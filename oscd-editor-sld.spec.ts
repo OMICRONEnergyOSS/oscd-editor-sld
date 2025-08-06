@@ -114,6 +114,7 @@ describe('oscd-editor-sld', () => {
     );
     element = await fixture(
       html`<oscd-editor-sld
+        .editor=${xmlEditor}
         docName="testDoc"
         .doc=${doc}
         @oscd-edit=${(event: EditEvent) => {
@@ -430,6 +431,7 @@ describe('oscd-editor-sld', () => {
         .property('placingLabel')
         .to.have.property('tagName', 'VoltageLevel');
       await sendMouse({ type: 'click', position: [200, 200] });
+
       expect(element.doc.querySelector('VoltageLevel')).to.have.attribute(
         'smth:lx',
         '5.5',

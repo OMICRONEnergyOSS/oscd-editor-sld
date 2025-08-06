@@ -49,7 +49,7 @@ import {
   xlinkNs,
   xmlBoolean,
 } from './util.js';
-import { Edit } from '@omicronenergy/oscd-api';
+import { Edit, EditV2, Transactor } from '@omicronenergy/oscd-api';
 import { newEditEvent } from '@omicronenergy/oscd-api/utils.js';
 
 const parentTags: Partial<Record<string, string>> = {
@@ -233,7 +233,11 @@ function renderMenuFooter(element: Element) {
   else if (element.tagName === 'Bay') footerGraphic = bayGraphic;
   else if (element.tagName === 'VoltageLevel')
     footerGraphic = voltageLevelGraphic;
-  return html`<mwc-list-item ?twoline=${detail} graphic="avatar" noninteractive>
+  return html`<mwc-list-item
+    ?twoline=${!!detail}
+    graphic="avatar"
+    noninteractive
+  >
     <span>${name}</span>
     ${detail
       ? html`<span
@@ -249,31 +253,34 @@ function renderMenuFooter(element: Element) {
 
 @customElement('sld-editor')
 export class SLDEditor extends LitElement {
-  @property()
+  @property({ type: Object })
+  editor!: Transactor<EditV2>;
+
+  @property({ type: Object })
   doc!: XMLDocument;
 
-  @property()
+  @property({ type: Object })
   substation!: Element;
 
-  @property()
+  @property({ type: Number })
   editCount = -1;
 
-  @property()
+  @property({ type: Number })
   gridSize = 32;
 
-  @property()
+  @property({ type: String })
   nsp = 'esld';
 
-  @property()
+  @property({ type: Object })
   resizing?: Element;
 
-  @property()
+  @property({ type: Object })
   placing?: Element;
 
-  @property()
+  @property({ type: Object })
   placingLabel?: Element;
 
-  @property()
+  @property({ type: Object })
   connecting?: {
     equipment: Element;
     path: Point[];
@@ -593,12 +600,12 @@ export class SLDEditor extends LitElement {
           <mwc-icon slot="graphic">delete</mwc-icon>
         </mwc-list-item>`,
         handler: () => {
-          const edits: Edit[] = [];
+          const edits: EditV2[] = [];
           Array.from(equipment.querySelectorAll('Terminal')).forEach(terminal =>
             edits.push(...removeTerminal(terminal)),
           );
           edits.push({ node: equipment });
-          this.dispatchEvent(newEditEvent(edits));
+          this.editor.commit(edits);
         },
       },
     ];
@@ -645,8 +652,7 @@ export class SLDEditor extends LitElement {
     if (!singleTerminal.has(equipment.getAttribute('type')!)) {
       if (bottomTerminal)
         items.unshift({
-          handler: () =>
-            this.dispatchEvent(newEditEvent(removeTerminal(bottomTerminal))),
+          handler: () => this.editor.commit(removeTerminal(bottomTerminal)),
           content: item('disconnect', false),
         });
       else
@@ -669,8 +675,7 @@ export class SLDEditor extends LitElement {
     }
     if (topTerminal)
       items.unshift({
-        handler: () =>
-          this.dispatchEvent(newEditEvent(removeTerminal(topTerminal))),
+        handler: () => this.editor.commit(removeTerminal(topTerminal)),
         content: item('disconnect', true),
       });
     else
@@ -743,9 +748,7 @@ export class SLDEditor extends LitElement {
         </mwc-list-item>`,
         handler: () => {
           const node = busBar.querySelector('ConnectivityNode')!;
-          this.dispatchEvent(
-            newEditEvent([...removeNode(node), { node: busBar }]),
-          );
+          this.editor.commit([...removeNode(node), { node: busBar }]);
         },
       },
     ];
@@ -812,7 +815,7 @@ export class SLDEditor extends LitElement {
           <mwc-icon slot="graphic">delete</mwc-icon>
         </mwc-list-item>`,
         handler: () => {
-          const edits: Edit[] = [];
+          const edits: EditV2[] = [];
           Array.from(bayOrVL.getElementsByTagName('ConnectivityNode')).forEach(
             cNode => {
               if (
@@ -841,7 +844,7 @@ export class SLDEditor extends LitElement {
             },
           );
           edits.push({ node: bayOrVL });
-          this.dispatchEvent(newEditEvent(edits));
+          this.editor.commit(edits);
         },
       },
     ];

@@ -1,4 +1,4 @@
-import { Edit } from '@omicronenergy/oscd-api';
+import { EditV2 } from '@omicronenergy/oscd-api';
 import { getReference } from '@openscd/oscd-scl';
 
 export const privType = 'Transpower-SLD-Vertices';
@@ -105,8 +105,8 @@ function collinear(v0: Element, v1: Element, v2: Element) {
   return (x0 === x1 && x1 === x2) || (y0 === y1 && y1 === y2);
 }
 
-export function removeNode(node: Element): Edit[] {
-  const edits = [] as Edit[];
+export function removeNode(node: Element): EditV2[] {
+  const edits = [] as EditV2[];
 
   if (xmlBoolean(node.querySelector(`Section[bus]`)?.getAttribute('bus'))) {
     Array.from(node.querySelectorAll('Section:not([bus])')).forEach(section =>
@@ -132,8 +132,8 @@ export function removeNode(node: Element): Edit[] {
   return edits;
 }
 
-function reverseSection(section: Element): Edit[] {
-  const edits = [] as Edit[];
+function reverseSection(section: Element): EditV2[] {
+  const edits = [] as EditV2[];
 
   Array.from(section.children)
     .reverse()
@@ -144,7 +144,7 @@ function reverseSection(section: Element): Edit[] {
   return edits;
 }
 
-function healSectionCut(cut: Element): Edit[] {
+function healSectionCut(cut: Element): EditV2[] {
   const [x, y] = ['x', 'y'].map(name => cut.getAttributeNS(sldNs, name));
 
   const isCut = (vertex: Element) =>
@@ -165,7 +165,7 @@ function healSectionCut(cut: Element): Edit[] {
   );
   if (busA !== busB) return [];
 
-  const edits = [] as Edit[];
+  const edits = [] as EditV2[];
   const [sectionA, sectionB] = cutSections as [Element, Element];
   if (isCut(sectionA.firstElementChild!)) edits.push(reverseSection(sectionA));
   const sectionBChildren = Array.from(sectionB.children);
@@ -202,7 +202,7 @@ function updateTerminals(
   cNodeName: string,
   connectivityNode: string,
 ) {
-  const updates = [] as Edit[];
+  const updates = [] as EditV2[];
 
   const oldPathName = cNode.getAttribute('pathName');
   if (!oldPathName) return [];
@@ -234,7 +234,7 @@ function updateConnectivityNodes(
   parent: Element,
   name: string,
 ) {
-  const updates = [] as Edit[];
+  const updates = [] as EditV2[];
 
   const cNodes = Array.from(element.getElementsByTagName('ConnectivityNode'));
   if (element.tagName === 'ConnectivityNode') cNodes.push(element);
@@ -297,8 +297,8 @@ function uniqueName(element: Element, parent: Element): string {
   return baseName + index.toString();
 }
 
-export function reparentElement(element: Element, parent: Element): Edit[] {
-  const edits: Edit[] = [];
+export function reparentElement(element: Element, parent: Element): EditV2[] {
+  const edits: EditV2[] = [];
   edits.push({
     node: element,
     parent,
@@ -311,8 +311,8 @@ export function reparentElement(element: Element, parent: Element): Edit[] {
   return edits;
 }
 
-export function removeTerminal(terminal: Element): Edit[] {
-  const edits = [] as Edit[];
+export function removeTerminal(terminal: Element): EditV2[] {
+  const edits = [] as EditV2[];
 
   edits.push({ node: terminal });
   const pathName = terminal.getAttribute('connectivityNode');
