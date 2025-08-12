@@ -1,6 +1,7 @@
 import nodeResolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import { rollupPluginHTML as html } from '@web/rollup-plugin-html';
+import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets';
 import fs from 'fs';
 
 const tsconfig = JSON.parse(fs.readFileSync('./tsconfig.json', 'utf8'));
@@ -23,7 +24,11 @@ export default [
     plugins: [
       /** Resolve bare module imports */
       nodeResolve(),
+
       typescript(),
+
+      /** Bundle assets references via import.meta.url */
+      importMetaAssets(),
     ],
   },
   {
