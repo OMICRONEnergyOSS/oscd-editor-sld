@@ -11504,6 +11504,17 @@ function loadSourcedPlugins(plugins) {
         .filter((plugin) => plugin !== undefined);
 }
 
+function __variableDynamicURLRuntime0__(path) {
+  switch (path) {
+    case './locales/de.js': return new URL(new URL('assets/de-BadDkCzR.js', import.meta.url).href);
+    default: return new Promise(function(resolve, reject) {
+      (typeof queueMicrotask === 'function' ? queueMicrotask : setTimeout)(
+        reject.bind(null, new Error("Unknown variable dynamic new URL statement: " + path))
+      );
+    })
+   }
+ }
+
 var _OpenSCD_plugins, _OpenSCD_actions;
 const _customElementsDefine = window.customElements.define;
 window.customElements.define = (name, cl, conf) => {
@@ -11514,7 +11525,7 @@ window.customElements.define = (name, cl, conf) => {
 const { getLocale, setLocale } = configureLocalization({
     sourceLocale,
     targetLocales,
-    loadLocale: locale => import(new URL(`./locales/${locale}.js`, import.meta.url).href),
+    loadLocale: locale => import(__variableDynamicURLRuntime0__(`./locales/${locale}.js`).href),
 });
 function renderActionItem(control, slot = 'actionItems') {
     return x$2 `<oscd-filled-icon-button
@@ -24246,7 +24257,7 @@ function appIdGenerator(doc, serviceType, type1A = false) {
     };
 }
 
-await fetch(new URL("../foundation/nsd.json", import.meta.url)).then((res) => res.json());
+await fetch(new URL(new URL('assets/nsd-BZ5JISRf.json', import.meta.url).href)).then((res) => res.json());
 
 const nsd72 = `<?xml version="1.0" encoding="UTF-8"?>
 <NS xmlns="http://www.iec.ch/61850/2016/NSD"
