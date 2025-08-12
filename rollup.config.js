@@ -40,6 +40,8 @@ export default [
       }),
       nodeResolve(),
       typescript(demoTsconfig),
+      /** Bundle assets references via import.meta.url */
+      importMetaAssets(),
     ],
     output: {
       dir: 'dist/demo',
