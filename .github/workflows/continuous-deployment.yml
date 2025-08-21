@@ -1,30 +1,14 @@
-name: Deploy
+name: Continuous Deployment
 on:
   push:
     branches:
       - main
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run bundle
-
-      - name: Deploy
-        run: |
-          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          npx gh-pages -d dist -u "github-actions <support+actions@github.com>"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  ci-cd:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: OMICRONEnergyOSS/oscd-gh-workflows/.github/workflows/continuous-deployment.yml@main
+    secrets:
+      gh_token: ${{ secrets.GITHUB_TOKEN }}

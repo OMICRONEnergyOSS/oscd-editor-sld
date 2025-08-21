@@ -1,78 +1,17 @@
-name: Release
-
+name: Release Please
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  release-please:
-    runs-on: ubuntu-latest
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
+  release:
     permissions:
       contents: write
-      pull-requests: write
       issues: write
-    steps:
-      - uses: googleapis/release-please-action@v4
-        id: release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
-
-  npm-publish:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.release_created }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+      pull-requests: write
       id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Build the package
-        run: npm run build
-      - name: Publish to NPMJS.org
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  upload-release-bundle:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.release_created }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node Environment
-        run: npm ci
-
-      - name: Set repository name env var
-        run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
-
-      - name: Build plugin bundle
-        run: npm run bundle
-
-      - name: Create zipped bundle
-        run: |
-          (cd ./dist && zip -r ../${REPO_NAME}.zip .)
-          tar -C ./dist -czvf ${REPO_NAME}.tar.gz ./
-
-      - name: Upload zipped bundle to GitHub release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ needs.release-please.outputs.tag_name }} ${REPO_NAME}.zip ${REPO_NAME}.tar.gz
+    uses: OMICRONEnergyOSS/oscd-gh-workflows/.github/workflows/release-please.yml@main
+    secrets:
+      npm_token: ${{ secrets.NPM_TOKEN }}
+      gh_token: ${{ secrets.GITHUB_TOKEN }}
