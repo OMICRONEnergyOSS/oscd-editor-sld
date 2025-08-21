@@ -49,8 +49,8 @@ import {
   xlinkNs,
   xmlBoolean,
 } from './util.js';
-import { Edit, EditV2, Transactor } from '@omicronenergy/oscd-api';
-import { newEditEvent } from '@omicronenergy/oscd-api/utils.js';
+import { EditV2 } from '@omicronenergy/oscd-api';
+import { newEditEventV2 } from '@omicronenergy/oscd-api/utils.js';
 
 const parentTags: Partial<Record<string, string>> = {
   ConductingEquipment: 'Bay',
@@ -253,9 +253,6 @@ function renderMenuFooter(element: Element) {
 
 @customElement('sld-editor')
 export class SLDEditor extends LitElement {
-  @property({ type: Object })
-  editor!: Transactor<EditV2>;
-
   @property({ type: Object })
   doc!: XMLDocument;
 
@@ -484,7 +481,7 @@ export class SLDEditor extends LitElement {
 
   groundTerminal(equipment: Element, name: 'T1' | 'T2') {
     const bay = equipment.closest('Bay')!;
-    const edits: Edit[] = [];
+    const edits: EditV2[] = [];
     let grounded = bay.querySelector(
       ':scope > ConnectivityNode[name="grounded"]',
     );
@@ -521,19 +518,16 @@ export class SLDEditor extends LitElement {
       node: terminal,
       reference: getReference(equipment, 'Terminal'),
     });
-    this.dispatchEvent(newEditEvent(edits));
+    this.dispatchEvent(newEditEventV2(edits));
   }
 
   flipElement(element: Element) {
     const { flip } = attributes(element);
     this.dispatchEvent(
-      newEditEvent({
+      newEditEventV2({
         element,
         attributes: {
-          [`${this.nsp}:flip`]: {
-            namespaceURI: sldNs,
-            value: flip ? null : 'true',
-          },
+          [`${this.nsp}:flip`]: flip ? null : 'true',
         },
       }),
     );
@@ -605,7 +599,7 @@ export class SLDEditor extends LitElement {
             edits.push(...removeTerminal(terminal)),
           );
           edits.push({ node: equipment });
-          this.editor.commit(edits);
+          this.dispatchEvent(newEditEventV2(edits));
         },
       },
     ];
@@ -652,7 +646,8 @@ export class SLDEditor extends LitElement {
     if (!singleTerminal.has(equipment.getAttribute('type')!)) {
       if (bottomTerminal)
         items.unshift({
-          handler: () => this.editor.commit(removeTerminal(bottomTerminal)),
+          handler: () =>
+            this.dispatchEvent(newEditEventV2(removeTerminal(bottomTerminal))),
           content: item('disconnect', false),
         });
       else
@@ -675,7 +670,8 @@ export class SLDEditor extends LitElement {
     }
     if (topTerminal)
       items.unshift({
-        handler: () => this.editor.commit(removeTerminal(topTerminal)),
+        handler: () =>
+          this.dispatchEvent(newEditEventV2(removeTerminal(topTerminal))),
         content: item('disconnect', true),
       });
     else
@@ -748,7 +744,9 @@ export class SLDEditor extends LitElement {
         </mwc-list-item>`,
         handler: () => {
           const node = busBar.querySelector('ConnectivityNode')!;
-          this.editor.commit([...removeNode(node), { node: busBar }]);
+          this.dispatchEvent(
+            newEditEventV2([...removeNode(node), { node: busBar }]),
+          );
         },
       },
     ];
@@ -844,7 +842,7 @@ export class SLDEditor extends LitElement {
             },
           );
           edits.push({ node: bayOrVL });
-          this.editor.commit(edits);
+          this.dispatchEvent(newEditEventV2(edits));
         },
       },
     ];
@@ -1221,11 +1219,13 @@ export class SLDEditor extends LitElement {
             this.resizeSubstationUI.close();
             if (newW === oldW.toString() && newH === oldH.toString()) return;
             this.dispatchEvent(
-              newEditEvent({
+              newEditEventV2({
                 element: this.substation,
-                attributes: {
-                  [`${this.nsp}:w`]: { namespaceURI: sldNs, value: newW },
-                  [`${this.nsp}:h`]: { namespaceURI: sldNs, value: newH },
+                attributesNS: {
+                  [sldNs]: {
+                    [`${this.nsp}:w`]: newW,
+                    [`${this.nsp}:h`]: newH,
+                  },
                 },
               }),
             );

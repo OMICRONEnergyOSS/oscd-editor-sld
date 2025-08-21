@@ -239,14 +239,6 @@
           "members": [
             {
               "kind": "field",
-              "name": "editor",
-              "type": {
-                "text": "Transactor<EditV2>"
-              },
-              "attribute": "editor"
-            },
-            {
-              "kind": "field",
               "name": "doc",
               "type": {
                 "text": "XMLDocument"
@@ -483,13 +475,6 @@
           ],
           "attributes": [
             {
-              "name": "editor",
-              "type": {
-                "text": "Transactor<EditV2>"
-              },
-              "fieldName": "editor"
-            },
-            {
               "name": "doc",
               "type": {
                 "text": "XMLDocument"
@@ -531,14 +516,6 @@
           "description": "",
           "name": "SLDEditor",
           "members": [
-            {
-              "kind": "field",
-              "name": "editor",
-              "type": {
-                "text": "Transactor<EditV2>"
-              },
-              "attribute": "editor"
-            },
             {
               "kind": "field",
               "name": "doc",
@@ -1001,13 +978,6 @@
             }
           ],
           "attributes": [
-            {
-              "name": "editor",
-              "type": {
-                "text": "Transactor<EditV2>"
-              },
-              "fieldName": "editor"
-            },
             {
               "name": "doc",
               "type": {

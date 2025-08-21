@@ -6,10 +6,9 @@ import {
   AttributesV2,
   EditV2,
   SetAttributes,
-  Transactor,
   Update,
 } from '@omicronenergy/oscd-api';
-import { newEditEvent } from '@omicronenergy/oscd-api/utils.js';
+import { newEditEventV2 } from '@omicronenergy/oscd-api/utils.js';
 import { getReference } from '@openscd/oscd-scl';
 
 import '@material/mwc-button';
@@ -119,9 +118,6 @@ function cutSectionAt(
 }
 
 export default class OscdEditorSLD extends LitElement {
-  @property({ type: Object })
-  editor!: Transactor<EditV2>;
-
   @property({ type: Object })
   doc!: XMLDocument;
 
@@ -259,7 +255,7 @@ export default class OscdEditorSLD extends LitElement {
         .filter(terminal => terminal.getAttribute('cNodeName') !== 'grounded')
         .forEach(terminal => edits.push(...removeTerminal(terminal)));
     }
-    this.editor.commit(edits);
+    this.dispatchEvent(newEditEventV2(edits));
   }
 
   placeLabel(element: Element, x: number, y: number) {
@@ -272,7 +268,7 @@ export default class OscdEditorSLD extends LitElement {
         },
       },
     };
-    this.editor.commit(editV2);
+    this.dispatchEvent(newEditEventV2(editV2));
     this.reset();
   }
 
@@ -447,7 +443,7 @@ export default class OscdEditorSLD extends LitElement {
       }
     }
 
-    this.editor.commit(edits);
+    this.dispatchEvent(newEditEventV2(edits));
     if (
       ['Bay', 'VoltageLevel'].includes(element.tagName) &&
       (!element.hasAttributeNS(sldNs, 'w') ||
@@ -593,7 +589,7 @@ export default class OscdEditorSLD extends LitElement {
       });
     }
     this.reset();
-    this.editor.commit(edits);
+    this.dispatchEvent(newEditEventV2(edits));
   }
 
   render() {
@@ -602,7 +598,6 @@ export default class OscdEditorSLD extends LitElement {
       ${Array.from(this.doc.querySelectorAll(':root > Substation')).map(
         subs =>
           html`<sld-editor
-            .editor=${this.editor}
             .doc=${this.doc}
             .editCount=${this.docVersion}
             .substation=${subs}
@@ -625,11 +620,13 @@ export default class OscdEditorSLD extends LitElement {
             }}
             @oscd-sld-resize=${({ detail: { element, w, h } }: ResizeEvent) => {
               this.dispatchEvent(
-                newEditEvent({
+                newEditEventV2({
                   element,
-                  attributes: {
-                    w: { namespaceURI: sldNs, value: w.toString() },
-                    h: { namespaceURI: sldNs, value: h.toString() },
+                  attributesNS: {
+                    [sldNs]: {
+                      w: w.toString(),
+                      h: h.toString(),
+                    },
                   },
                 }),
               );
@@ -760,7 +757,7 @@ export default class OscdEditorSLD extends LitElement {
     node.setAttribute('name', `S${index}`);
     node.setAttributeNS(sldNs, `${this.nsp}:w`, '50');
     node.setAttributeNS(sldNs, `${this.nsp}:h`, '25');
-    this.dispatchEvent(newEditEvent({ parent, node, reference }));
+    this.dispatchEvent(newEditEventV2({ parent, node, reference }));
   }
 
   static styles = css`

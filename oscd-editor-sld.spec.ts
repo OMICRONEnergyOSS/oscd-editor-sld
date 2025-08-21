@@ -10,8 +10,7 @@ import { identity } from '@openscd/oscd-scl';
 import { ListItem } from '@material/mwc-list/mwc-list-item.js';
 import OscdEditorSLD from './oscd-editor-sld.js';
 import { SLDEditor } from './sld-editor.js';
-import { EditEvent } from '@omicronenergy/oscd-api';
-import { convertEdit } from '@omicronenergy/oscd-api/utils.js';
+import { EditEventV2 } from '@omicronenergy/oscd-api';
 import { XMLEditor } from '@omicronenergy/oscd-editor';
 
 function middleOf(element: Element): [number, number] {
@@ -78,7 +77,7 @@ export const equipmentDocString = `<?xml version="1.0" encoding="UTF-8"?>
 `;
 
 describe('oscd-editor-sld', () => {
-  const xmlEditor: XMLEditor = new XMLEditor();
+  let xmlEditor: XMLEditor;
   let element: OscdEditorSLD;
   let lastCalledWizard: Element | undefined;
 
@@ -112,14 +111,14 @@ describe('oscd-editor-sld', () => {
       emptyDocString,
       'application/xml',
     );
+    //Use the actual editor here so that tests depending on a sequence of changes, still makes sense.
+    xmlEditor = new XMLEditor();
     element = await fixture(
       html`<oscd-editor-sld
-        .editor=${xmlEditor}
         docName="testDoc"
         .doc=${doc}
-        @oscd-edit=${(event: EditEvent) => {
-          const editV2 = convertEdit(event.detail);
-          xmlEditor.commit(editV2);
+        @oscd-edit-v2=${(event: EditEventV2) => {
+          xmlEditor.commit(event.detail.edit);
           element.docVersion += 1;
         }}
         @oscd-edit-wizard-request=${({
@@ -142,11 +141,11 @@ describe('oscd-editor-sld', () => {
     expect(element.shadowRoot?.querySelector('p')).to.contain.text('SCL');
   });
 
-  it('adds the SLD XML namespace if doc lacks it', async () => {
+  it('adds the SLD XML namespace if doc lacks it', () => {
     expect(element.doc.documentElement).to.have.attribute('xmlns:esld');
   });
 
-  it('adds a substation on add button click', async () => {
+  it('adds a substation on add button click', () => {
     expect(element.doc.querySelector('Substation')).to.not.exist;
     element
       .shadowRoot!.querySelector<Button>('[label="Add Substation"]')
@@ -154,7 +153,7 @@ describe('oscd-editor-sld', () => {
     expect(element.doc.querySelector('Substation')).to.exist;
   });
 
-  it('gives new substations unique names', async () => {
+  it('gives new substations unique names', () => {
     element
       .shadowRoot!.querySelector<Button>('[label="Add Substation"]')
       ?.click();
@@ -167,13 +166,13 @@ describe('oscd-editor-sld', () => {
     expect(name1).not.to.equal(name2);
   });
 
-  it('zooms in on zoom in button click', async () => {
+  it('zooms in on zoom in button click', () => {
     const initial = element.gridSize;
     element.shadowRoot!.querySelector<IconButton>('[icon="zoom_in"]')?.click();
     expect(element.gridSize).to.be.greaterThan(initial);
   });
 
-  it('zooms out on zoom out button click', async () => {
+  it('zooms out on zoom out button click', () => {
     const initial = element.gridSize;
     element.shadowRoot!.querySelector<IconButton>('[icon="zoom_out"]')?.click();
     expect(element.gridSize).to.be.lessThan(initial);
@@ -291,7 +290,7 @@ describe('oscd-editor-sld', () => {
       await element.updateComplete;
     });
 
-    it('forbids undersizing the substation', async () => {
+    it('forbids undersizing the substation', () => {
       const sldEditor =
         element.shadowRoot!.querySelector<SLDEditor>('sld-editor')!;
       sldEditor.shadowRoot
@@ -475,7 +474,7 @@ describe('oscd-editor-sld', () => {
       );
     });
 
-    it('requests a voltage level edit wizard on label middle click', async () => {
+    it('requests a voltage level edit wizard on label middle click', () => {
       queryUI({ ui: '.label text' }).dispatchEvent(
         new PointerEvent('auxclick', { button: 1 }),
       );
@@ -1414,7 +1413,7 @@ describe('oscd-editor-sld', () => {
           });
         });
 
-        it('removes superfluous connectivity nodes when disconnecting', async () => {
+        it('removes superfluous connectivity nodes when disconnecting', () => {
           queryUI({ scl: '[type="CTR"]', ui: 'rect' }).dispatchEvent(
             new PointerEvent('auxclick', { button: 1 }),
           );
