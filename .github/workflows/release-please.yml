@@ -1,0 +1,17 @@
+name: Release Please
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    uses: OMICRONEnergyOSS/oscd-gh-workflows/.github/workflows/release-please.yml@main
+    secrets:
+      npm_token: ${{ secrets.NPM_TOKEN }}
+      gh_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,42 @@
+import { LitElement } from 'lit';
+import '@material/mwc-button';
+import '@material/mwc-fab';
+import '@material/mwc-icon-button';
+import '@material/mwc-icon';
+import './sld-editor.js';
+import { ConnectDetail, Point, StartConnectDetail } from './util.js';
+export default class OscdEditorSLD extends LitElement {
+    doc: XMLDocument;
+    get docVersion(): number;
+    set docVersion(value: number);
+    private _docVersion;
+    gridSize: number;
+    nsp: string;
+    templateElements: Record<string, Element>;
+    resizing?: Element;
+    placing?: Element;
+    placingLabel?: Element;
+    connecting?: {
+        equipment: Element;
+        path: Point[];
+        terminal: 'top' | 'bottom';
+    };
+    zoomIn(step?: number): void;
+    zoomOut(step?: number): void;
+    startResizing(element: Element | undefined): void;
+    startPlacing(element: Element | undefined): void;
+    startPlacingLabel(element: Element | undefined): void;
+    startConnecting({ equipment, terminal }: StartConnectDetail): void;
+    reset(): void;
+    handleKeydown: ({ key }: KeyboardEvent) => void;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
+    updated(changedProperties: Map<string, unknown>): void;
+    rotateElement(element: Element): void;
+    placeLabel(element: Element, x: number, y: number): void;
+    placeElement(element: Element, parent: Element, x: number, y: number): void;
+    connectEquipment({ equipment, terminal, connectTo, toTerminal, path, }: ConnectDetail): void;
+    render(): import("lit").TemplateResult<1>;
+    insertSubstation(): void;
+    static styles: import("lit").CSSResult;
+}
