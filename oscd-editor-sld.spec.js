@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-expressions */
 import { html } from 'lit';
 import { fixture, expect } from '@open-wc/testing';
-import { handleEdit } from '@openscd/open-scd-core';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { identity } from '@openscd/oscd-scl';
+import { XMLEditor } from '@omicronenergy/oscd-editor';
 import OscdEditorSld from './oscd-editor-sld.js';
 function middleOf(element) {
     const { x, y, width, height } = element.getBoundingClientRect();
@@ -63,13 +63,13 @@ export const equipmentDocString = `<?xml version="1.0" encoding="UTF-8"?>
 `;
 describe('SLD Editor', () => {
     let element;
+    let xmlEditor;
     let lastCalledWizard;
     function queryUI({ scl, ui, }) {
-        var _a;
         let target = element.shadowRoot.querySelector('sld-editor').shadowRoot;
         if (scl) {
             const sclTarget = element.doc.querySelector(scl);
-            target = (_a = target.getElementById) === null || _a === void 0 ? void 0 : _a.call(target, identity(sclTarget));
+            target = target.getElementById?.(identity(sclTarget));
         }
         if (ui) {
             target = target.querySelector(ui);
@@ -78,12 +78,14 @@ describe('SLD Editor', () => {
     }
     beforeEach(async () => {
         const doc = new DOMParser().parseFromString(emptyDocString, 'application/xml');
+        // Use the actual editor here so that tests depending on a sequence of changes, still makes sense.
+        xmlEditor = new XMLEditor();
         element = await fixture(html `<oscd-editor-sld
         docName="testDoc"
         .doc=${doc}
-        @oscd-edit=${({ detail }) => {
-            handleEdit(detail);
-            element.editCount += 1;
+        @oscd-edit-v2=${(event) => {
+            xmlEditor.commit(event.detail.edit);
+            element.docVersion += 1;
         }}
         @oscd-edit-wizard-request=${({ detail: { element: e }, }) => {
             lastCalledWizard = e;
@@ -96,75 +98,80 @@ describe('SLD Editor', () => {
         await resetMouse();
     });
     it('shows a placeholder message while no document is loaded', async () => {
-        var _a;
         element = await fixture(html `<oscd-editor-sld></oscd-editor-sld>`);
-        expect((_a = element.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector('p')).to.contain.text('SCL');
+        expect(element.shadowRoot?.querySelector('p')).to.contain.text('SCL');
     });
     it('adds the SLD XML namespace if doc lacks it', async () => {
         expect(element.doc.documentElement).to.have.attribute('xmlns:esld');
     });
     it('adds a substation on add button click', async () => {
-        var _a;
         expect(element.doc.querySelector('Substation')).to.not.exist;
-        (_a = element
-            .shadowRoot.querySelector('[label="Add Substation"]')) === null || _a === void 0 ? void 0 : _a.click();
+        element
+            .shadowRoot.querySelector('[label="Add Substation"]')
+            ?.click();
         expect(element.doc.querySelector('Substation')).to.exist;
     });
     it('gives new substations unique names', async () => {
-        var _a, _b;
-        (_a = element
-            .shadowRoot.querySelector('[label="Add Substation"]')) === null || _a === void 0 ? void 0 : _a.click();
-        (_b = element
-            .shadowRoot.querySelector('[label="Add Substation"]')) === null || _b === void 0 ? void 0 : _b.click();
+        element
+            .shadowRoot.querySelector('[label="Add Substation"]')
+            ?.click();
+        element
+            .shadowRoot.querySelector('[label="Add Substation"]')
+            ?.click();
         const [name1, name2] = Array.from(element.doc.querySelectorAll('Substation')).map(substation => substation.getAttribute('name'));
         expect(name1).not.to.equal(name2);
     });
     it('does not zoom out past a positive minimum value', async () => {
-        var _a;
         for (let i = 0; i < 20; i += 1)
-            (_a = element
-                .shadowRoot.querySelector('[icon="zoom_out"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element
+                .shadowRoot.querySelector('[icon="zoom_out"]')
+                ?.click();
         expect(element.gridSize).to.be.greaterThan(0);
     });
     describe('given a substation', () => {
         beforeEach(async () => {
-            var _a;
-            (_a = element
-                .shadowRoot.querySelector('[label="Add Substation"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element
+                .shadowRoot.querySelector('[label="Add Substation"]')
+                ?.click();
             await element.updateComplete;
         });
         it('zooms in on zoom in button click', async () => {
-            var _a;
             const initial = element.gridSize;
-            (_a = element
-                .shadowRoot.querySelector('[icon="zoom_in"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element
+                .shadowRoot.querySelector('[icon="zoom_in"]')
+                ?.click();
             expect(element.gridSize).to.be.greaterThan(initial);
         });
         it('zooms out on zoom out button click', async () => {
-            var _a;
             const initial = element.gridSize;
-            (_a = element
-                .shadowRoot.querySelector('[icon="zoom_out"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element
+                .shadowRoot.querySelector('[icon="zoom_out"]')
+                ?.click();
             expect(element.gridSize).to.be.lessThan(initial);
         });
         it('allows resizing substations', async () => {
-            var _a, _b, _c, _d, _e, _f;
             const sldEditor = element.shadowRoot.querySelector('sld-editor');
-            (_b = (_a = sldEditor.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector('h2 > mwc-icon-button')) === null || _b === void 0 ? void 0 : _b.click();
+            sldEditor.shadowRoot
+                ?.querySelector('h2 > mwc-icon-button')
+                ?.click();
             sldEditor.substationWidthUI.value = '50';
             sldEditor.substationHeightUI.value = '25';
-            (_d = (_c = sldEditor.shadowRoot) === null || _c === void 0 ? void 0 : _c.querySelector('mwc-button[slot="primaryAction"]')) === null || _d === void 0 ? void 0 : _d.click();
-            expect(element).to.have.property('editCount', 0);
+            sldEditor.shadowRoot
+                ?.querySelector('mwc-button[slot="primaryAction"]')
+                ?.click();
+            expect(element).to.have.property('docVersion', 0);
             sldEditor.substationWidthUI.value = '1337';
             sldEditor.substationHeightUI.value = '42';
-            (_f = (_e = sldEditor.shadowRoot) === null || _e === void 0 ? void 0 : _e.querySelector('mwc-button[slot="primaryAction"]')) === null || _f === void 0 ? void 0 : _f.click();
+            sldEditor.shadowRoot
+                ?.querySelector('mwc-button[slot="primaryAction"]')
+                ?.click();
             expect(sldEditor.substation).to.have.attribute('esld:h', '42');
             expect(sldEditor.substation).to.have.attribute('esld:w', '1337');
         });
         it('allows placing a new voltage level', async () => {
-            var _a;
-            (_a = element
-                .shadowRoot.querySelector('[label="Add VoltageLevel"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element
+                .shadowRoot.querySelector('[label="Add VoltageLevel"]')
+                ?.click();
             expect(element)
                 .property('placing')
                 .to.have.property('tagName', 'VoltageLevel');
@@ -182,13 +189,14 @@ describe('SLD Editor', () => {
             expect(element.doc.querySelector('VoltageLevel')).to.have.attribute('h', '8');
         });
         it('gives new voltage levels unique names', async () => {
-            var _a, _b;
-            (_a = element
-                .shadowRoot.querySelector('[label="Add VoltageLevel"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element
+                .shadowRoot.querySelector('[label="Add VoltageLevel"]')
+                ?.click();
             await sendMouse({ type: 'click', position: [200, 252] });
             await sendMouse({ type: 'click', position: [300, 352] });
-            (_b = element
-                .shadowRoot.querySelector('[label="Add VoltageLevel"]')) === null || _b === void 0 ? void 0 : _b.click();
+            element
+                .shadowRoot.querySelector('[label="Add VoltageLevel"]')
+                ?.click();
             await sendMouse({ type: 'click', position: [350, 402] });
             await sendMouse({ type: 'click', position: [450, 502] });
             const [name1, name2] = Array.from(element.doc.querySelectorAll('VoltageLevel')).map(substation => substation.getAttribute('name'));
@@ -197,9 +205,9 @@ describe('SLD Editor', () => {
             expect(name2).to.exist;
         });
         it('allows the user to abort placing an element', async () => {
-            var _a;
-            (_a = element
-                .shadowRoot.querySelector('[label="Add VoltageLevel"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element
+                .shadowRoot.querySelector('[label="Add VoltageLevel"]')
+                ?.click();
             expect(element)
                 .property('placing')
                 .to.have.property('tagName', 'VoltageLevel');
@@ -215,12 +223,15 @@ describe('SLD Editor', () => {
             await element.updateComplete;
         });
         it('forbids undersizing the substation', async () => {
-            var _a, _b, _c, _d;
             const sldEditor = element.shadowRoot.querySelector('sld-editor');
-            (_b = (_a = sldEditor.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector('h2 > mwc-icon-button')) === null || _b === void 0 ? void 0 : _b.click();
+            sldEditor.shadowRoot
+                ?.querySelector('h2 > mwc-icon-button')
+                ?.click();
             sldEditor.substationWidthUI.value = '30';
             sldEditor.substationHeightUI.value = '20';
-            (_d = (_c = sldEditor.shadowRoot) === null || _c === void 0 ? void 0 : _c.querySelector('mwc-button[slot="primaryAction"]')) === null || _d === void 0 ? void 0 : _d.click();
+            sldEditor.shadowRoot
+                ?.querySelector('mwc-button[slot="primaryAction"]')
+                ?.click();
             expect(sldEditor.substation).to.have.attribute('smth:h', '25');
             expect(sldEditor.substation).to.have.attribute('smth:w', '50');
         });
@@ -369,8 +380,7 @@ describe('SLD Editor', () => {
             expect(lastCalledWizard).to.equal(element.doc.querySelector('VoltageLevel'));
         });
         it('allows placing a new bay', async () => {
-            var _a;
-            (_a = element.shadowRoot.querySelector('[label="Add Bay"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element.shadowRoot.querySelector('[label="Add Bay"]')?.click();
             expect(element).property('placing').to.have.property('tagName', 'Bay');
             const sldEditor = element.shadowRoot.querySelector('sld-editor');
             await sendMouse({ type: 'click', position: [200, 252] });
@@ -386,9 +396,9 @@ describe('SLD Editor', () => {
             expect(bay).to.have.attribute('h', '8');
         });
         it('allows placing a new bus bar', async () => {
-            var _a;
-            (_a = element
-                .shadowRoot.querySelector('[label="Add Bus Bar"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element
+                .shadowRoot.querySelector('[label="Add Bus Bar"]')
+                ?.click();
             expect(element).property('placing').to.have.property('tagName', 'Bay');
             const sldEditor = element.shadowRoot.querySelector('sld-editor');
             await sendMouse({ type: 'click', position: [200, 252] });
@@ -476,8 +486,8 @@ describe('SLD Editor', () => {
         });
         it('moves bays on move handle click', async () => {
             const bayElement = element.doc.querySelector('Bay');
-            const currentX = parseInt(bayElement.getAttribute('esld:x'));
-            const currentY = parseInt(bayElement.getAttribute('esld:y'));
+            const currentX = parseInt(bayElement.getAttribute('esld:x'), 10);
+            const currentY = parseInt(bayElement.getAttribute('esld:y'), 10);
             // Move mouse to bay position to establish offset
             await sendMouse({
                 type: 'move',
@@ -501,8 +511,8 @@ describe('SLD Editor', () => {
         });
         it('renames reparented bays if necessary', async () => {
             const bayElement = element.doc.querySelector('Bay');
-            const currentX = parseInt(bayElement.getAttribute('esld:x'));
-            const currentY = parseInt(bayElement.getAttribute('esld:y'));
+            const currentX = parseInt(bayElement.getAttribute('esld:x'), 10);
+            const currentY = parseInt(bayElement.getAttribute('esld:y'), 10);
             // Move mouse to bay position to establish offset
             await sendMouse({
                 type: 'move',
@@ -528,8 +538,8 @@ describe('SLD Editor', () => {
         });
         it("updates reparented bays' connectivity node paths", async () => {
             const bayElement = element.doc.querySelector('Bay');
-            const currentX = parseInt(bayElement.getAttribute('esld:x'));
-            const currentY = parseInt(bayElement.getAttribute('esld:y'));
+            const currentX = parseInt(bayElement.getAttribute('esld:x'), 10);
+            const currentY = parseInt(bayElement.getAttribute('esld:y'), 10);
             // Move mouse to bay position to establish offset
             await sendMouse({
                 type: 'move',
@@ -548,7 +558,7 @@ describe('SLD Editor', () => {
             });
         });
         it('moves a bay when its parent voltage level is moved', async () => {
-            const voltageLevel = element.doc.querySelector('VoltageLevel');
+            // const voltageLevel = element.doc.querySelector('VoltageLevel')!;
             await sendMouse({
                 type: 'click',
                 position: [70, 250],
@@ -564,8 +574,7 @@ describe('SLD Editor', () => {
             expect(bay).to.have.attribute('esld:y', '1');
         });
         it('allows placing new conducting equipment', async () => {
-            var _a;
-            (_a = element.shadowRoot.querySelector('[label="Add GEN"]')) === null || _a === void 0 ? void 0 : _a.click();
+            element.shadowRoot.querySelector('[label="Add GEN"]')?.click();
             expect(element)
                 .property('placing')
                 .to.have.property('tagName', 'ConductingEquipment');
@@ -579,9 +588,9 @@ describe('SLD Editor', () => {
         });
         describe('with a sibling bus bar', () => {
             beforeEach(async () => {
-                var _a;
-                (_a = element
-                    .shadowRoot.querySelector('[label="Add Bus Bar"]')) === null || _a === void 0 ? void 0 : _a.click();
+                element
+                    .shadowRoot.querySelector('[label="Add Bus Bar"]')
+                    ?.click();
                 await sendMouse({ type: 'click', position: [200, 244] });
                 await sendMouse({ type: 'click', position: [400, 468] });
             });
@@ -603,8 +612,8 @@ describe('SLD Editor', () => {
                 const bus = element.doc.querySelector('[name="BB1"]');
                 expect(bus).to.have.attribute('x', '5');
                 // Move mouse to current bus position to establish offset
-                const currentX = parseInt(bus.getAttribute('x'));
-                const currentY = parseInt(bus.getAttribute('y'));
+                const currentX = parseInt(bus.getAttribute('x'), 10);
+                const currentY = parseInt(bus.getAttribute('y'), 10);
                 await sendMouse({
                     type: 'move',
                     position: [(currentX - 1) * 32 + 64, (currentY - 1) * 32 + 228],
@@ -621,8 +630,8 @@ describe('SLD Editor', () => {
             });
             it('resizes the bus bar on middle mouse button click', async () => {
                 const bus = element.doc.querySelector('[name="BB1"]');
-                const currentX = parseInt(bus.getAttribute('x'));
-                const currentY = parseInt(bus.getAttribute('y'));
+                const currentX = parseInt(bus.getAttribute('x'), 10);
+                const currentY = parseInt(bus.getAttribute('y'), 10);
                 // Move mouse to bus bar position to establish offset
                 await sendMouse({
                     type: 'move',
@@ -1139,7 +1148,6 @@ describe('SLD Editor', () => {
                     expect(element.doc.querySelectorAll('ConnectivityNode')).to.have.lengthOf(1);
                 });
                 it('keeps internal connectivity nodes when moving containers', async () => {
-                    var _a;
                     const position = middleOf(queryUI({
                         scl: '[name="V2"]',
                         ui: '.handle',
@@ -1149,8 +1157,9 @@ describe('SLD Editor', () => {
                         scl: '[name="V2"]',
                         ui: 'rect',
                     }).dispatchEvent(new PointerEvent('click'));
-                    (_a = element
-                        .shadowRoot.querySelector('[label="Add Substation"]')) === null || _a === void 0 ? void 0 : _a.click();
+                    element
+                        .shadowRoot.querySelector('[label="Add Substation"]')
+                        ?.click();
                     expect(element.doc.querySelectorAll('ConnectivityNode')).to.have.lengthOf(2);
                     await sendMouse({ position, type: 'click' });
                     expect(element.doc.querySelectorAll('ConnectivityNode')).to.have.lengthOf(1);
@@ -1199,9 +1208,9 @@ describe('SLD Editor', () => {
                 });
                 describe('and a bus bar', () => {
                     beforeEach(async () => {
-                        var _a;
-                        (_a = element
-                            .shadowRoot.querySelector('[label="Add Bus Bar"]')) === null || _a === void 0 ? void 0 : _a.click();
+                        element
+                            .shadowRoot.querySelector('[label="Add Bus Bar"]')
+                            ?.click();
                         await sendMouse({ type: 'click', position: [430, 202] });
                         await sendMouse({ type: 'click', position: [430, 282] });
                         await sendMouse({
@@ -1216,21 +1225,22 @@ describe('SLD Editor', () => {
                         });
                     });
                     it('keeps the bus bar when moving containers', async () => {
-                        var _a, _b;
                         const position = middleOf(queryUI({
                             scl: '[name="V2"] > [name="B1"]',
                             ui: '.handle',
                         }));
-                        expect((_a = element.doc
-                            .querySelector('[name="L"]')) === null || _a === void 0 ? void 0 : _a.querySelectorAll('Section')).to.have.lengthOf(2);
+                        expect(element.doc
+                            .querySelector('[name="L"]')
+                            ?.querySelectorAll('Section')).to.have.lengthOf(2);
                         position[1] += 120;
                         await sendMouse({ position, type: 'click' });
                         await element.updateComplete;
                         position[1] += 40;
                         await sendMouse({ position, type: 'click' });
                         await element.updateComplete;
-                        expect((_b = element.doc
-                            .querySelector('[name="L"]')) === null || _b === void 0 ? void 0 : _b.querySelectorAll('Section')).to.have.lengthOf(1);
+                        expect(element.doc
+                            .querySelector('[name="L"]')
+                            ?.querySelectorAll('Section')).to.have.lengthOf(1);
                         await expect(element.doc.documentElement).dom.to.equalSnapshot({
                             ignoreAttributes: ['esld:uuid'],
                         });
@@ -1260,8 +1270,8 @@ describe('SLD Editor', () => {
                     });
                     it('resizes the bus bar on resize menu item select', async () => {
                         const bus = element.doc.querySelector('[name="BB1"]');
-                        const currentX = parseInt(bus.getAttribute('x'));
-                        const currentY = parseInt(bus.getAttribute('y'));
+                        const currentX = parseInt(bus.getAttribute('x'), 10);
+                        const currentY = parseInt(bus.getAttribute('y'), 10);
                         // Move mouse to bus bar position to establish offset
                         await sendMouse({
                             type: 'move',
@@ -1318,8 +1328,8 @@ describe('SLD Editor', () => {
                         const initialX = bus.getAttribute('x');
                         // Move mouse to bus bar position at current x,y
                         // Using equipment formula: screenX = (gridX - 1) * 32 + 64, screenY = (gridY - 1) * 32 + 228
-                        const currentY = parseInt(initialY);
-                        const currentX = parseInt(initialX);
+                        const currentY = parseInt(initialY, 10);
+                        const currentX = parseInt(initialX, 10);
                         await sendMouse({
                             type: 'move',
                             position: [(currentX - 1) * 32 + 64, (currentY - 1) * 32 + 228],
@@ -1410,15 +1420,15 @@ describe('SLD Editor', () => {
                         });
                     });
                     it('copies voltage levels on move handle shift click', async () => {
-                        var _a;
                         queryUI({
                             scl: '[name="V1"]',
                             ui: 'rect',
                         }).dispatchEvent(new PointerEvent('click', { shiftKey: true }));
                         expect(element.doc.querySelector('[name="V1"] [name="B2"]')).not.to
                             .exist;
-                        (_a = element
-                            .shadowRoot.querySelector('[label="Add Substation"]')) === null || _a === void 0 ? void 0 : _a.click();
+                        element
+                            .shadowRoot.querySelector('[label="Add Substation"]')
+                            ?.click();
                         await sendMouse({ type: 'click', position: [640, 480] });
                         expect(element.doc.querySelector('[name="S2"] [name="V1"]')).to
                             .exist;
