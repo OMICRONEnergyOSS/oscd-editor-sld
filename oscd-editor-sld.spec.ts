@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-expressions */
 import { html } from 'lit';
-import { fixture, expect } from '@open-wc/testing';
+import { fixture, expect, aTimeout } from '@open-wc/testing';
 
 import type { Button } from '@material/mwc-button';
 
@@ -12,6 +12,7 @@ import { XMLEditor } from '@omicronenergy/oscd-editor';
 import { EditEventV2 } from '@openscd/oscd-api';
 import OscdEditorSld from './oscd-editor-sld.js';
 import { SLDEditor } from './sld-editor.js';
+import { busSections } from './util.js';
 
 function middleOf(element: Element): [number, number] {
   const { x, y, width, height } = element.getBoundingClientRect();
@@ -22,6 +23,17 @@ function middleOf(element: Element): [number, number] {
   ];
 }
 
+function sldAttribute(element: Element, attr: string): string | null {
+  const nsp = 'https://openscd.org/SCL/SSD/SLD/v0';
+  return (
+    element
+      .querySelector(
+        ':scope > Private[type="OpenSCD-SLD-Layout"] > SLDAttributes'
+      )
+      ?.getAttributeNS(nsp, attr) ?? null
+  );
+}
+
 customElements.define('oscd-editor-sld', OscdEditorSld);
 
 export const emptyDocString = `<?xml version="1.0" encoding="UTF-8"?>
@@ -29,47 +41,116 @@ export const emptyDocString = `<?xml version="1.0" encoding="UTF-8"?>
 </SCL>`;
 
 export const voltageLevelDocString = `<?xml version="1.0" encoding="UTF-8"?>
-<SCL xmlns:smth="https://transpower.co.nz/SCL/SSD/SLD/v0" xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
-  <Substation name="S1" smth:w="50" smth:h="25">
-    <VoltageLevel name="V1" smth:x="1" smth:y="1" smth:lx="1" smth:ly="1" smth:w="48" smth:h="23" desc="some description"/>
+<SCL xmlns:smth="https://openscd.org/SCL/SSD/SLD/v0" xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <smth:SLDAttributes smth:w="50" smth:h="25"/>
+    </Private>
+    <VoltageLevel name="V1" desc="some description">
+      <Private type="OpenSCD-SLD-Layout">
+        <smth:SLDAttributes smth:x="1" smth:y="1" smth:lx="1" smth:ly="1" smth:w="48" smth:h="23"/>
+      </Private>
+    </VoltageLevel>
   </Substation>
 </SCL>
 `;
 
 export const bayDocString = `<?xml version="1.0" encoding="UTF-8"?>
-<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0">
-  <Substation name="S1" esld:w="50" esld:h="25">
-    <VoltageLevel name="V1" esld:x="1" esld:y="1" esld:w="13" esld:h="13" esld:lx="1" esld:ly="1">
-      <Bay name="B1" esld:x="2" esld:y="2" esld:w="3" esld:h="3" esld:lx="2" esld:ly="2">
-        <ConnectivityNode name="L1" pathName="S1/V1/B1/L1"/>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:esldoscd="https://openscd.org/SCL/SSD/SLD/v0">
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <esldoscd:SLDAttributes esldoscd:w="50" esldoscd:h="25"/>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <esldoscd:SLDAttributes esldoscd:x="1" esldoscd:y="1" esldoscd:w="13" esldoscd:h="13" esldoscd:lx="1" esldoscd:ly="1"/>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <esldoscd:SLDAttributes esldoscd:x="2" esldoscd:y="2" esldoscd:w="3" esldoscd:h="3" esldoscd:lx="2" esldoscd:ly="2"/>
+        </Private>
+        <ConnectivityNode name="L1" pathName="S1/V1/B1/L1" />
       </Bay>
     </VoltageLevel>
-    <VoltageLevel name="V2" esld:x="15" esld:y="1" esld:w="13" esld:h="13" esld:lx="15" esld:ly="1">
-      <Bay name="B1" esld:x="20" esld:y="11" esld:w="1" esld:h="1" esld:lx="20" esld:ly="11"/>
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <esldoscd:SLDAttributes esldoscd:x="15" esldoscd:y="1" esldoscd:w="13" esldoscd:h="13" esldoscd:lx="15" esldoscd:ly="1"/>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <esldoscd:SLDAttributes esldoscd:x="20" esldoscd:y="11" esldoscd:w="1" esldoscd:h="1" esldoscd:lx="20" esldoscd:ly="11"/>
+        </Private>
+      </Bay>
     </VoltageLevel>
   </Substation>
 </SCL>
 `;
 
 export const equipmentDocString = `<?xml version="1.0" encoding="UTF-8"?>
-<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0">
-  <Substation name="S1" esld:w="50" esld:h="25">
-    <VoltageLevel name="V1" esld:x="1" esld:y="1" esld:w="13" esld:h="13" esld:lx="1" esld:ly="1">
-      <Bay name="B1" esld:x="2" esld:y="2" esld:w="6" esld:h="6" esld:lx="2" esld:ly="2">
-        <ConductingEquipment type="CBR" name="CBR1" desc="CBR description" esld:x="4" esld:y="4" esld:rot="1" esld:lx="3.5" esld:ly="4"/>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:esldoscd="https://openscd.org/SCL/SSD/SLD/v0">
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <esldoscd:SLDAttributes esldoscd:w="50" esldoscd:h="25"/>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <esldoscd:SLDAttributes esldoscd:x="1" esldoscd:y="1" esldoscd:w="13" esldoscd:h="13" esldoscd:lx="1" esldoscd:ly="1"/>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <esldoscd:SLDAttributes esldoscd:x="2" esldoscd:y="2" esldoscd:w="6" esldoscd:h="6" esldoscd:lx="2" esldoscd:ly="2"/>
+        </Private>
+        <ConductingEquipment type="CBR" name="CBR1" desc="CBR description">
+          <Private type="OpenSCD-SLD-Layout">
+            <esldoscd:SLDAttributes esldoscd:x="4" esldoscd:y="4" esldoscd:rot="1" esldoscd:lx="3.5" esldoscd:ly="4"/>
+          </Private>
+        </ConductingEquipment>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel name="V2" esld:x="15" esld:y="1" esld:w="23" esld:h="23" esld:lx="15" esld:ly="1">
-      <Bay name="B1" esld:x="16" esld:y="2" esld:w="6" esld:h="6" esld:lx="16" esld:ly="2">
-        <ConductingEquipment type="CTR" name="CTR1" esld:x="17" esld:y="5" esld:rot="3" esld:lx="17" esld:ly="7.5"/>
-        <ConductingEquipment type="DIS" name="DIS1" esld:x="18" esld:y="4" esld:rot="1" esld:lx="17" esld:ly="4.5"/>
-        <ConductingEquipment type="NEW" name="NEW1" esld:x="19" esld:y="3" esld:rot="2" esld:lx="20" esld:ly="3.5"/>
-        <ConductingEquipment type="VTR" name="VTR1" esld:x="17" esld:y="3" esld:rot="3" esld:lx="17" esld:ly="3"/>
-        <ConductingEquipment type="DIS" name="DIS2" esld:x="20" esld:y="4" esld:rot="0" esld:lx="21" esld:ly="5"/>
-        <ConductingEquipment type="BAT" name="BAT1" esld:x="19" esld:y="7" esld:rot="3" esld:lx="19" esld:ly="7">
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <esldoscd:SLDAttributes esldoscd:x="15" esldoscd:y="1" esldoscd:w="23" esldoscd:h="23" esldoscd:lx="15" esldoscd:ly="1"/>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <esldoscd:SLDAttributes esldoscd:x="16" esldoscd:y="2" esldoscd:w="6" esldoscd:h="6" esldoscd:lx="16" esldoscd:ly="2"/>
+        </Private>
+        <ConductingEquipment type="CTR" name="CTR1">
+          <Private type="OpenSCD-SLD-Layout">
+            <esldoscd:SLDAttributes esldoscd:x="17" esldoscd:y="5" esldoscd:rot="3" esldoscd:lx="17" esldoscd:ly="7.5"/>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment type="DIS" name="DIS1">
+          <Private type="OpenSCD-SLD-Layout">
+            <esldoscd:SLDAttributes esldoscd:x="18" esldoscd:y="4" esldoscd:rot="1" esldoscd:lx="17" esldoscd:ly="4.5"/>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment type="NEW" name="NEW1">
+          <Private type="OpenSCD-SLD-Layout">
+            <esldoscd:SLDAttributes esldoscd:x="19" esldoscd:y="3" esldoscd:rot="2" esldoscd:lx="20" esldoscd:ly="3.5"/>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment type="VTR" name="VTR1">
+          <Private type="OpenSCD-SLD-Layout">
+            <esldoscd:SLDAttributes esldoscd:x="17" esldoscd:y="3" esldoscd:rot="3" esldoscd:lx="17" esldoscd:ly="3"/>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment type="DIS" name="DIS2">
+          <Private type="OpenSCD-SLD-Layout">
+            <esldoscd:SLDAttributes esldoscd:x="20" esldoscd:y="4" esldoscd:rot="0" esldoscd:lx="21" esldoscd:ly="5"/>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment type="BAT" name="BAT1">
+          <Private type="OpenSCD-SLD-Layout">
+            <esldoscd:SLDAttributes esldoscd:x="19" esldoscd:y="7" esldoscd:rot="3" esldoscd:lx="19" esldoscd:ly="7"/>
+          </Private>
           <Terminal name="erroneous"/>
         </ConductingEquipment>
-        <ConductingEquipment type="SMC" name="SMC1" esld:x="21" esld:y="7" esld:rot="3" esld:lx="22" esld:ly="8" />
+        <ConductingEquipment type="SMC" name="SMC1">
+          <Private type="OpenSCD-SLD-Layout">
+            <esldoscd:SLDAttributes esldoscd:x="21" esldoscd:y="7" esldoscd:rot="3" esldoscd:lx="22" esldoscd:ly="8" />
+          </Private>
+        </ConductingEquipment>
       </Bay>
     </VoltageLevel>
   </Substation>
@@ -139,7 +220,7 @@ describe('SLD Editor', () => {
   });
 
   it('adds the SLD XML namespace if doc lacks it', async () => {
-    expect(element.doc.documentElement).to.have.attribute('xmlns:esld');
+    expect(element.doc.documentElement).to.have.attribute('xmlns:esldoscd');
   });
 
   it('adds a substation on add button click', async () => {
@@ -212,8 +293,8 @@ describe('SLD Editor', () => {
       sldEditor.shadowRoot
         ?.querySelector<Button>('mwc-button[slot="primaryAction"]')
         ?.click();
-      expect(sldEditor.substation).to.have.attribute('esld:h', '42');
-      expect(sldEditor.substation).to.have.attribute('esld:w', '1337');
+      expect(sldAttribute(sldEditor.substation, 'h')).to.equal('42');
+      expect(sldAttribute(sldEditor.substation, 'w')).to.equal('1337');
     });
 
     it('allows placing a new voltage level', async () => {
@@ -229,24 +310,13 @@ describe('SLD Editor', () => {
         .property('resizingBR')
         .to.have.property('tagName', 'VoltageLevel');
       await sendMouse({ type: 'click', position: [400, 452] });
+      await aTimeout(10); // Wait for quick machines
       expect(element).to.have.property('resizingBR', undefined);
-      expect(element.doc.querySelector('VoltageLevel')).to.exist;
-      expect(element.doc.querySelector('VoltageLevel')).to.have.attribute(
-        'x',
-        '5'
-      );
-      expect(element.doc.querySelector('VoltageLevel')).to.have.attribute(
-        'y',
-        '3'
-      );
-      expect(element.doc.querySelector('VoltageLevel')).to.have.attribute(
-        'w',
-        '7'
-      );
-      expect(element.doc.querySelector('VoltageLevel')).to.have.attribute(
-        'h',
-        '8'
-      );
+      const voltLv = element.doc.querySelector('VoltageLevel')!;
+      expect(sldAttribute(voltLv, 'x')).to.equal('5');
+      expect(sldAttribute(voltLv, 'y')).to.equal('3');
+      expect(sldAttribute(voltLv, 'w')).to.equal('7');
+      expect(sldAttribute(voltLv, 'h')).to.equal('8');
     });
 
     it('gives new voltage levels unique names', async () => {
@@ -302,8 +372,8 @@ describe('SLD Editor', () => {
       sldEditor.shadowRoot
         ?.querySelector<Button>('mwc-button[slot="primaryAction"]')
         ?.click();
-      expect(sldEditor.substation).to.have.attribute('smth:h', '25');
-      expect(sldEditor.substation).to.have.attribute('smth:w', '50');
+      expect(sldAttribute(sldEditor.substation, 'h')).to.equal('25');
+      expect(sldAttribute(sldEditor.substation, 'w')).to.equal('50');
     });
 
     it('allows resizing voltage levels', async () => {
@@ -316,11 +386,11 @@ describe('SLD Editor', () => {
         .property('resizingBR')
         .to.exist.and.to.have.property('tagName', 'VoltageLevel');
       const voltageLevel = element.resizingBR!;
-      expect(voltageLevel).to.have.attribute('smth:w', '48');
-      expect(voltageLevel).to.have.attribute('smth:h', '23');
-      await sendMouse({ type: 'click', position: [300, 352] });
-      expect(voltageLevel).to.have.attribute('smth:w', '8');
-      expect(voltageLevel).to.have.attribute('smth:h', '7');
+      expect(sldAttribute(voltageLevel, 'w')).to.equal('48');
+      expect(sldAttribute(voltageLevel, 'h')).to.equal('23');
+      await sendMouse({ type: 'click', position: [300, 362] });
+      expect(sldAttribute(voltageLevel, 'w')).to.equal('8');
+      expect(sldAttribute(voltageLevel, 'h')).to.equal('7');
     });
 
     it('moves voltage levels on move handle click', async () => {
@@ -330,12 +400,12 @@ describe('SLD Editor', () => {
         .property('placing')
         .to.exist.and.to.have.property('tagName', 'VoltageLevel');
       const voltageLevel = element.placing!;
-      expect(voltageLevel).to.have.attribute('smth:x', '1');
-      expect(voltageLevel).to.have.attribute('smth:y', '1');
+      expect(sldAttribute(voltageLevel, 'x')).to.equal('1');
+      expect(sldAttribute(voltageLevel, 'y')).to.equal('1');
       // Click to place at new position (moved right and down)
       await sendMouse({ type: 'click', position: [132, 202] });
-      expect(voltageLevel).to.have.attribute('smth:x', '2');
-      expect(voltageLevel).to.have.attribute('smth:y', '2');
+      expect(sldAttribute(voltageLevel, 'x')).to.equal('2');
+      expect(sldAttribute(voltageLevel, 'y')).to.equal('2');
     });
 
     it('opens a menu on voltage level right click', async () => {
@@ -365,11 +435,11 @@ describe('SLD Editor', () => {
         .property('resizingBR')
         .to.exist.and.to.have.property('tagName', 'VoltageLevel');
       const voltageLevel = element.resizingBR!;
-      expect(voltageLevel).to.have.attribute('smth:w', '48');
-      expect(voltageLevel).to.have.attribute('smth:h', '23');
+      expect(sldAttribute(voltageLevel, 'w')).to.equal('48');
+      expect(sldAttribute(voltageLevel, 'h')).to.equal('23');
       await sendMouse({ type: 'click', position: [300, 352] });
-      expect(voltageLevel).to.have.attribute('smth:w', '8');
-      expect(voltageLevel).to.have.attribute('smth:h', '7');
+      expect(sldAttribute(voltageLevel, 'w')).to.equal('8');
+      expect(sldAttribute(voltageLevel, 'h')).to.equal('7');
     });
 
     it('moves voltage levels on move menu item select', async () => {
@@ -404,13 +474,13 @@ describe('SLD Editor', () => {
         .property('placing')
         .to.exist.and.to.have.property('tagName', 'VoltageLevel');
       const voltageLevel = element.placing!;
-      expect(voltageLevel).to.have.attribute('smth:x', '1');
-      expect(voltageLevel).to.have.attribute('smth:y', '1');
+      expect(sldAttribute(voltageLevel, 'x')).to.equal('1');
+      expect(sldAttribute(voltageLevel, 'y')).to.equal('1');
 
       // Click to place at [2,2]
       await sendMouse({ type: 'click', position: [96, 196] });
-      expect(voltageLevel).to.have.attribute('smth:x', '2');
-      expect(voltageLevel).to.have.attribute('smth:y', '2');
+      expect(sldAttribute(voltageLevel, 'x')).to.equal('2');
+      expect(sldAttribute(voltageLevel, 'y')).to.equal('2');
     });
 
     it('requests voltage level edit wizard on edit menu item select', async () => {
@@ -446,14 +516,9 @@ describe('SLD Editor', () => {
         .property('placingLabel')
         .to.have.property('tagName', 'VoltageLevel');
       await sendMouse({ type: 'click', position: [200, 252] });
-      expect(element.doc.querySelector('VoltageLevel')).to.have.attribute(
-        'smth:lx',
-        '5'
-      );
-      expect(element.doc.querySelector('VoltageLevel')).to.have.attribute(
-        'smth:ly',
-        '4.5'
-      );
+      const voltageLevel = element.doc.querySelector('VoltageLevel')!;
+      expect(sldAttribute(voltageLevel, 'lx')).to.equal('5');
+      expect(sldAttribute(voltageLevel, 'ly')).to.equal('4.5');
     });
 
     it('forbids moving voltage levels out of bounds', async () => {
@@ -465,11 +530,11 @@ describe('SLD Editor', () => {
         .property('placing')
         .to.exist.and.to.have.property('tagName', 'VoltageLevel');
       const voltageLevel = element.placing!;
-      expect(voltageLevel).to.have.attribute('smth:x', '1');
-      expect(voltageLevel).to.have.attribute('smth:y', '1');
+      expect(sldAttribute(voltageLevel, 'x')).to.equal('1');
+      expect(sldAttribute(voltageLevel, 'y')).to.equal('1');
       await sendMouse({ type: 'click', position: [200, 252] });
-      expect(voltageLevel).to.have.attribute('smth:x', '1');
-      expect(voltageLevel).to.have.attribute('smth:y', '1');
+      expect(sldAttribute(voltageLevel, 'x')).to.equal('1');
+      expect(sldAttribute(voltageLevel, 'y')).to.equal('1');
     });
 
     it('moves the voltage level label on label left click', async () => {
@@ -480,14 +545,9 @@ describe('SLD Editor', () => {
         .to.have.property('tagName', 'VoltageLevel');
       // Click to place label at position [5, 4.5]
       await sendMouse({ type: 'click', position: [144, 244] });
-      expect(element.doc.querySelector('VoltageLevel')).to.have.attribute(
-        'smth:lx',
-        '5'
-      );
-      expect(element.doc.querySelector('VoltageLevel')).to.have.attribute(
-        'smth:ly',
-        '4.5'
-      );
+      const voltageLevel = element.doc.querySelector('VoltageLevel')!;
+      expect(sldAttribute(voltageLevel, 'lx')).to.equal('5');
+      expect(sldAttribute(voltageLevel, 'ly')).to.equal('4.5');
     });
 
     it('requests a voltage level edit wizard on label middle click', async () => {
@@ -509,12 +569,12 @@ describe('SLD Editor', () => {
       expect(element).property('resizingBR').to.have.property('tagName', 'Bay');
       await sendMouse({ type: 'click', position: [400, 500] });
       expect(sldEditor).to.have.property('resizingBR', undefined);
-      const bay = element.doc.querySelector('Bay');
+      const bay = element.doc.querySelector('Bay')!;
       expect(bay).to.exist;
-      expect(bay).to.have.attribute('x', '5');
-      expect(bay).to.have.attribute('y', '3');
-      expect(bay).to.have.attribute('w', '7');
-      expect(bay).to.have.attribute('h', '8');
+      expect(sldAttribute(bay, 'x')).to.equal('5');
+      expect(sldAttribute(bay, 'y')).to.equal('3');
+      expect(sldAttribute(bay, 'w')).to.equal('7');
+      expect(sldAttribute(bay, 'h')).to.equal('8');
     });
 
     it('allows placing a new bus bar', async () => {
@@ -531,12 +591,12 @@ describe('SLD Editor', () => {
       expect(sldEditor).to.have.property('resizingBR', undefined);
       const bus = element.doc.querySelector('Bay');
       expect(bus).to.exist;
-      expect(bus).to.have.attribute('x', '5');
-      expect(bus).to.have.attribute('y', '3');
-      expect(bus).to.have.attribute('smth:w', '1');
-      expect(bus).to.have.attribute('h', '8');
+      expect(sldAttribute(bus!, 'x')).to.equal('5');
+      expect(sldAttribute(bus!, 'y')).to.equal('3');
+      expect(sldAttribute(bus!, 'w')).to.equal('1');
+      expect(sldAttribute(bus!, 'h')).to.equal('8');
       await expect(bus).dom.to.equalSnapshot({
-        ignoreAttributes: ['esld:uuid'],
+        ignoreAttributes: ['esldoscd:uuid'],
       });
     });
   });
@@ -561,11 +621,11 @@ describe('SLD Editor', () => {
         .property('resizingBR')
         .to.exist.and.to.have.property('tagName', 'Bay');
       const bay = element.resizingBR!;
-      expect(bay).to.have.attribute('esld:w', '3');
-      expect(bay).to.have.attribute('esld:h', '3');
+      expect(sldAttribute(bay, 'w')).to.equal('3');
+      expect(sldAttribute(bay, 'h')).to.equal('3');
       await sendMouse({ type: 'click', position: [384, 516] });
-      expect(bay).to.have.attribute('esld:w', '10');
-      expect(bay).to.have.attribute('esld:h', '9');
+      expect(sldAttribute(bay!, 'w')).to.equal('10');
+      expect(sldAttribute(bay, 'h')).to.equal('9');
     });
 
     it('opens a menu on bay right click', async () => {
@@ -602,11 +662,11 @@ describe('SLD Editor', () => {
         .property('resizingBR')
         .to.exist.and.to.have.property('tagName', 'Bay');
       const bay = element.resizingBR!;
-      expect(bay).to.have.attribute('esld:w', '3');
-      expect(bay).to.have.attribute('esld:h', '3');
+      expect(sldAttribute(bay, 'w')).to.equal('3');
+      expect(sldAttribute(bay, 'h')).to.equal('3');
       await sendMouse({ type: 'click', position: [600, 452] });
-      expect(bay).to.have.attribute('esld:w', '3');
-      expect(bay).to.have.attribute('esld:h', '3');
+      expect(sldAttribute(bay, 'w')).to.equal('3');
+      expect(sldAttribute(bay, 'h')).to.equal('3');
     });
 
     it('forbids undersizing voltage levels containing bays', async () => {
@@ -620,17 +680,17 @@ describe('SLD Editor', () => {
         .property('resizingBR')
         .to.exist.and.to.have.property('tagName', 'VoltageLevel');
       const voltageLevel = element.resizingBR!;
-      expect(voltageLevel).to.have.attribute('esld:w', '13');
-      expect(voltageLevel).to.have.attribute('esld:h', '13');
+      expect(sldAttribute(voltageLevel, 'w')).to.equal('13');
+      expect(sldAttribute(voltageLevel, 'h')).to.equal('13');
       await sendMouse({ type: 'click', position: [100, 152] });
-      expect(voltageLevel).to.have.attribute('esld:w', '13');
-      expect(voltageLevel).to.have.attribute('esld:h', '13');
+      expect(sldAttribute(voltageLevel, 'w')).to.equal('13');
+      expect(sldAttribute(voltageLevel, 'h')).to.equal('13');
     });
 
     it('moves bays on move handle click', async () => {
       const bayElement = element.doc.querySelector('Bay')!;
-      const currentX = parseInt(bayElement.getAttribute('esld:x')!, 10);
-      const currentY = parseInt(bayElement.getAttribute('esld:y')!, 10);
+      const currentX = parseInt(sldAttribute(bayElement, 'x')!, 10);
+      const currentY = parseInt(sldAttribute(bayElement, 'y')!, 10);
 
       // Move mouse to bay position to establish offset
       await sendMouse({
@@ -658,14 +718,14 @@ describe('SLD Editor', () => {
       const bay = element.placing!;
       // Click to place at new position [4,3] using equipment context formula
       await sendMouse({ type: 'click', position: [160, 292] });
-      expect(bay).to.have.attribute('esld:x', '4');
-      expect(bay).to.have.attribute('esld:y', '3');
+      expect(sldAttribute(bay, 'x')).to.equal('4');
+      expect(sldAttribute(bay, 'y')).to.equal('3');
     });
 
     it('renames reparented bays if necessary', async () => {
       const bayElement = element.doc.querySelector('Bay')!;
-      const currentX = parseInt(bayElement.getAttribute('esld:x')!, 10);
-      const currentY = parseInt(bayElement.getAttribute('esld:y')!, 10);
+      const currentX = parseInt(sldAttribute(bayElement, 'x')!, 10);
+      const currentY = parseInt(sldAttribute(bayElement, 'y')!, 10);
 
       // Move mouse to bay position to establish offset
       await sendMouse({
@@ -682,24 +742,24 @@ describe('SLD Editor', () => {
       expect(bay).to.have.attribute('name', 'B1');
       await sendMouse({ type: 'click', position: [608, 292] });
       expect(element).to.have.property('placing', undefined);
-      expect(bay).to.have.attribute('esld:x', '18');
-      expect(bay).to.have.attribute('esld:y', '3');
+      expect(sldAttribute(bay, 'x')).to.equal('18');
+      expect(sldAttribute(bay, 'y')).to.equal('3');
       expect(bay.parentElement).to.have.attribute('name', 'V2');
       expect(bay).to.have.attribute('name', 'B2');
       queryUI({ scl: 'Bay', ui: 'rect' }).dispatchEvent(
         new PointerEvent('click')
       );
       await sendMouse({ type: 'click', position: [192, 292] });
-      expect(bay).to.have.attribute('esld:x', '5');
-      expect(bay).to.have.attribute('esld:y', '3');
+      expect(sldAttribute(bay, 'x')).to.equal('5');
+      expect(sldAttribute(bay, 'y')).to.equal('3');
       expect(bay.parentElement).to.have.attribute('name', 'V1');
       expect(bay).to.have.attribute('name', 'B2');
     });
 
     it("updates reparented bays' connectivity node paths", async () => {
       const bayElement = element.doc.querySelector('Bay')!;
-      const currentX = parseInt(bayElement.getAttribute('esld:x')!, 10);
-      const currentY = parseInt(bayElement.getAttribute('esld:y')!, 10);
+      const currentX = parseInt(sldAttribute(bayElement, 'x')!, 10);
+      const currentY = parseInt(sldAttribute(bayElement, 'y')!, 10);
 
       // Move mouse to bay position to establish offset
       await sendMouse({
@@ -718,7 +778,7 @@ describe('SLD Editor', () => {
       expect(element).to.have.property('placing', undefined);
       expect(cNode).to.have.attribute('pathName', 'S1/V2/B2/L1');
       await expect(element.doc.documentElement).dom.to.equalSnapshot({
-        ignoreAttributes: ['esld:uuid'],
+        ignoreAttributes: ['esldoscd:uuid'],
       });
     });
 
@@ -729,14 +789,14 @@ describe('SLD Editor', () => {
         position: [70, 250],
       });
       const bay = element.placing!.querySelector('Bay')!;
-      expect(bay).to.have.attribute('esld:x', '2');
-      expect(bay).to.have.attribute('esld:y', '2');
+      expect(sldAttribute(bay, 'x')).to.equal('2');
+      expect(sldAttribute(bay, 'y')).to.equal('2');
       await sendMouse({
         type: 'click',
         position: [100, 220],
       });
-      expect(bay).to.have.attribute('esld:x', '3');
-      expect(bay).to.have.attribute('esld:y', '1');
+      expect(sldAttribute(bay, 'x')).to.equal('3');
+      expect(sldAttribute(bay, 'y')).to.equal('1');
     });
 
     it('allows placing new conducting equipment', async () => {
@@ -749,8 +809,8 @@ describe('SLD Editor', () => {
       expect(element).to.have.property('resizingBR', undefined);
       const equipment = element.doc.querySelector('ConductingEquipment');
       expect(equipment).to.exist;
-      expect(equipment).to.have.attribute('x', '4');
-      expect(equipment).to.have.attribute('y', '4');
+      expect(sldAttribute(equipment!, 'x')).to.equal('4');
+      expect(sldAttribute(equipment!, 'y')).to.equal('4');
     });
 
     describe('with a sibling bus bar', () => {
@@ -774,20 +834,20 @@ describe('SLD Editor', () => {
           .property('resizingBR')
           .to.exist.and.to.have.property('tagName', 'Bay');
         const bay = element.resizingBR!;
-        expect(bay).to.have.attribute('esld:w', '3');
-        expect(bay).to.have.attribute('esld:h', '3');
+        expect(sldAttribute(bay, 'w')).to.equal('3');
+        expect(sldAttribute(bay, 'h')).to.equal('3');
         await sendMouse({ type: 'click', position: [384, 516] });
-        expect(bay).to.have.attribute('esld:w', '10');
-        expect(bay).to.have.attribute('esld:h', '9');
+        expect(sldAttribute(bay, 'w')).to.equal('10');
+        expect(sldAttribute(bay, 'h')).to.equal('9');
       });
 
       it('moves the bus bar on left click', async () => {
         const bus = element.doc.querySelector('[name="BB1"]');
-        expect(bus).to.have.attribute('x', '5');
+        expect(sldAttribute(bus!, 'x')).to.equal('5');
 
         // Move mouse to current bus position to establish offset
-        const currentX = parseInt(bus!.getAttribute('x')!, 10);
-        const currentY = parseInt(bus!.getAttribute('y')!, 10);
+        const currentX = parseInt(sldAttribute(bus!, 'x')!, 10);
+        const currentY = parseInt(sldAttribute(bus!, 'y')!, 10);
         await sendMouse({
           type: 'move',
           position: [(currentX - 1) * 32 + 64, (currentY - 1) * 32 + 228],
@@ -808,13 +868,13 @@ describe('SLD Editor', () => {
         await sldEditor.updateComplete;
 
         await sendMouse({ type: 'click', position: [128, 260] });
-        expect(bus).to.have.attribute('x', '3');
+        expect(sldAttribute(bus!, 'x')).to.equal('3');
       });
 
       it('resizes the bus bar on middle mouse button click', async () => {
         const bus = element.doc.querySelector('[name="BB1"]');
-        const currentX = parseInt(bus!.getAttribute('x')!, 10);
-        const currentY = parseInt(bus!.getAttribute('y')!, 10);
+        const currentX = parseInt(sldAttribute(bus!, 'x')!, 10);
+        const currentY = parseInt(sldAttribute(bus!, 'y')!, 10);
 
         // Move mouse to bus bar position to establish offset
         await sendMouse({
@@ -836,11 +896,11 @@ describe('SLD Editor', () => {
         )!.selected = true;
         await sldEditor.updateComplete;
 
-        expect(bus).to.have.attribute('esld:w', '1');
-        expect(bus).to.have.attribute('h', '8');
+        expect(sldAttribute(bus!, 'w')).to.equal('1');
+        expect(sldAttribute(bus!, 'h')).to.equal('8');
         await sendMouse({ type: 'click', position: [272, 260] });
-        expect(bus).to.have.attribute('esld:w', '3');
-        expect(bus).to.have.attribute('h', '1');
+        expect(sldAttribute(bus!, 'w')).to.equal('3');
+        expect(sldAttribute(bus!, 'h')).to.equal('1');
       });
     });
   });
@@ -889,11 +949,11 @@ describe('SLD Editor', () => {
         .to.have.property('tagName', 'ConductingEquipment');
       await sendMouse({ type: 'click', position: [200, 308] });
       expect(
-        element.doc.querySelector('ConductingEquipment')
-      ).to.have.attribute('esld:lx', '5');
+        sldAttribute(element.doc.querySelector('ConductingEquipment')!, 'lx')
+      ).to.equal('5');
       expect(
-        element.doc.querySelector('ConductingEquipment')
-      ).to.have.attribute('esld:ly', '4.5');
+        sldAttribute(element.doc.querySelector('ConductingEquipment')!, 'ly')
+      ).to.equal('4.5');
     });
 
     it('moves equipment on left mouse button click', async () => {
@@ -902,8 +962,8 @@ describe('SLD Editor', () => {
       await sendMouse({ type: 'click', position: [150, 230] });
       // Click to place at new position (moved left -1, up -1 grid units)
       await sendMouse({ type: 'click', position: [118, 198] });
-      expect(equipment).to.have.attribute('esld:x', '3');
-      expect(equipment).to.have.attribute('esld:y', '3');
+      expect(sldAttribute(equipment!, 'x')).to.equal('3');
+      expect(sldAttribute(equipment!, 'y')).to.equal('3');
     });
 
     it('copies equipment on shift click', async () => {
@@ -917,16 +977,25 @@ describe('SLD Editor', () => {
       eqClickTarget.dispatchEvent(
         new PointerEvent('click', { shiftKey: true })
       );
-      expect(element.doc.querySelector('ConductingEquipment[*|x="3"][*|y="3"]'))
-        .to.not.exist;
-      await sendMouse({ type: 'click', position: [128, 292] });
       expect(
-        element.doc.querySelector('ConductingEquipment[*|x="3"][*|y="3"]')
-      ).to.exist.and.have.attribute('type', equipment!.getAttribute('type')!);
-      expect(equipment).to.have.attribute('esld:x', '4');
-      expect(equipment).to.have.attribute('esld:y', '4');
+        element.doc.querySelector(
+          'ConductingEquipment>Private>SLDAttributes[*|x="3"][*|y="3"]'
+        )
+      ).to.not.exist;
+      await sendMouse({ type: 'click', position: [128, 292] });
+      const newCondEqSld = element.doc.querySelector(
+        'ConductingEquipment>Private>SLDAttributes[*|x="3"][*|y="3"]'
+      );
+      const newCondEq = newCondEqSld?.parentElement?.parentElement;
+      expect(newCondEq).to.exist;
+      expect(newCondEq).to.exist.and.have.attribute(
+        'type',
+        equipment!.getAttribute('type')!
+      );
+      expect(sldAttribute(equipment!, 'x')).to.equal('4');
+      expect(sldAttribute(equipment!, 'y')).to.equal('4');
       await expect(element.doc.documentElement).dom.to.equalSnapshot({
-        ignoreAttributes: ['esld:uuid'],
+        ignoreAttributes: ['esldoscd:uuid'],
       });
     });
 
@@ -938,9 +1007,9 @@ describe('SLD Editor', () => {
       const eqClickTarget = sldEditor
         .shadowRoot!.getElementById(<string>id)!
         .querySelector('rect')!;
-      expect(equipment).to.have.attribute('esld:rot', '1');
+      expect(sldAttribute(equipment!, 'rot')).to.equal('1');
       eqClickTarget.dispatchEvent(new PointerEvent('auxclick', { button: 1 }));
-      expect(equipment).to.have.attribute('esld:rot', '2');
+      expect(sldAttribute(equipment!, 'rot')).to.equal('2');
     });
 
     it('opens a menu on equipment right click', async () => {
@@ -965,11 +1034,11 @@ describe('SLD Editor', () => {
       let item = sldEditor.shadowRoot!.querySelector<ListItem>(
         'mwc-list-item:nth-of-type(6)'
       )!;
-      expect(equipment).to.not.have.attribute('esld:flip');
+      expect(equipment).to.not.have.attribute('esldoscd:flip');
       item.selected = true;
       await element.updateComplete;
       item.selected = false;
-      expect(equipment).to.have.attribute('esld:flip', 'true');
+      expect(sldAttribute(equipment!, 'flip')).to.equal('true');
       eqClickTarget = sldEditor
         .shadowRoot!.getElementById(<string>id)!
         .querySelector('rect')!;
@@ -980,7 +1049,7 @@ describe('SLD Editor', () => {
       )!;
       item.selected = true;
       await element.updateComplete;
-      expect(equipment).to.not.have.attribute('esld:flip');
+      expect(equipment).to.not.have.attribute('esldoscd:flip');
     });
 
     it('rotates equipment on rotate menu item select', async () => {
@@ -996,10 +1065,10 @@ describe('SLD Editor', () => {
       const item = sldEditor.shadowRoot!.querySelector<ListItem>(
         'mwc-list-item:nth-of-type(7)'
       )!;
-      expect(equipment).to.have.attribute('esld:rot', '1');
+      expect(sldAttribute(equipment!, 'rot')).to.equal('1');
       item.selected = true;
       await element.updateComplete;
-      expect(equipment).to.have.attribute('esld:rot', '2');
+      expect(sldAttribute(equipment!, 'rot')).to.equal('2');
     });
 
     it('moves equipment on move menu item select', async () => {
@@ -1033,13 +1102,14 @@ describe('SLD Editor', () => {
       item.selected = true;
       await element.updateComplete;
 
-      expect(equipment).to.have.attribute('esld:x', '4');
-      expect(equipment).to.have.attribute('esld:y', '4');
+      expect(sldAttribute(equipment!, 'x')).to.equal('4');
+      expect(sldAttribute(equipment!, 'y')).to.equal('4');
 
       // Click to place at [3,3] - try [128, 292] (adding 64 to Y)
+      await sendMouse({ type: 'move', position: [128, 292] });
       await sendMouse({ type: 'click', position: [128, 292] });
-      expect(equipment).to.have.attribute('esld:x', '3');
-      expect(equipment).to.have.attribute('esld:y', '3');
+      expect(sldAttribute(equipment!, 'x')).to.equal('3');
+      expect(sldAttribute(equipment!, 'y')).to.equal('3');
     });
 
     it('grounds equipment on connection point right click', async () => {
@@ -1068,7 +1138,7 @@ describe('SLD Editor', () => {
         'grounded'
       );
       await expect(element.doc.documentElement).dom.to.equalSnapshot({
-        ignoreAttributes: ['esld:uuid'],
+        ignoreAttributes: ['esldoscd:uuid'],
       });
     });
 
@@ -1109,15 +1179,13 @@ describe('SLD Editor', () => {
     it('connects equipment on connection point and equipment click', async () => {
       const sldEditor =
         element.shadowRoot!.querySelector<SLDEditor>('sld-editor')!;
-      const equipment = element.doc.querySelector('ConductingEquipment');
+      const equipment = element.doc.querySelectorAll('ConductingEquipment')[0];
       const eqClickTarget = sldEditor
         .shadowRoot!.getElementById(<string>identity(equipment))!
         .querySelector('circle:nth-of-type(2)')!;
       eqClickTarget.dispatchEvent(new PointerEvent('click'));
       await element.updateComplete;
-      const equipment2 = element.doc.querySelector(
-        'ConductingEquipment:nth-child(2)'
-      );
+      const equipment2 = element.doc.querySelectorAll('ConductingEquipment')[1];
       const eq2ClickTarget = sldEditor.shadowRoot!.getElementById(
         <string>identity(equipment2)
       )!;
@@ -1127,7 +1195,7 @@ describe('SLD Editor', () => {
       await sendMouse({ type: 'click', position });
       expect(element.doc.querySelector('ConnectivityNode')).to.exist;
       await expect(element.doc.documentElement).dom.to.equalSnapshot({
-        ignoreAttributes: ['esld:uuid'],
+        ignoreAttributes: ['esldoscd:uuid'],
       });
     });
 
@@ -1187,7 +1255,7 @@ describe('SLD Editor', () => {
       await sendMouse({ type: 'click', position });
       expect(equipment.querySelector('Terminal[name="T2"]')).to.exist;
       await expect(element.doc.documentElement).dom.to.equalSnapshot({
-        ignoreAttributes: ['esld:uuid'],
+        ignoreAttributes: ['esldoscd:uuid'],
       });
     });
 
@@ -1236,7 +1304,7 @@ describe('SLD Editor', () => {
         element.doc.querySelectorAll('ConnectivityNode[name="grounded"]')
       ).to.have.lengthOf(2);
       await expect(element.doc.documentElement).dom.to.equalSnapshot({
-        ignoreAttributes: ['esld:uuid'],
+        ignoreAttributes: ['esldoscd:uuid'],
       });
     });
 
@@ -1286,7 +1354,7 @@ describe('SLD Editor', () => {
         expect(element.doc.querySelector('ConnectivityNode[name="L2"]')).to
           .exist;
         await expect(element.doc.documentElement).dom.to.equalSnapshot({
-          ignoreAttributes: ['esld:uuid'],
+          ignoreAttributes: ['esldoscd:uuid'],
         });
       });
 
@@ -1315,7 +1383,7 @@ describe('SLD Editor', () => {
           cNode!.getAttribute('pathName')!
         );
         await expect(element.doc.documentElement).dom.to.equalSnapshot({
-          ignoreAttributes: ['esld:uuid'],
+          ignoreAttributes: ['esldoscd:uuid'],
         });
       });
 
@@ -1340,7 +1408,7 @@ describe('SLD Editor', () => {
         });
         expect(equipment!.querySelectorAll('Terminal')).to.have.lengthOf(1);
         await expect(element.doc.documentElement).dom.to.equalSnapshot({
-          ignoreAttributes: ['esld:uuid'],
+          ignoreAttributes: ['esldoscd:uuid'],
         });
       });
 
@@ -1379,7 +1447,7 @@ describe('SLD Editor', () => {
           15
         );
         await expect(element.doc.documentElement).dom.to.equalSnapshot({
-          ignoreAttributes: ['esld:uuid'],
+          ignoreAttributes: ['esldoscd:uuid'],
         });
       });
 
@@ -1419,7 +1487,7 @@ describe('SLD Editor', () => {
           expect(element.doc.querySelector('[type="BAT"] > Terminal')).to.not
             .exist;
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1463,7 +1531,7 @@ describe('SLD Editor', () => {
           expect(element.doc.querySelectorAll('Section')).to.have.lengthOf(4);
           expect(element.doc.querySelectorAll('Vertex')).to.have.lengthOf(13);
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1481,7 +1549,7 @@ describe('SLD Editor', () => {
           expect(element.doc.querySelectorAll('Section')).to.have.lengthOf(4);
           expect(element.doc.querySelectorAll('Vertex')).to.have.lengthOf(11);
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1502,7 +1570,7 @@ describe('SLD Editor', () => {
           expect(element.doc.querySelectorAll('Section')).to.have.lengthOf(6);
           expect(element.doc.querySelectorAll('Vertex')).to.have.lengthOf(16);
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1515,7 +1583,7 @@ describe('SLD Editor', () => {
           expect(element.doc.querySelector('[type="DIS"] > Terminal')).to.not
             .exist;
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1528,7 +1596,7 @@ describe('SLD Editor', () => {
           );
           expect(element.doc.querySelector('ConnectivityNode')).to.not.exist;
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1577,7 +1645,7 @@ describe('SLD Editor', () => {
             element.doc.querySelectorAll('ConnectivityNode')
           ).to.have.lengthOf(1);
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1596,7 +1664,7 @@ describe('SLD Editor', () => {
           await element.updateComplete;
           expect(equipment.parentElement).to.not.exist;
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1615,7 +1683,7 @@ describe('SLD Editor', () => {
           await element.updateComplete;
           expect(bay.parentElement).to.not.exist;
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1634,7 +1702,7 @@ describe('SLD Editor', () => {
           await element.updateComplete;
           expect(bay.parentElement).to.not.exist;
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
-            ignoreAttributes: ['esld:uuid'],
+            ignoreAttributes: ['esldoscd:uuid'],
           });
         });
 
@@ -1683,11 +1751,14 @@ describe('SLD Editor', () => {
                 ?.querySelectorAll('Section')
             ).to.have.lengthOf(1);
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
-              ignoreAttributes: ['esld:uuid'],
+              ignoreAttributes: ['esldoscd:uuid'],
             });
           });
 
           it('does not merge bus bar sections with feeder sections', async () => {
+            const busBar = element.doc.querySelector('Bay[name="BB1"]');
+            const busSection = busSections(busBar!)[0];
+
             queryUI({
               scl: '[type="NEW"]',
               ui: 'circle:nth-of-type(2)',
@@ -1697,33 +1768,20 @@ describe('SLD Editor', () => {
               new PointerEvent('click')
             );
             await sendMouse({ type: 'click', position: [420, 292] });
-            expect(
-              element.doc.querySelectorAll('Section[bus] Vertex')
-            ).to.have.lengthOf(2);
+            expect(busSection.querySelectorAll('Vertex')).to.have.lengthOf(2);
             queryUI({ scl: '[type="CBR"]', ui: 'rect' }).dispatchEvent(
               new PointerEvent('auxclick', { button: 1 })
             );
-            expect(
-              element.doc.querySelectorAll('Section[bus] Vertex')
-            ).to.have.lengthOf(2);
+            expect(busSection.querySelectorAll('Vertex')).to.have.lengthOf(2);
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
-              ignoreAttributes: ['esld:uuid'],
+              ignoreAttributes: ['esldoscd:uuid'],
             });
-          });
-
-          it('opens a menu on bus bar right click', async () => {
-            queryUI({
-              scl: '[name="L"]',
-              ui: 'line:not([stroke])',
-            }).dispatchEvent(new PointerEvent('contextmenu'));
-            await element.updateComplete;
-            expect(queryUI({ ui: 'menu' })).to.exist;
           });
 
           it('resizes the bus bar on resize menu item select', async () => {
             const bus = element.doc.querySelector('[name="BB1"]');
-            const currentX = parseInt(bus!.getAttribute('x')!, 10);
-            const currentY = parseInt(bus!.getAttribute('y')!, 10);
+            const currentX = parseInt(sldAttribute(bus!, 'x')!, 10);
+            const currentY = parseInt(sldAttribute(bus!, 'y')!, 10);
 
             // Move mouse to bus bar position to establish offset
             await sendMouse({
@@ -1742,11 +1800,11 @@ describe('SLD Editor', () => {
             sldEditor.shadowRoot!.querySelector<ListItem>(
               'mwc-list-item:nth-of-type(2)'
             )!.selected = true;
-            expect(bus).to.have.attribute('h', '1');
+            expect(sldAttribute(bus!, 'h')).equal('1');
             await sendMouse({ type: 'click', position: [380, 330] });
-            expect(bus).to.have.attribute('h', '2');
+            expect(sldAttribute(bus!, 'h')).equal('2');
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
-              ignoreAttributes: ['esld:uuid'],
+              ignoreAttributes: ['esldoscd:uuid'],
             });
           });
 
@@ -1773,24 +1831,36 @@ describe('SLD Editor', () => {
               'mwc-list-item:nth-last-of-type(6)'
             )!.selected = true;
             expect(
-              element.doc.querySelector('ConductingEquipment[*|x="3"][*|y="3"]')
+              element.doc.querySelector(
+                'ConductingEquipment SLDAttributes[*|x="3"][*|y="3"]'
+              )
             ).to.not.exist;
             expect(
-              element.doc.querySelector('ConductingEquipment')
-            ).to.have.attribute('esld:x', '4');
+              sldAttribute(
+                element.doc.querySelector('ConductingEquipment')!,
+                'x'
+              )
+            ).to.equal('4');
             expect(
-              element.doc.querySelector('ConductingEquipment')
-            ).to.have.attribute('esld:y', '4');
+              sldAttribute(
+                element.doc.querySelector('ConductingEquipment')!,
+                'y'
+              )
+            ).to.equal('4');
             // Click to place copy at [3,3] using equipment formula: screenY = (3-1)*32 + 228 = 292
             await sendMouse({ type: 'click', position: [128, 292] });
             expect(
-              element.doc.querySelector('ConductingEquipment[*|x="3"][*|y="3"]')
+              element.doc.querySelector(
+                'ConductingEquipment SLDAttributes[*|x="3"][*|y="3"]'
+              )
             ).to.exist;
             expect(
-              element.doc.querySelector('ConductingEquipment[*|x="4"][*|y="4"]')
+              element.doc.querySelector(
+                'ConductingEquipment SLDAttributes[*|x="4"][*|y="4"]'
+              )
             ).to.exist;
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
-              ignoreAttributes: ['esld:uuid'],
+              ignoreAttributes: ['esldoscd:uuid'],
             });
           });
 
@@ -1800,8 +1870,8 @@ describe('SLD Editor', () => {
               ui: 'line:not([stroke])',
             });
             const bus = element.doc.querySelector('[name="BB1"]');
-            const initialY = bus!.getAttribute('y')!;
-            const initialX = bus!.getAttribute('x')!;
+            const initialY = sldAttribute(bus!, 'y')!;
+            const initialX = sldAttribute(bus!, 'x')!;
 
             // Move mouse to bus bar position at current x,y
             // Using equipment formula: screenX = (gridX - 1) * 32 + 64, screenY = (gridY - 1) * 32 + 228
@@ -1828,12 +1898,12 @@ describe('SLD Editor', () => {
             )!.selected = true;
             await sldEditor.updateComplete;
 
-            expect(bus).to.have.attribute('y', initialY);
+            expect(sldAttribute(bus!, 'y')).to.equal(initialY);
             // Click to place at y=4: screenY = (4-1)*32 + 228 = 324
             await sendMouse({ type: 'click', position: [64, 324] });
-            expect(bus).to.have.attribute('y', '4');
+            expect(sldAttribute(bus!, 'y')).to.equal('4');
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
-              ignoreAttributes: ['esld:uuid'],
+              ignoreAttributes: ['esldoscd:uuid'],
             });
           });
 
@@ -1853,14 +1923,9 @@ describe('SLD Editor', () => {
               .property('placingLabel')
               .to.have.attribute('name', 'BB1');
             await sendMouse({ type: 'click', position: [200, 308] });
-            expect(element.doc.querySelector('[name="BB1"]')).to.have.attribute(
-              'lx',
-              '5'
-            );
-            expect(element.doc.querySelector('[name="BB1"]')).to.have.attribute(
-              'ly',
-              '4.5'
-            );
+            const busBar = element.doc.querySelector('[name="BB1"]');
+            expect(sldAttribute(busBar!, 'lx')).to.equal('5');
+            expect(sldAttribute(busBar!, 'ly')).to.equal('4.5');
           });
 
           it('requests bus bar edit wizard on edit menu item select', async () => {
@@ -1895,7 +1960,7 @@ describe('SLD Editor', () => {
             await sldEditor.updateComplete;
             expect(element.doc.querySelector('[name="BB1"]')).to.not.exist;
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
-              ignoreAttributes: ['esld:uuid'],
+              ignoreAttributes: ['esldoscd:uuid'],
             });
           });
 
@@ -1929,7 +1994,7 @@ describe('SLD Editor', () => {
             expect(element.doc.querySelector('[name="V1"] [name="B2"]')).to
               .exist;
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
-              ignoreAttributes: ['esld:uuid'],
+              ignoreAttributes: ['esldoscd:uuid'],
             });
           });
 
@@ -1947,8 +2012,17 @@ describe('SLD Editor', () => {
             expect(element.doc.querySelector('[name="S2"] [name="V1"]')).to
               .exist;
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
-              ignoreAttributes: ['esld:uuid'],
+              ignoreAttributes: ['esldoscd:uuid'],
             });
+          });
+
+          it('opens a menu on bus bar right click', async () => {
+            queryUI({
+              scl: '[name="L"]',
+              ui: 'line:not([stroke])',
+            }).dispatchEvent(new PointerEvent('contextmenu'));
+            await element.updateComplete;
+            expect(queryUI({ ui: 'menu' })).to.exist;
           });
         });
       });
