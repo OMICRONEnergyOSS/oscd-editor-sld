@@ -20,10 +20,12 @@ import './sld-editor.js';
 import { bayIcon, equipmentIcon, ptrIcon, voltageLevelIcon } from './icons.js';
 import {
   attributes,
+  busSections,
   ConnectDetail,
   ConnectEvent,
   elementPath,
   eqTypes,
+  getSLDAttributes,
   isBusBar,
   PlaceEvent,
   PlaceLabelEvent,
@@ -34,11 +36,13 @@ import {
   reparentElement,
   ResizeEvent,
   ResizeTLEvent,
+  setSLDAttributes,
   sldNs,
   StartConnectDetail,
   StartConnectEvent,
   StartEvent,
   StartPlaceEvent,
+  updateSLDAttributes,
   uuid,
   xmlnsNs,
 } from './util.js';
@@ -50,7 +54,7 @@ const aboutContent = await fetch(new URL('about.html', import.meta.url)).then(
 function makeBusBar(doc: XMLDocument, nsp: string) {
   const busBar = doc.createElementNS(doc.documentElement.namespaceURI, 'Bay');
   busBar.setAttribute('name', 'BB1');
-  busBar.setAttributeNS(sldNs, `${nsp}:w`, '2');
+  setSLDAttributes(busBar, nsp, { w: '2' });
   const cNode = doc.createElementNS(
     doc.documentElement.namespaceURI,
     'ConnectivityNode'
@@ -59,14 +63,12 @@ function makeBusBar(doc: XMLDocument, nsp: string) {
   const priv = doc.createElementNS(doc.documentElement.namespaceURI, 'Private');
   priv.setAttribute('type', privType);
   const section = doc.createElementNS(sldNs, `${nsp}:Section`);
-  section.setAttribute('bus', 'true');
+  setSLDAttributes(section, nsp, { bus: 'true' });
   const v1 = doc.createElementNS(sldNs, `${nsp}:Vertex`);
-  v1.setAttributeNS(sldNs, `${nsp}:x`, '0.5');
-  v1.setAttributeNS(sldNs, `${nsp}:y`, '0.5');
+  setSLDAttributes(v1, nsp, { x: '0.5', y: '0.5' });
   section.appendChild(v1);
   const v2 = doc.createElementNS(sldNs, `${nsp}:Vertex`);
-  v2.setAttributeNS(sldNs, `${nsp}:x`, '1.5');
-  v2.setAttributeNS(sldNs, `${nsp}:y`, '0.5');
+  setSLDAttributes(v2, nsp, { x: '1.5', y: '0.5' });
   section.appendChild(v2);
   priv.appendChild(section);
   cNode.appendChild(priv);
@@ -85,8 +87,8 @@ function cutSectionAt(
   const vertices = Array.from(section.getElementsByTagNameNS(sldNs, 'Vertex'));
   const vertexAtXY = vertices.find(
     ve =>
-      ve.getAttributeNS(sldNs, 'x') === x.toString() &&
-      ve.getAttributeNS(sldNs, 'y') === y.toString()
+      getSLDAttributes(ve, 'x') === x.toString() &&
+      getSLDAttributes(ve, 'y') === y.toString()
   );
 
   if (
@@ -100,8 +102,7 @@ function cutSectionAt(
     .slice(0, index + 1)
     .forEach(vertex => vertex.remove());
   const v = vertices[index].cloneNode() as Element;
-  v.setAttributeNS(sldNs, `${nsPrefix}:x`, x.toString());
-  v.setAttributeNS(sldNs, `${nsPrefix}:y`, y.toString());
+  setSLDAttributes(v, nsPrefix, { x: x.toString(), y: y.toString() });
   v.removeAttributeNS(sldNs, 'uuid');
   newSection.prepend(v);
   edits.push({
@@ -143,7 +144,7 @@ export default class OscdEditorSld extends LitElement {
   gridSize = 32;
 
   @state()
-  nsp = 'esld';
+  nsp = 'esldoscd';
 
   @state()
   templateElements: Record<string, Element> = {};
@@ -243,12 +244,13 @@ export default class OscdEditorSld extends LitElement {
   updated(changedProperties: Map<string, any>) {
     if (!changedProperties.has('doc')) return;
     const sldNsPrefix = this.doc.documentElement.lookupPrefix(sldNs);
-    if (sldNsPrefix) {
-      this.nsp = sldNsPrefix;
-    } else {
-      this.doc.documentElement.setAttributeNS(xmlnsNs, 'xmlns:esld', sldNs);
-      this.nsp = 'esld';
-    }
+    if (sldNsPrefix) this.nsp = sldNsPrefix;
+    else
+      this.doc.documentElement.setAttributeNS(
+        xmlnsNs,
+        `xmlns:${this.nsp}`,
+        sldNs
+      );
 
     [
       'Substation',
@@ -269,21 +271,10 @@ export default class OscdEditorSld extends LitElement {
   rotateElement(element: Element) {
     const { rot } = attributes(element);
     const edits = [
-      {
-        element,
-        // attributes: {
-        //   [`${this.nsp}:rot`]: {
-        //     namespaceURI: sldNs,
-        //     value: ((rot + 1) % 4).toString(),
-        //   },
-        // },
-        attributesNS: {
-          [sldNs]: {
-            [`${this.nsp}:rot`]: ((rot + 1) % 4).toString(),
-          },
-        },
-      },
-    ] as EditV2[];
+      updateSLDAttributes(element, this.nsp, {
+        rot: ((rot + 1) % 4).toString(),
+      }),
+    ];
     if (
       element.tagName === 'ConductingEquipment' ||
       element.tagName === 'PowerTransformer'
@@ -296,21 +287,11 @@ export default class OscdEditorSld extends LitElement {
   }
 
   placeLabel(element: Element, x: number, y: number) {
-    this.dispatchEvent(
-      newEditEventV2({
-        element,
-        // attributes: {
-        //   lx: { namespaceURI: sldNs, value: x.toString() },
-        //   ly: { namespaceURI: sldNs, value: y.toString() },
-        // },
-        attributesNS: {
-          [sldNs]: {
-            lx: x.toString(),
-            ly: y.toString(),
-          },
-        },
-      })
-    );
+    const editV2 = updateSLDAttributes(element, this.nsp, {
+      lx: x.toString(),
+      ly: y.toString(),
+    });
+    this.dispatchEvent(newEditEventV2(editV2));
     this.reset();
   }
 
@@ -334,7 +315,7 @@ export default class OscdEditorSld extends LitElement {
       let ly = oldLY;
       if (
         element.tagName === 'ConductingEquipment' &&
-        !element.hasAttributeNS(sldNs, 'lx') &&
+        !getSLDAttributes(element, 'lx') &&
         rot % 2 === 0
       ) {
         lx += 1;
@@ -342,7 +323,7 @@ export default class OscdEditorSld extends LitElement {
       }
       if (
         element.tagName === 'PowerTransformer' &&
-        !element.hasAttributeNS(sldNs, 'lx')
+        !getSLDAttributes(element, 'lx')
       ) {
         if (rot < 2) lx += 1.5;
         else {
@@ -350,49 +331,26 @@ export default class OscdEditorSld extends LitElement {
           ly += 2;
         }
       }
-      edits.push({
-        element,
-        // attributes: {
-        //   x: { namespaceURI: sldNs, value: x.toString() },
-        //   y: { namespaceURI: sldNs, value: y.toString() },
-        //   lx: { namespaceURI: sldNs, value: (lx + dx).toString() },
-        //   ly: { namespaceURI: sldNs, value: (ly + dy).toString() },
-        // },
-        attributesNS: {
-          [sldNs]: {
-            x: x.toString(),
-            y: y.toString(),
-            lx: (lx + dx).toString(),
-            ly: (ly + dy).toString(),
-          },
-        },
-      });
+      edits.push(
+        updateSLDAttributes(element, this.nsp, {
+          x: x.toString(),
+          y: y.toString(),
+          lx: (lx + dx).toString(),
+          ly: (ly + dy).toString(),
+        })
+      );
     }
 
     Array.from(element.querySelectorAll('Text')).forEach(text => {
       const {
         label: [textLX, textLY],
       } = attributes(text);
-      // const newAttributes = {
-      //   lx: {
-      //     namespaceURI: sldNs,
-      //     value: (textLX + dx).toString(),
-      //   },
-      //   ly: {
-      //     namespaceURI: sldNs,
-      //     value: (textLY + dy).toString(),
-      //   },
-      // };
-      edits.push({
-        element: text,
-        // attributes: newAttributes,
-        attributesNS: {
-          [sldNs]: {
-            lx: (textLX + dx).toString(),
-            ly: (textLY + dy).toString(),
-          },
-        },
-      });
+
+      const newAttr = {
+        lx: (textLX + dx).toString(),
+        ly: (textLY + dy).toString(),
+      };
+      edits.push(updateSLDAttributes(text, this.nsp, newAttr));
     });
 
     Array.from(
@@ -404,31 +362,16 @@ export default class OscdEditorSld extends LitElement {
         pos: [descX, descY],
         label: [descLX, descLY],
       } = attributes(descendant);
-      const newAttributes: SetAttributes['attributesNS'] = {
-        [sldNs]: {
+      const newAttributes: { x: string; y: string; lx?: string; ly?: string } =
+        {
           x: (descX + dx).toString(),
           y: (descY + dy).toString(),
-        },
-        // x: { namespaceURI: sldNs, value: (descX + dx).toString() },
-        // y: { namespaceURI: sldNs, value: (descY + dy).toString() },
-      };
+        };
       if (descendant.localName !== 'Vertex') {
-        // newAttributes.lx = {
-        //   namespaceURI: sldNs,
-        //   value: (descLX + dx).toString(),
-        // };
-        // newAttributes.ly = {
-        //   namespaceURI: sldNs,
-        //   value: (descLY + dy).toString(),
-        // };
-
-        newAttributes[sldNs]!.lx = (descLX + dx).toString();
-        newAttributes[sldNs]!.ly = (descLY + dy).toString();
+        newAttributes.lx = (descLX + dx).toString();
+        newAttributes.ly = (descLY + dy).toString();
       }
-      edits.push({
-        element: descendant,
-        attributesNS: newAttributes,
-      });
+      edits.push(updateSLDAttributes(descendant, this.nsp, newAttributes));
     });
 
     if (
@@ -520,7 +463,7 @@ export default class OscdEditorSld extends LitElement {
 
     if (element.localName === 'Vertex') {
       const bay = element.closest('Bay')!;
-      const sections = Array.from(bay.querySelectorAll('Section[bus]'));
+      const sections = busSections(bay);
       const section = sections[0];
       const vertex = section.querySelector('Vertex')!;
       const lastSection = sections[sections.length - 1];
@@ -532,40 +475,25 @@ export default class OscdEditorSld extends LitElement {
       const h = y - y1 + 1;
       if (isBusBar(bay)) {
         edits.push(...removeNode(section.closest('ConnectivityNode')!));
-        edits.push({
-          element: lastVertex,
-          // attributes: {
-          //   x: { namespaceURI: sldNs, value: x.toString() },
-          //   y: { namespaceURI: sldNs, value: y.toString() },
-          // },
-          attributesNS: {
-            [sldNs]: {
-              x: x.toString(),
-              y: y.toString(),
-            },
-          },
-        });
-        edits.push({
-          element: bay,
-          // attributes: {
-          //   w: { namespaceURI: sldNs, value: w.toString() },
-          //   h: { namespaceURI: sldNs, value: h.toString() },
-          // },
-          attributesNS: {
-            [sldNs]: {
-              w: w.toString(),
-              h: h.toString(),
-            },
-          },
-        });
+        edits.push(
+          updateSLDAttributes(lastVertex, this.nsp, {
+            x: x.toString(),
+            y: y.toString(),
+          })
+        );
+        edits.push(
+          updateSLDAttributes(bay, this.nsp, {
+            w: w.toString(),
+            h: h.toString(),
+          })
+        );
       }
     }
 
     this.dispatchEvent(newEditEventV2(edits));
     if (
       ['Bay', 'VoltageLevel'].includes(element.tagName) &&
-      (!element.hasAttributeNS(sldNs, 'w') ||
-        !element.hasAttributeNS(sldNs, 'h'))
+      (!getSLDAttributes(element, 'w') || !getSLDAttributes(element, 'h'))
     )
       this.startResizingBottomRight(element);
     else this.reset();
@@ -630,12 +558,10 @@ export default class OscdEditorSld extends LitElement {
     const toTermUUID = uuid();
     path.forEach(([x, y], i) => {
       const vertex = this.doc.createElementNS(sldNs, `${this.nsp}:Vertex`);
-      vertex.setAttributeNS(sldNs, `${this.nsp}:x`, x.toString());
-      vertex.setAttributeNS(sldNs, `${this.nsp}:y`, y.toString());
-      if (i === 0)
-        vertex.setAttributeNS(sldNs, `${this.nsp}:uuid`, fromTermUUID);
+      setSLDAttributes(vertex, this.nsp, { x: x.toString(), y: y.toString() });
+      if (i === 0) setSLDAttributes(vertex, this.nsp, { uuid: fromTermUUID });
       else if (i === path.length - 1 && to.tagName !== 'ConnectivityNode')
-        vertex.setAttributeNS(sldNs, `${this.nsp}:uuid`, toTermUUID);
+        setSLDAttributes(vertex, this.nsp, { uuid: toTermUUID });
       edits.push({ parent: section, node: vertex, reference: null });
     });
     if (to.tagName === 'ConnectivityNode') {
@@ -674,7 +600,7 @@ export default class OscdEditorSld extends LitElement {
       this.doc.documentElement.namespaceURI,
       fromTagName
     );
-    fromTermElement.setAttributeNS(sldNs, `${this.nsp}:uuid`, fromTermUUID);
+    setSLDAttributes(fromTermElement, this.nsp, { uuid: fromTermUUID });
     fromTermElement.setAttribute('name', fromTerminal);
     fromTermElement.setAttribute('connectivityNode', connectivityNode);
     fromTermElement.setAttribute('substationName', substationName);
@@ -694,7 +620,7 @@ export default class OscdEditorSld extends LitElement {
         this.doc.documentElement.namespaceURI,
         toTagName
       );
-      toTermElement.setAttributeNS(sldNs, `${this.nsp}:uuid`, toTermUUID);
+      setSLDAttributes(toTermElement, this.nsp, { uuid: toTermUUID });
       toTermElement.setAttribute('name', toTerminal!);
       toTermElement.setAttribute('connectivityNode', connectivityNode);
       toTermElement.setAttribute('substationName', substationName);
@@ -804,8 +730,10 @@ export default class OscdEditorSld extends LitElement {
                     const element =
                       this.templateElements.PowerTransformer!.cloneNode() as Element;
                     element.setAttribute('type', 'PTR');
-                    element.setAttributeNS(sldNs, `${this.nsp}:kind`, 'auto');
-                    element.setAttributeNS(sldNs, `${this.nsp}:rot`, '3');
+                    setSLDAttributes(element, this.nsp, {
+                      kind: 'auto',
+                      rot: '3',
+                    });
                     const winding =
                       this.templateElements.TransformerWinding!.cloneNode() as Element;
                     winding.setAttribute('type', 'PTW');
@@ -822,7 +750,7 @@ export default class OscdEditorSld extends LitElement {
                     const element =
                       this.templateElements.PowerTransformer!.cloneNode() as Element;
                     element.setAttribute('type', 'PTR');
-                    element.setAttributeNS(sldNs, `${this.nsp}:kind`, 'auto');
+                    setSLDAttributes(element, this.nsp, { kind: 'auto' });
                     const windings = [];
                     for (let i = 1; i <= 2; i += 1) {
                       const winding =
@@ -883,11 +811,7 @@ export default class OscdEditorSld extends LitElement {
                     const element =
                       this.templateElements.PowerTransformer!.cloneNode() as Element;
                     element.setAttribute('type', 'PTR');
-                    element.setAttributeNS(
-                      sldNs,
-                      `${this.nsp}:kind`,
-                      'earthing'
-                    );
+                    setSLDAttributes(element, this.nsp, { kind: 'earthing' });
                     const winding =
                       this.templateElements.TransformerWinding!.cloneNode() as Element;
                     winding.setAttribute('type', 'PTW');
@@ -904,11 +828,7 @@ export default class OscdEditorSld extends LitElement {
                     const element =
                       this.templateElements.PowerTransformer!.cloneNode() as Element;
                     element.setAttribute('type', 'PTR');
-                    element.setAttributeNS(
-                      sldNs,
-                      `${this.nsp}:kind`,
-                      'earthing'
-                    );
+                    setSLDAttributes(element, this.nsp, { kind: 'earthing' });
                     const windings = [];
                     for (let i = 1; i <= 2; i += 1) {
                       const winding =
@@ -1010,21 +930,11 @@ export default class OscdEditorSld extends LitElement {
               this.startConnecting(detail);
             }}
             @oscd-sld-resize=${({ detail: { element, w, h } }: ResizeEvent) => {
-              this.dispatchEvent(
-                newEditEventV2({
-                  element,
-                  // attributes: {
-                  //   w: { namespaceURI: sldNs, value: w.toString() },
-                  //   h: { namespaceURI: sldNs, value: h.toString() },
-                  // },
-                  attributesNS: {
-                    [sldNs]: {
-                      w: w.toString(),
-                      h: h.toString(),
-                    },
-                  },
-                })
-              );
+              const resize = updateSLDAttributes(element, this.nsp, {
+                w: w.toString(),
+                h: h.toString(),
+              });
+              this.dispatchEvent(newEditEventV2(resize));
               this.reset();
             }}
             @oscd-sld-resize-tl=${({
@@ -1040,29 +950,17 @@ export default class OscdEditorSld extends LitElement {
                 lx += x - oldX;
                 ly += y - oldY;
               }
-              this.dispatchEvent(
-                newEditEventV2({
-                  element,
-                  // attributes: {
-                  //   x: { namespaceURI: sldNs, value: x.toString() },
-                  //   y: { namespaceURI: sldNs, value: y.toString() },
-                  //   w: { namespaceURI: sldNs, value: w.toString() },
-                  //   h: { namespaceURI: sldNs, value: h.toString() },
-                  //   lx: { namespaceURI: sldNs, value: lx.toString() },
-                  //   ly: { namespaceURI: sldNs, value: ly.toString() },
-                  // },
-                  attributesNS: {
-                    [sldNs]: {
-                      x: x.toString(),
-                      y: y.toString(),
-                      w: w.toString(),
-                      h: h.toString(),
-                      lx: lx.toString(),
-                      ly: ly.toString(),
-                    },
-                  },
-                })
-              );
+
+              const resize = updateSLDAttributes(element, this.nsp, {
+                x: x.toString(),
+                y: y.toString(),
+                w: w.toString(),
+                h: h.toString(),
+                lx: lx.toString(),
+                ly: ly.toString(),
+              });
+
+              this.dispatchEvent(newEditEventV2(resize));
               this.reset();
             }}
             @oscd-sld-place=${({
@@ -1097,8 +995,7 @@ export default class OscdEditorSld extends LitElement {
     while (this.doc.querySelector(`:root > Substation[name="S${index}"]`))
       index += 1;
     node.setAttribute('name', `S${index}`);
-    node.setAttributeNS(sldNs, `${this.nsp}:w`, '50');
-    node.setAttributeNS(sldNs, `${this.nsp}:h`, '25');
+    setSLDAttributes(node, this.nsp, { w: '50', h: '25' });
     this.dispatchEvent(newEditEventV2({ parent, node, reference }));
   }
 
