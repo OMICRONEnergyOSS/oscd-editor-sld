@@ -1897,4 +1897,214 @@ describe('SLD Editor', () => {
             });
         });
     });
+
+    describe('when disabled', () => {
+        beforeEach(async () => {
+            element.disabled = true;
+            await element.updateComplete;
+        });
+
+        describe('given a substation', () => {
+            let sldSubstationEditor: SldSubstationEditor;
+            beforeEach(async () => {
+                const subSt = element.doc.createElement('Substation');
+                subSt.setAttribute('name', 'S1');
+                setSLDAttributes(subSt, element.nsp, { w: '51', h: '26' });
+                element.doc.documentElement.appendChild(subSt);
+                element.requestUpdate();
+                await element.updateComplete;
+
+                sldSubstationEditor = getSldSubstationEditor(element)!;
+                await sldSubstationEditor.updateComplete;
+            });
+
+            it('disables substation buttons', async () => {
+                const h2 = sldSubstationEditor.shadowRoot?.querySelector('h2');
+                await expect(h2).dom.to.equalSnapshot();
+            });
+
+            it('does not add voltage level', async () => {
+                const newVoltLevel = element.doc.createElement('VoltageLevel');
+                newVoltLevel.setAttribute('name', 'NewVoltLevel');
+                element.startPlacing(newVoltLevel);
+
+                expect(element).to.have.property('placing', undefined);
+            });
+        });
+
+        describe('given a voltage level', () => {
+            let sldSubstationEditor: SldSubstationEditor;
+            beforeEach(async () => {
+                const doc = new DOMParser().parseFromString(
+                    voltageLevelDocString,
+                    'application/xml'
+                );
+                element.doc = doc;
+                await element.updateComplete;
+                sldSubstationEditor = getSldSubstationEditor(element)!;
+                await sldSubstationEditor.updateComplete;
+            });
+
+            it('does not render resize handlers', async () => {
+                const moveHandle =
+                    sldSubstationEditor.shadowRoot!.querySelectorAll<SVGElement>('.handle')[1];
+                expect(moveHandle).to.be.undefined;
+            });
+
+            it('does not allow to move voltage level', async () => {
+                // Click on voltage level to start placing/moving
+                await sendMouse({ type: 'click', position: [100 - 16, 180 - 76] });
+
+                expect(element).to.have.property('placing', undefined);
+            });
+
+            it('disabled context menu', async () => {
+                queryUI({
+                    scl: 'VoltageLevel',
+                    ui: 'rect',
+                }).dispatchEvent(new PointerEvent('contextmenu'));
+                await element.updateComplete;
+                expect(queryUI({ ui: 'menu' })).to.not.exist;
+            });
+
+            it('does not allow to move label', async () => {
+                // Click on label to start placing/moving it
+                queryUI({ ui: '.label text' }).dispatchEvent(new PointerEvent('click'));
+
+                expect(element).to.have.property('placing', undefined);
+            });
+
+            it('does not trigger auxclick', async () => {
+                queryUI({ ui: '.label text' }).dispatchEvent(
+                    new PointerEvent('auxclick', { button: 1 })
+                );
+                expect(lastCalledWizard).to.be.undefined
+            });
+
+            it('does not allow placing a new bay', async () => {
+                const newBay = element.doc.createElement('Bay');
+                newBay.setAttribute('name', 'NewBay');
+                element.startPlacing(newBay);
+
+                expect(element).to.have.property('placing', undefined);
+            });
+
+            it('allows placing a new bus bar', async () => {
+                const busBar = makeBusBar(element.doc, element.nsp);
+                element.startPlacing(busBar);
+
+                expect(element).to.have.property('placing', undefined)
+            });
+        });
+
+        describe('given a bay', () => {
+            let sldSubstationEditor: SldSubstationEditor;
+            beforeEach(async () => {
+                const doc = new DOMParser().parseFromString(
+                    bayDocString,
+                    'application/xml'
+                );
+                element.doc = doc;
+                await element.updateComplete;
+                sldSubstationEditor = getSldSubstationEditor(element)!;
+                await sldSubstationEditor.updateComplete;
+            });
+
+            it('does not render resize handlers', async () => {
+                const moveHandle =
+                    sldSubstationEditor.shadowRoot!.querySelectorAll<SVGElement>('g.bay .handle')[1];
+
+                expect(moveHandle).to.be.undefined;
+            });
+
+            it('disables auxclick', async () => {
+                queryUI({
+                    scl: 'Bay',
+                    ui: 'rect',
+                }).dispatchEvent(new PointerEvent('contextmenu'));
+                await element.updateComplete;
+                expect(queryUI({ ui: 'menu' })).to.not.exist;
+            });
+
+            it('does not allow to move bays', async () => {
+                const bayElement = element.doc.querySelector('Bay')!;
+                const currentX = parseInt(sldAttribute(bayElement, 'x')!, 10);
+                const currentY = parseInt(sldAttribute(bayElement, 'y')!, 10);
+
+                // Move mouse to bay position to establish offset
+                await sendMouse({
+                    type: 'move',
+                    position: [(currentX - 1) * 32 + 64 - 16, (currentY - 1) * 32 + 228 - 76],
+                });
+                await element.updateComplete;
+
+                expect(element).to.have.property('placing', undefined);
+            });
+
+            it('does not allow to place conducting equipment', async () => {
+                const condEq = element.doc.createElement('ConductingEquipment');
+                condEq.setAttribute('type', 'GEN');
+                condEq.setAttribute('name', 'GEN1');
+                element.startPlacing(condEq);
+
+                expect(element).to.have.property('placing', undefined);
+            });
+        });
+
+        describe('given conducting equipment', () => {
+            let sldSubstationEditor: SldSubstationEditor;
+            beforeEach(async () => {
+                const doc = new DOMParser().parseFromString(
+                    equipmentDocString,
+                    'application/xml'
+                );
+                element.doc = doc;
+                await element.updateComplete;
+                sldSubstationEditor = getSldSubstationEditor(element)!;
+                await sldSubstationEditor.updateComplete;
+            });
+
+            it('disables contextmenu', async () => {
+                queryUI({
+                    scl: '[type="SMC"]',
+                    ui: 'rect',
+                }).dispatchEvent(new PointerEvent('contextmenu'));
+                await element.updateComplete;
+                expect(queryUI({ ui: 'menu' })).to.not.exist;
+            });
+
+            it('does not allow to move conducting equipment', async () => {
+                // Click on equipment to start placing/moving
+                await sendMouse({ type: 'click', position: [150 - 16, 230 - 76] });
+                expect(element).to.have.property('placing', undefined);
+            });
+
+            it('does not rotate on auxclick', () => {
+                const equipment = element.doc.querySelector('ConductingEquipment');
+                const id = identity(equipment);
+                const eqClickTarget = sldSubstationEditor
+                    .shadowRoot!.getElementById(<string>id)!
+                    .querySelector('rect')!;
+                expect(sldAttribute(equipment!, 'rot')).to.equal('1');
+                eqClickTarget.dispatchEvent(new PointerEvent('auxclick', { button: 1 }));
+                expect(sldAttribute(equipment!, 'rot')).to.equal('1');
+            });
+
+            it('does not opens a menu on equipment right click', async () => {
+                queryUI({ scl: 'ConductingEquipment', ui: 'rect' }).dispatchEvent(
+                    new PointerEvent('contextmenu', { clientX: 750, clientY: 550 })
+                );
+                await element.updateComplete;
+                expect(queryUI({ ui: 'menu' })).to.not.exist;
+            });
+
+            it('does not render connector', async () => {
+                const equipment = element.doc.querySelector('ConductingEquipment')!;
+                const eqClickTarget = sldSubstationEditor
+                    .shadowRoot!.getElementById(<string>identity(equipment))!
+                    .querySelector('circle')!;
+                expect(eqClickTarget).to.not.exist;
+            });
+        });
+    })
 });

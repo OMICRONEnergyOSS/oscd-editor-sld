@@ -100,6 +100,8 @@ export class SldEditor extends LitElement {
   @state()
   private _docVersion = -1;
 
+  @property({ type: Boolean }) disabled = false;
+
   @state() gridSize = 32;
 
   @state() nsp = 'eoscd';
@@ -177,6 +179,8 @@ export class SldEditor extends LitElement {
   }
 
   startPlacing(element: Element | undefined, offset: Point = [0, 0]) {
+    if (this.disabled) return;
+
     this.reset();
     this.placing = element;
     this.placingOffset = offset;
@@ -582,6 +586,7 @@ export class SldEditor extends LitElement {
           .placingLabel=${this.placingLabel}
           .connecting=${this.connecting}
           .showLabels=${this.showLabels}
+          .disabled=${this.disabled}
           @oscd-sld-start-resize-br=${({ detail }: StartEvent) => {
             this.startResizingBottomRight(detail);
           }}

@@ -8575,3 +8575,34 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies voltage levels on move handle shift click */
 
+snapshots["SLD Editor when disabled given a substation disables substation buttons"] =
+  `<h2 class="disabled">
+  S1
+  <mwc-icon-button
+    icon="edit"
+    label="Edit Substation"
+    title="Edit Substation"
+  >
+  </mwc-icon-button>
+  <mwc-icon-button
+    label="Resize Substation"
+    title="Resize Substation"
+  >
+  </mwc-icon-button>
+  <mwc-icon-button
+    icon="delete"
+    label="Delete Substation"
+    title="Delete Substation"
+  >
+  </mwc-icon-button>
+  <mwc-icon-button
+    icon="file_download"
+    label="Export Single Line Diagram SVG"
+    title="Export Single Line Diagram SVG"
+  >
+  </mwc-icon-button>
+</h2>
+`;
+/* end snapshot SLD Editor when disabled given a substation disables substation buttons */
+
+
