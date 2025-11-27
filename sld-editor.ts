@@ -102,7 +102,7 @@ export class SldEditor extends LitElement {
 
   @state() gridSize = 32;
 
-  @state() nsp = 'esldoscd';
+  @state() nsp = 'eoscd';
 
   @state() resizingBR?: Element;
 
