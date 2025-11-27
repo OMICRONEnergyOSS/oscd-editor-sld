@@ -176,6 +176,31 @@ export function isBusBar(element: Element) {
   return element.tagName === 'Bay' && containsBusSection(element);
 }
 
+export function makeBusBar(doc: XMLDocument, nsp: string) {
+  const busBar = doc.createElementNS(doc.documentElement.namespaceURI, 'Bay');
+  busBar.setAttribute('name', 'BB1');
+  setSLDAttributes(busBar, nsp, { w: '2' });
+  const cNode = doc.createElementNS(
+    doc.documentElement.namespaceURI,
+    'ConnectivityNode'
+  );
+  cNode.setAttribute('name', 'L');
+  const priv = doc.createElementNS(doc.documentElement.namespaceURI, 'Private');
+  priv.setAttribute('type', privType);
+  const section = doc.createElementNS(sldNs, `${nsp}:Section`);
+  setSLDAttributes(section, nsp, { bus: 'true' });
+  const v1 = doc.createElementNS(sldNs, `${nsp}:Vertex`);
+  setSLDAttributes(v1, nsp, { x: '0.5', y: '0.5' });
+  section.appendChild(v1);
+  const v2 = doc.createElementNS(sldNs, `${nsp}:Vertex`);
+  setSLDAttributes(v2, nsp, { x: '1.5', y: '0.5' });
+  section.appendChild(v2);
+  priv.appendChild(section);
+  cNode.appendChild(priv);
+  busBar.appendChild(cNode);
+  return busBar;
+}
+
 export function attributes(element: Element): Attrs {
   const [x, y, w, h, rotVal, labelX, labelY] = [
     'x',
