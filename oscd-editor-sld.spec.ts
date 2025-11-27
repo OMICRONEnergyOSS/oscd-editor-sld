@@ -146,8 +146,12 @@ export const equipmentDocString = `<?xml version="1.0" encoding="UTF-8"?>
 </SCL>
 `;
 
-function getSldSubstationEditor(element: OscdEditorSld): SldSubstationEditor | null | undefined {
-  return element.shadowRoot?.querySelector<SldSubstationEditor>('sld-editor')?.shadowRoot?.querySelector('sld-substation-editor');
+function getSldSubstationEditor(
+  element: OscdEditorSld
+): SldSubstationEditor | null | undefined {
+  return element.shadowRoot
+    ?.querySelector<SldSubstationEditor>('sld-editor')
+    ?.shadowRoot?.querySelector('sld-substation-editor');
 }
 
 function getSldEditor(element: OscdEditorSld): SldEditor | null | undefined {
@@ -325,7 +329,9 @@ describe('SLD Editor', () => {
       expect(sldEditor).property('placing').to.have.property('tagName', 'Bay');
       await sendMouse({ type: 'click', position: [200, 252] });
       expect(sldEditor).to.have.property('placing', undefined);
-      expect(sldEditor).property('resizingBR').to.have.property('tagName', 'Bay');
+      expect(sldEditor)
+        .property('resizingBR')
+        .to.have.property('tagName', 'Bay');
       await sendMouse({ type: 'click', position: [400, 500] });
       expect(sldSubstationEditor).to.have.property('resizingBR', undefined);
       const bay = sldEditor.doc.querySelector('Bay')!;
@@ -343,7 +349,9 @@ describe('SLD Editor', () => {
       expect(sldEditor).property('placing').to.have.property('tagName', 'Bay');
       await sendMouse({ type: 'click', position: [200, 252] });
       expect(sldEditor).to.have.property('placing', undefined);
-      expect(sldEditor).property('resizingBR').to.have.property('tagName', 'Bay');
+      expect(sldEditor)
+        .property('resizingBR')
+        .to.have.property('tagName', 'Bay');
       await sendMouse({ type: 'click', position: [400, 452] });
       expect(sldSubstationEditor).to.have.property('resizingBR', undefined);
       const bus = sldEditor.doc.querySelector('Bay');

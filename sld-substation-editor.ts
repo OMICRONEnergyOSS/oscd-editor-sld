@@ -46,6 +46,7 @@ import {
   newResizeEvent,
   newResizeTLEvent,
   newRotateEvent,
+  newSelectEvent,
   newStartConnectEvent,
   newStartPlaceEvent,
   newStartPlaceLabelEvent,
@@ -340,6 +341,10 @@ function renderMenuHeader(element: Element) {
   </mwc-list-item>`;
 }
 
+function isSelectable(element: Element, selectable: string[]) {
+  return selectable.some(sel => identity(element) === sel);
+}
+
 @customElement('sld-substation-editor')
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 export class SldSubstationEditor extends LitElement {
@@ -384,6 +389,8 @@ export class SldSubstationEditor extends LitElement {
   showLabels?: boolean;
 
   @property({ type: Boolean }) disabled: boolean = false;
+
+  @property() selectable: string[] = [];
 
   @state()
   get idle(): boolean {
@@ -471,15 +478,15 @@ export class SldSubstationEditor extends LitElement {
 
     const containingParent =
       element.tagName === 'VoltageLevel' ||
-        element.tagName === 'PowerTransformer'
+      element.tagName === 'PowerTransformer'
         ? containsRect(this.substation, x, y, w, h)
         : Array.from(
-          this.substation.querySelectorAll(
-            parentTags[element.tagName]!.join(',')
-          )
-        ).find(
-          parent => !isBusBar(parent) && containsRect(parent, x, y, w, h)
-        );
+            this.substation.querySelectorAll(
+              parentTags[element.tagName]!.join(',')
+            )
+          ).find(
+            parent => !isBusBar(parent) && containsRect(parent, x, y, w, h)
+          );
     if (containingParent) return true;
     return false;
   }
@@ -877,19 +884,19 @@ export class SldSubstationEditor extends LitElement {
       },
       text
         ? {
-          content: html`<mwc-list-item graphic="icon">
+            content: html`<mwc-list-item graphic="icon">
               <span>Delete Text</span>
               <mwc-icon slot="graphic">format_strikethrough</mwc-icon>
             </mwc-list-item>`,
-          handler: () => this.dispatchEvent(newEditEventV2({ node: text })),
-        }
+            handler: () => this.dispatchEvent(newEditEventV2({ node: text })),
+          }
         : {
-          content: html`<mwc-list-item graphic="icon">
+            content: html`<mwc-list-item graphic="icon">
               <span>Add Text</span>
               <mwc-icon slot="graphic">title</mwc-icon>
             </mwc-list-item>`,
-          handler: () => this.addTextTo(transformer),
-        },
+            handler: () => this.addTextTo(transformer),
+          },
       {
         content: html`<mwc-list-item graphic="icon">
           <span>Edit</span>
@@ -980,20 +987,20 @@ export class SldSubstationEditor extends LitElement {
       },
       textElement
         ? {
-          content: html`<mwc-list-item graphic="icon">
+            content: html`<mwc-list-item graphic="icon">
               <span>Remove Text</span>
               <mwc-icon slot="graphic">format_strikethrough</mwc-icon>
             </mwc-list-item>`,
-          handler: () =>
-            this.dispatchEvent(newEditEventV2({ node: textElement })),
-        }
+            handler: () =>
+              this.dispatchEvent(newEditEventV2({ node: textElement })),
+          }
         : {
-          content: html`<mwc-list-item graphic="icon">
+            content: html`<mwc-list-item graphic="icon">
               <span>Add Text</span>
               <mwc-icon slot="graphic">title</mwc-icon>
             </mwc-list-item>`,
-          handler: () => this.addTextTo(equipment),
-        },
+            handler: () => this.addTextTo(equipment),
+          },
 
       {
         content: html`<mwc-list-item graphic="icon">
@@ -1155,19 +1162,19 @@ export class SldSubstationEditor extends LitElement {
       },
       text
         ? {
-          content: html`<mwc-list-item graphic="icon">
+            content: html`<mwc-list-item graphic="icon">
               <span>Remove Text</span>
               <mwc-icon slot="graphic">format_strikethrough</mwc-icon>
             </mwc-list-item>`,
-          handler: () => this.dispatchEvent(newEditEventV2({ node: text })),
-        }
+            handler: () => this.dispatchEvent(newEditEventV2({ node: text })),
+          }
         : {
-          content: html`<mwc-list-item graphic="icon">
+            content: html`<mwc-list-item graphic="icon">
               <span>Add Text</span>
               <mwc-icon slot="graphic">title</mwc-icon>
             </mwc-list-item>`,
-          handler: () => this.addTextTo(busBar),
-        },
+            handler: () => this.addTextTo(busBar),
+          },
 
       {
         content: html`<mwc-list-item graphic="icon">
@@ -1248,19 +1255,19 @@ export class SldSubstationEditor extends LitElement {
       },
       text
         ? {
-          content: html`<mwc-list-item graphic="icon">
+            content: html`<mwc-list-item graphic="icon">
               <span>Remove Text</span>
               <mwc-icon slot="graphic">format_strikethrough</mwc-icon>
             </mwc-list-item>`,
-          handler: () => this.dispatchEvent(newEditEventV2({ node: text })),
-        }
+            handler: () => this.dispatchEvent(newEditEventV2({ node: text })),
+          }
         : {
-          content: html`<mwc-list-item graphic="icon">
+            content: html`<mwc-list-item graphic="icon">
               <span>Add Text</span>
               <mwc-icon slot="graphic">title</mwc-icon>
             </mwc-list-item>`,
-          handler: () => this.addTextTo(bayOrVL),
-        },
+            handler: () => this.addTextTo(bayOrVL),
+          },
 
       {
         content: html`<mwc-list-item graphic="icon">
@@ -1466,8 +1473,8 @@ export class SldSubstationEditor extends LitElement {
 
     const headerHeight =
       element.hasAttribute('desc') ||
-        element.hasAttribute('type') ||
-        (element.tagName === 'Text' && element.textContent)
+      element.hasAttribute('type') ||
+      (element.tagName === 'Text' && element.textContent)
         ? 73
         : 57;
 
@@ -1475,7 +1482,7 @@ export class SldSubstationEditor extends LitElement {
       <menu
         id="sld-context-menu"
         style="top: ${this.menu.top - headerHeight}px; left: ${this.menu
-        .left}px;"
+          .left}px;"
         ${ref(async (menu?: Element) => {
           if (!(menu instanceof HTMLElement)) return;
           await this.updateComplete;
@@ -1496,9 +1503,9 @@ export class SldSubstationEditor extends LitElement {
       >
         <mwc-list
           @selected=${({ detail: { index } }: SingleSelectedEvent) => {
-        items.filter(item => item.handler)[index]?.handler?.();
-        this.menu = undefined;
-      }}
+            items.filter(item => item.handler)[index]?.handler?.();
+            this.menu = undefined;
+          }}
         >
           ${items.map(i => i.content)}
         </mwc-list>
@@ -1524,10 +1531,10 @@ export class SldSubstationEditor extends LitElement {
     const placingLabelTarget = this.placingLabel
       ? svg`<rect width="100%" height="100%" fill="url(#halfgrid)"
       @click=${() => {
-          const element = this.placingLabel!;
-          const [x, y] = this.renderedLabelPosition(element);
-          this.dispatchEvent(newPlaceLabelEvent({ element, x, y }));
-        }}
+        const element = this.placingLabel!;
+        const [x, y] = this.renderedLabelPosition(element);
+        this.dispatchEvent(newPlaceLabelEvent({ element, x, y }));
+      }}
       />`
       : nothing;
 
@@ -1646,22 +1653,22 @@ export class SldSubstationEditor extends LitElement {
       connectionPreview.push(
         svg`<rect width="100%" height="100%" fill="url(#grid)"
       @click=${() => {
-            path[path.length - 1] = [x2, y2];
-            path.push([x3, y3]);
-            path.push([x4, y4]);
-            cleanPath(path);
-            this.requestUpdate();
-            if (targetEq && toTerminal)
-              this.dispatchEvent(
-                newConnectEvent({
-                  from,
-                  fromTerminal,
-                  path,
-                  to: targetEq,
-                  toTerminal,
-                })
-              );
-          }} />`
+        path[path.length - 1] = [x2, y2];
+        path.push([x3, y3]);
+        path.push([x4, y4]);
+        cleanPath(path);
+        this.requestUpdate();
+        if (targetEq && toTerminal)
+          this.dispatchEvent(
+            newConnectEvent({
+              from,
+              fromTerminal,
+              path,
+              to: targetEq,
+              toTerminal,
+            })
+          );
+      }} />`
       );
     }
 
@@ -1674,7 +1681,7 @@ export class SldSubstationEditor extends LitElement {
           label="Edit Substation"
           title="Edit Substation"
           @click=${() =>
-        this.dispatchEvent(newEditWizardEvent(this.substation))}
+            this.dispatchEvent(newEditWizardEvent(this.substation))}
           icon="edit"
         >
         </mwc-icon-button>
@@ -1697,7 +1704,7 @@ export class SldSubstationEditor extends LitElement {
           label="Delete Substation"
           title="Delete Substation"
           @click=${() =>
-        this.dispatchEvent(newEditEventV2({ node: this.substation }))}
+            this.dispatchEvent(newEditEventV2({ node: this.substation }))}
           icon="delete"
         >
         </mwc-icon-button>
@@ -1719,17 +1726,17 @@ export class SldSubstationEditor extends LitElement {
         stroke-width="0.06"
         fill="none"
         @mousemove=${(e: MouseEvent) => {
-        if (this.disabled) return;
+          if (this.disabled) return;
 
-        const [x, y] = this.svgCoordinates(e.clientX, e.clientY);
-        this.mouseX = Math.floor(x);
-        this.mouseY = Math.floor(y);
-        this.mouseX2 = Math.round(x * 2) / 2;
-        this.mouseY2 = Math.round(y * 2) / 2;
-        this.mouseX2f = Math.floor(x * 2) / 2;
-        this.mouseY2f = Math.floor(y * 2) / 2;
-        this.positionCoordinates(e);
-      }}
+          const [x, y] = this.svgCoordinates(e.clientX, e.clientY);
+          this.mouseX = Math.floor(x);
+          this.mouseY = Math.floor(y);
+          this.mouseX2 = Math.round(x * 2) / 2;
+          this.mouseY2 = Math.round(y * 2) / 2;
+          this.mouseX2f = Math.floor(x * 2) / 2;
+          this.mouseY2f = Math.floor(y * 2) / 2;
+          this.positionCoordinates(e);
+        }}
       >
         <style>
           @font-face {
@@ -1767,36 +1774,36 @@ export class SldSubstationEditor extends LitElement {
         <rect width="100%" height="100%" fill="white" />
         ${placingTarget}
         ${Array.from(this.substation.children)
-        .filter(child => child.tagName === 'VoltageLevel')
-        .map(vl => svg`${this.renderContainer(vl)}`)}
+          .filter(child => child.tagName === 'VoltageLevel')
+          .map(vl => svg`${this.renderContainer(vl)}`)}
         ${connectionPreview}
         ${this.connecting?.from.closest('Substation') === this.substation
-        ? Array.from(
-          this.substation.querySelectorAll('ConductingEquipment')
-        ).map(eq => this.renderEquipment(eq, { connect: true }))
-        : nothing}
+          ? Array.from(
+              this.substation.querySelectorAll('ConductingEquipment')
+            ).map(eq => this.renderEquipment(eq, { connect: true }))
+          : nothing}
         ${Array.from(this.substation.querySelectorAll('ConnectivityNode'))
-        .filter(
-          node =>
-            node.getAttribute('name') !== 'grounded' &&
-            !(
-              this.placing &&
-              node.closest(this.placing.tagName) === this.placing
-            ) &&
-            !isBusBar(node.parentElement!)
-        )
-        .map(cNode => this.renderConnectivityNode(cNode))}
+          .filter(
+            node =>
+              node.getAttribute('name') !== 'grounded' &&
+              !(
+                this.placing &&
+                node.closest(this.placing.tagName) === this.placing
+              ) &&
+              !isBusBar(node.parentElement!)
+          )
+          .map(cNode => this.renderConnectivityNode(cNode))}
         ${Array.from(this.substation.querySelectorAll('ConnectivityNode'))
-        .filter(
-          node =>
-            node.getAttribute('name') !== 'grounded' &&
-            !(
-              this.placing &&
-              node.closest(this.placing.tagName) === this.placing
-            ) &&
-            isBusBar(node.parentElement!)
-        )
-        .map(cNode => this.renderConnectivityNode(cNode))}
+          .filter(
+            node =>
+              node.getAttribute('name') !== 'grounded' &&
+              !(
+                this.placing &&
+                node.closest(this.placing.tagName) === this.placing
+              ) &&
+              isBusBar(node.parentElement!)
+          )
+          .map(cNode => this.renderConnectivityNode(cNode))}
         ${Array.from(
           this.substation.querySelectorAll(':scope > PowerTransformer')
         ).map(transformer => this.renderPowerTransformer(transformer))}
@@ -1805,11 +1812,11 @@ export class SldSubstationEditor extends LitElement {
             'VoltageLevel, Bay, ConductingEquipment, PowerTransformer, Text'
           )
         )
-        .filter(
-          e =>
-            !this.placing || e.closest(this.placing.tagName) !== this.placing
-        )
-        .map(element => this.renderLabel(element))}
+          .filter(
+            e =>
+              !this.placing || e.closest(this.placing.tagName) !== this.placing
+          )
+          .map(element => this.renderLabel(element))}
         ${transformerPlacingTarget} ${placingLabelTarget} ${placingElement}
       </svg>
       ${menu} ${coordinateTooltip}
@@ -1828,17 +1835,17 @@ export class SldSubstationEditor extends LitElement {
             dialogInitialFocus
             autoValidate
             .validityTransform=${(value: string, validity: ValidityState) => {
-        const {
-          dim: [_w, oldH],
-        } = attributes(this.substation);
-        if (
-          validity.valid &&
-          !this.canResizeTo(this.substation, parseInt(value, 10), oldH)
-        ) {
-          return { valid: false, rangeUnderflow: true };
-        }
-        return {};
-      }}
+              const {
+                dim: [_w, oldH],
+              } = attributes(this.substation);
+              if (
+                validity.valid &&
+                !this.canResizeTo(this.substation, parseInt(value, 10), oldH)
+              ) {
+                return { valid: false, rangeUnderflow: true };
+              }
+              return {};
+            }}
           ></mwc-textfield>
           <mwc-textfield
             id="substationHeightUI"
@@ -1849,41 +1856,41 @@ export class SldSubstationEditor extends LitElement {
             value="${h}"
             autoValidate
             .validityTransform=${(value: string, validity: ValidityState) => {
-        const {
-          dim: [oldW, _h],
-        } = attributes(this.substation);
-        if (
-          validity.valid &&
-          !this.canResizeTo(this.substation, oldW, parseInt(value, 10))
-        ) {
-          return { valid: false, rangeUnderflow: true };
-        }
-        return {};
-      }}
+              const {
+                dim: [oldW, _h],
+              } = attributes(this.substation);
+              if (
+                validity.valid &&
+                !this.canResizeTo(this.substation, oldW, parseInt(value, 10))
+              ) {
+                return { valid: false, rangeUnderflow: true };
+              }
+              return {};
+            }}
           ></mwc-textfield>
         </div>
         <mwc-button
           slot="primaryAction"
           @click=${() => {
-        const valid = Array.from(
-          this.resizeSubstationUI.querySelectorAll('mwc-textfield')
-        ).every(textField => textField.checkValidity());
-        if (!valid) return;
-        const {
-          dim: [oldW, oldH],
-        } = attributes(this.substation);
-        const [newW, newH] = [
-          this.substationWidthUI,
-          this.substationHeightUI,
-        ].map(ui => parseInt(ui.value ?? '1', 10).toString());
-        this.resizeSubstationUI.close();
-        if (newW === oldW.toString() && newH === oldH.toString()) return;
-        const resizeEdit = updateSLDAttributes(this.substation, this.nsp, {
-          w: newW,
-          h: newH,
-        });
-        this.dispatchEvent(newEditEventV2(resizeEdit));
-      }}
+            const valid = Array.from(
+              this.resizeSubstationUI.querySelectorAll('mwc-textfield')
+            ).every(textField => textField.checkValidity());
+            if (!valid) return;
+            const {
+              dim: [oldW, oldH],
+            } = attributes(this.substation);
+            const [newW, newH] = [
+              this.substationWidthUI,
+              this.substationHeightUI,
+            ].map(ui => parseInt(ui.value ?? '1', 10).toString());
+            this.resizeSubstationUI.close();
+            if (newW === oldW.toString() && newH === oldH.toString()) return;
+            const resizeEdit = updateSLDAttributes(this.substation, this.nsp, {
+              w: newW,
+              h: newH,
+            });
+            this.dispatchEvent(newEditEventV2(resizeEdit));
+          }}
           >resize</mwc-button
         >
         <mwc-button dialogAction="close" slot="secondaryAction"
@@ -1936,7 +1943,8 @@ export class SldSubstationEditor extends LitElement {
       const offset = [this.mouseX2 - x - 0.5, this.mouseY2 - y + 0.5] as Point;
       handleClick = () =>
         this.dispatchEvent(newStartPlaceLabelEvent(element, offset));
-    }
+    } else if (this.disabled && isSelectable(element, this.selectable))
+      handleClick = () => this.dispatchEvent(newSelectEvent(element));
 
     let auxclick: ((e: MouseEvent) => void) | symbol = nothing;
     if (!this.disabled)
@@ -1946,7 +1954,7 @@ export class SldSubstationEditor extends LitElement {
           this.dispatchEvent(newEditWizardEvent(element));
           e.preventDefault();
         }
-      }
+      };
 
     let contextmenu: ((e: MouseEvent) => void) | symbol = nothing;
     if (!this.disabled)
@@ -1954,7 +1962,7 @@ export class SldSubstationEditor extends LitElement {
 
     const id =
       element.closest('Substation') === this.substation &&
-        element.tagName !== 'Text'
+      element.tagName !== 'Text'
         ? identity(element)
         : nothing;
     const classes = classMap({
@@ -1963,6 +1971,7 @@ export class SldSubstationEditor extends LitElement {
         (element.tagName === 'Bay' && !isBusBar(element)) ||
         element.tagName === 'VoltageLevel',
       disabled: this.disabled,
+      selectable: isSelectable(element, this.selectable),
     });
     return svg`<g class="${classes}" id="label:${id}"
                  transform="rotate(${deg} ${x + 0.5} ${y - 0.5})">
@@ -2004,8 +2013,8 @@ export class SldSubstationEditor extends LitElement {
     };
     let invalid = false;
 
-    let contextmenu = (e: MouseEvent) => this.openMenu(bayOrVL, e)
-    if (this.disabled) contextmenu = () => { };
+    let contextmenu = (e: MouseEvent) => this.openMenu(bayOrVL, e);
+    if (this.disabled) contextmenu = () => {};
 
     let auxclick = ({ clientX, clientY, button }: MouseEvent) => {
       if (button !== 1) return;
@@ -2013,8 +2022,8 @@ export class SldSubstationEditor extends LitElement {
       if (distance(mouse, [x, y]) < distance(mouse, [right, bottom]))
         this.dispatchEvent(newStartResizeTLEvent(bayOrVL));
       else this.dispatchEvent(newStartResizeBREvent(bayOrVL));
-    }
-    if (this.disabled) auxclick = () => { };
+    };
+    if (this.disabled) auxclick = () => {};
 
     if (this.resizingBR === bayOrVL) {
       w = Math.max(1, this.mouseX - x + 1);
@@ -2087,26 +2096,29 @@ export class SldSubstationEditor extends LitElement {
       resizingTarget = svg`<rect x="${x}" y="${y}" width="${w}" height="${h}"
         @click=${handleClick || nothing} fill="url(#grid)" />`;
 
-    const resizeBRHandle = this.idle && !this.disabled
-      ? svg`<svg xmlns="${svgNs}" height="1" width="1" fill="black"
+    const resizeBRHandle =
+      this.idle && !this.disabled
+        ? svg`<svg xmlns="${svgNs}" height="1" width="1" fill="black"
           opacity="0.83" class="handle"
           @click=${() => this.dispatchEvent(newStartResizeBREvent(bayOrVL))}
           viewBox="0 96 960 960" x="${w + x - 1}" y="${h + y - 1}">
           <rect fill="white" x="28.8" y="124.8" width="902.4" height="902.4" />
           ${resizeBRPath}
         </svg>`
-      : nothing;
-    const resizeTLhandle = this.idle && !this.disabled
-      ? svg`<svg xmlns="${svgNs}" height="1" width="1" fill="black"
+        : nothing;
+    const resizeTLhandle =
+      this.idle && !this.disabled
+        ? svg`<svg xmlns="${svgNs}" height="1" width="1" fill="black"
           opacity="0.83" class="handle"
           @click=${() => this.dispatchEvent(newStartResizeTLEvent(bayOrVL))}
           viewBox="0 96 960 960" x="${x}" y="${y}">
           <rect fill="white" x="28.8" y="124.8" width="902.4" height="902.4" />
           ${resizeTLPath}
         </svg>`
-      : nothing;
+        : nothing;
 
-    const clickthrough = this.disabled ||
+    const clickthrough =
+      this.disabled ||
       (!this.idle &&
         this.placing !== bayOrVL &&
         this.resizingBR !== bayOrVL &&
@@ -2121,15 +2133,17 @@ export class SldSubstationEditor extends LitElement {
       strokeColor = '#12579B';
     }
 
-    return svg`<g id="${bayOrVL.closest('Substation') === this.substation
-      ? identity(bayOrVL)
-      : nothing
-      }" class=${classMap({
-        voltagelevel: isVL,
-        bay: !isVL,
-        preview,
-      })} tabindex="0" pointer-events="${clickthrough ? 'none' : 'all'
-      }" style="outline: none;">
+    return svg`<g id="${
+      bayOrVL.closest('Substation') === this.substation
+        ? identity(bayOrVL)
+        : nothing
+    }" class=${classMap({
+      voltagelevel: isVL,
+      bay: !isVL,
+      preview,
+    })} tabindex="0" pointer-events="${
+      clickthrough ? 'none' : 'all'
+    }" style="outline: none;">
       <rect x="${x}" y="${y}" width="${w}" height="${h}"
         @contextmenu=${contextmenu}
         @click=${handleClick || nothing} @mousedown=${preventDefault}
@@ -2145,21 +2159,23 @@ export class SldSubstationEditor extends LitElement {
       ${Array.from(bayOrVL.children)
         .filter(child => child.tagName === 'PowerTransformer')
         .map(equipment => this.renderPowerTransformer(equipment))}
-      ${preview
-        ? Array.from(bayOrVL.querySelectorAll('ConnectivityNode'))
-          .filter(child => child.getAttribute('name') !== 'grounded')
-          .map(cNode => this.renderConnectivityNode(cNode))
-        : nothing
+      ${
+        preview
+          ? Array.from(bayOrVL.querySelectorAll('ConnectivityNode'))
+              .filter(child => child.getAttribute('name') !== 'grounded')
+              .map(cNode => this.renderConnectivityNode(cNode))
+          : nothing
       }
-      ${preview
-        ? Array.from(
-          bayOrVL.querySelectorAll(
-            'Bay, ConductingEquipment, PowerTransformer, Text'
-          )
-        )
-          .concat(bayOrVL)
-          .map(element => this.renderLabel(element))
-        : nothing
+      ${
+        preview
+          ? Array.from(
+              bayOrVL.querySelectorAll(
+                'Bay, ConductingEquipment, PowerTransformer, Text'
+              )
+            )
+              .concat(bayOrVL)
+              .map(element => this.renderLabel(element))
+          : nothing
       }
       ${resizeTLhandle}
       ${resizeBRHandle}
@@ -2192,11 +2208,11 @@ export class SldSubstationEditor extends LitElement {
     const terminals: Partial<Record<'T1' | 'T2' | 'N1' | 'N2', Point>> = {};
     let arc:
       | {
-        from: Point;
-        fromCtl: Point;
-        to: Point;
-        toCtl: Point;
-      }
+          from: Point;
+          fromCtl: Point;
+          to: Point;
+          toCtl: Point;
+        }
       | undefined;
     let zigZagTransform: string | undefined;
     const terminalElements = Array.from(winding.children).filter(
@@ -2433,7 +2449,8 @@ export class SldSubstationEditor extends LitElement {
         this.resizingBR ||
         this.resizingTL ||
         this.placingLabel ||
-        (this.placing && this.placing !== winding.closest('PowerTransformer')) ||
+        (this.placing &&
+          this.placing !== winding.closest('PowerTransformer')) ||
         this.disabled
       )
     )
@@ -2446,26 +2463,26 @@ export class SldSubstationEditor extends LitElement {
         const fill = terminal ? 'BB1326' : '12579B';
         ports.push(svg`<circle class="port" cx="${x}" cy="${y}" r="0.2" opacity="0.4"
               @contextmenu=${(e: MouseEvent) => {
-            if (terminal) return;
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            if (!this.idle) return;
-            this.groundTerminal(winding, name as 'T1' | 'T2' | 'N1' | 'N2');
-          }}
+                if (terminal) return;
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                if (!this.idle) return;
+                this.groundTerminal(winding, name as 'T1' | 'T2' | 'N1' | 'N2');
+              }}
               @click=${(e: MouseEvent) => {
-            e.stopImmediatePropagation();
-            if (!this.idle) return;
-            this.dispatchEvent(
-              newStartConnectEvent({
-                from: winding,
-                fromTerminal: name as 'T1' | 'T2' | 'N1' | 'N2',
-                path: [
-                  [x, y],
-                  [x1, y1],
-                ],
-              })
-            );
-          }}
+                e.stopImmediatePropagation();
+                if (!this.idle) return;
+                this.dispatchEvent(
+                  newStartConnectEvent({
+                    from: winding,
+                    fromTerminal: name as 'T1' | 'T2' | 'N1' | 'N2',
+                    path: [
+                      [x, y],
+                      [x1, y1],
+                    ],
+                  })
+                );
+              }}
               fill="#${fill}"
               stroke="${groundable && !terminal ? '#F5E214' : fill}" />`);
       });
@@ -2485,7 +2502,8 @@ export class SldSubstationEditor extends LitElement {
     }
     const tapChanger = winding.querySelector('TapChanger');
     const ltcArrow = tapChanger
-      ? svg`<line x1="${cx - 0.8}" y1="${cy + 0.8}" x2="${cx + 0.8}" y2="${cy - (longArrow ? 1 : 0.8)
+      ? svg`<line x1="${cx - 0.8}" y1="${cy + 0.8}" x2="${cx + 0.8}" y2="${
+          cy - (longArrow ? 1 : 0.8)
         }"
               stroke="black" stroke-width="0.06" marker-end="url(#arrow)" />`
       : nothing;
@@ -2518,17 +2536,9 @@ export class SldSubstationEditor extends LitElement {
               x="${this.mouseX}" y="${this.mouseY}" />`
         : nothing;
 
-    return svg`<g class="${classMap({ transformer: true, preview, disabled: this.disabled })}"
-        pointer-events="all"
-        @mousedown=${preventDefault}
-        @auxclick=${(e: MouseEvent) => {
-        if (e.button === 1) {
-          // middle mouse button
-          this.dispatchEvent(newRotateEvent(transformer));
-          e.preventDefault();
-        }
-      }}
-        @click=${(e: MouseEvent) => {
+    let handleClick: ((e: MouseEvent) => void) | symbol = nothing;
+    if (this.placing === transformer)
+      handleClick = (e: MouseEvent) => {
         if (this.placing === transformer) {
           const parent =
             Array.from(
@@ -2555,18 +2565,38 @@ export class SldSubstationEditor extends LitElement {
         let placing = transformer;
         if (e.shiftKey) placing = copy(transformer, this.nsp);
         this.dispatchEvent(newStartPlaceEvent(placing, offset));
-      }}>
+      };
+    else if (this.disabled && isSelectable(transformer, this.selectable))
+      handleClick = () => this.dispatchEvent(newSelectEvent(transformer));
+
+    return svg`<g class="${classMap({
+      transformer: true,
+      preview,
+      disabled: this.disabled,
+      selectable: isSelectable(transformer, this.selectable),
+    })}"
+        pointer-events="all"
+        @mousedown=${preventDefault}
+        @auxclick=${(e: MouseEvent) => {
+          if (e.button === 1) {
+            // middle mouse button
+            this.dispatchEvent(newRotateEvent(transformer));
+            e.preventDefault();
+          }
+        }}
+        @click=${handleClick}>
         ${windings.map(w => this.renderTransformerWinding(w))}
         ${clickTarget}
       </g>
-      <g class="preview">${preview
-        ? [
-          this.renderLabel(transformer),
-          ...Array.from(transformer.querySelectorAll('Text')).map(text =>
-            this.renderLabel(text)
-          ),
-        ]
-        : nothing
+      <g class="preview">${
+        preview
+          ? [
+              this.renderLabel(transformer),
+              ...Array.from(transformer.querySelectorAll('Text')).map(text =>
+                this.renderLabel(text)
+              ),
+            ]
+          : nothing
       }</g>`;
   }
 
@@ -2624,17 +2654,24 @@ export class SldSubstationEditor extends LitElement {
         };
     }
 
+    if (this.disabled && !isSelectable(equipment, this.selectable))
+      handleClick = () => {};
+    if (this.disabled && isSelectable(equipment, this.selectable))
+      handleClick = () => {
+        this.dispatchEvent(newSelectEvent(equipment));
+      };
+
     let auxclick = (e: MouseEvent) => {
       if (e.button === 1) {
         // middle mouse button
         this.dispatchEvent(newRotateEvent(equipment));
         e.preventDefault();
       }
-    }
-    if (this.disabled) auxclick = () => { };
+    };
+    if (this.disabled) auxclick = () => {};
 
-    let contextmenu = (e: MouseEvent) => this.openMenu(equipment, e)
-    if (this.disabled) contextmenu = () => { };
+    let contextmenu = (e: MouseEvent) => this.openMenu(equipment, e);
+    if (this.disabled) contextmenu = () => {};
 
     const terminals = Array.from(equipment.children).filter(
       c => c.tagName === 'Terminal'
@@ -2644,39 +2681,40 @@ export class SldSubstationEditor extends LitElement {
 
     const topConnector =
       topTerminal ||
-        this.resizingBR ||
-        this.resizingTL ||
-        this.connecting ||
-        this.placingLabel ||
-        (this.placing && this.placing !== equipment) ||
-        this.disabled
+      this.resizingBR ||
+      this.resizingTL ||
+      this.connecting ||
+      this.placingLabel ||
+      (this.placing && this.placing !== equipment) ||
+      this.disabled
         ? nothing
         : svg`<circle class="port" cx="0.5" cy="0" r="0.2" opacity="0.4"
-      fill="#BB1326" stroke="#F5E214" pointer-events="${this.placing ? 'none' : nothing
-          }"
+      fill="#BB1326" stroke="#F5E214" pointer-events="${
+        this.placing ? 'none' : nothing
+      }"
     @click=${() =>
-            this.dispatchEvent(
-              newStartConnectEvent({
-                from: equipment,
-                fromTerminal: 'T1',
-                path: connectionStartPoints(equipment).T1,
-              })
-            )}
+      this.dispatchEvent(
+        newStartConnectEvent({
+          from: equipment,
+          fromTerminal: 'T1',
+          path: connectionStartPoints(equipment).T1,
+        })
+      )}
     @contextmenu=${(e: MouseEvent) => {
-            e.preventDefault();
-            this.groundTerminal(equipment, 'T1');
-          }}
+      e.preventDefault();
+      this.groundTerminal(equipment, 'T1');
+    }}
       />`;
 
     const topIndicator =
       !this.connecting ||
-        this.connecting.from === equipment ||
-        (this.connecting &&
-          this.mouseX === x &&
-          this.mouseY === y &&
-          this.nearestOpenTerminal(equipment) === 'T1') ||
-        topTerminal ||
-        this.disabled
+      this.connecting.from === equipment ||
+      (this.connecting &&
+        this.mouseX === x &&
+        this.mouseY === y &&
+        this.nearestOpenTerminal(equipment) === 'T1') ||
+      topTerminal ||
+      this.disabled
         ? nothing
         : svg`<polygon points="0.3,0 0.7,0 0.5,0.4" 
                 fill="#BB1326" opacity="0.4" />`;
@@ -2689,41 +2727,42 @@ export class SldSubstationEditor extends LitElement {
 
     const bottomConnector =
       bottomTerminal ||
-        this.resizingBR ||
-        this.resizingTL ||
-        this.connecting ||
-        this.placingLabel ||
-        (this.placing && this.placing !== equipment) ||
-        singleTerminal.has(eqType) ||
-        this.disabled
+      this.resizingBR ||
+      this.resizingTL ||
+      this.connecting ||
+      this.placingLabel ||
+      (this.placing && this.placing !== equipment) ||
+      singleTerminal.has(eqType) ||
+      this.disabled
         ? nothing
         : svg`<circle class="port" cx="0.5" cy="1" r="0.2" opacity="0.4"
-      fill="#BB1326" stroke="#F5E214" pointer-events="${this.placing ? 'none' : nothing
-          }"
+      fill="#BB1326" stroke="#F5E214" pointer-events="${
+        this.placing ? 'none' : nothing
+      }"
     @click=${() =>
-            this.dispatchEvent(
-              newStartConnectEvent({
-                from: equipment,
-                fromTerminal: 'T2',
-                path: connectionStartPoints(equipment).T2,
-              })
-            )}
+      this.dispatchEvent(
+        newStartConnectEvent({
+          from: equipment,
+          fromTerminal: 'T2',
+          path: connectionStartPoints(equipment).T2,
+        })
+      )}
     @contextmenu=${(e: MouseEvent) => {
-            e.preventDefault();
-            this.groundTerminal(equipment, 'T2');
-          }}
+      e.preventDefault();
+      this.groundTerminal(equipment, 'T2');
+    }}
       />`;
 
     const bottomIndicator =
       !this.connecting ||
-        this.connecting.from === equipment ||
-        (this.connecting &&
-          this.mouseX === x &&
-          this.mouseY === y &&
-          this.nearestOpenTerminal(equipment) === 'T2') ||
-        bottomTerminal ||
-        singleTerminal.has(eqType) ||
-        this.disabled
+      this.connecting.from === equipment ||
+      (this.connecting &&
+        this.mouseX === x &&
+        this.mouseY === y &&
+        this.nearestOpenTerminal(equipment) === 'T2') ||
+      bottomTerminal ||
+      singleTerminal.has(eqType) ||
+      this.disabled
         ? nothing
         : svg`<polygon points="0.3,1 0.7,1 0.5,0.6" 
                 fill="#BB1326" opacity="0.4" />`;
@@ -2734,27 +2773,35 @@ export class SldSubstationEditor extends LitElement {
                 stroke-width="0.06" marker-start="url(#grounded)" />`
         : nothing;
 
-    const clickthrough = connect || (!this.idle && this.placing !== equipment) || this.disabled;
+    const clickthrough =
+      connect ||
+      (!this.idle && this.placing !== equipment) ||
+      (this.disabled && !isSelectable(equipment, this.selectable));
 
     return svg`<g class="${classMap({
       equipment: true,
       preview: this.placing === equipment,
       disabled: this.disabled,
+      selectable: isSelectable(equipment, this.selectable),
     })}"
-    id="${equipment.closest('Substation') === this.substation
+    id="${
+      equipment.closest('Substation') === this.substation
         ? identity(equipment)
         : nothing
-      }"
-    transform="translate(${x} ${y}) rotate(${deg} 0.5 0.5)${flip ? ' scale(-1,1) translate(-1 0)' : ''
-      }">
+    }"
+    transform="translate(${x} ${y}) rotate(${deg} 0.5 0.5)${
+      flip ? ' scale(-1,1) translate(-1 0)' : ''
+    }">
       <title>${equipment.getAttribute('name')}</title>
       ${icon}
-      ${ringed
-        ? svg`<use transform="rotate(${-deg} 0.5 0.5)" pointer-events="none"
+      ${
+        ringed
+          ? svg`<use transform="rotate(${-deg} 0.5 0.5)" pointer-events="none"
                   href="#${symbol}" xlink:href="#${symbol}" />`
-        : nothing
+          : nothing
       }
-      <rect width="1" height="1" fill="none" pointer-events="${clickthrough ? 'none' : 'all'
+      <rect width="1" height="1" fill="none" pointer-events="${
+        clickthrough ? 'none' : 'all'
       }"
         @mousedown=${preventDefault}
         @click=${handleClick}
@@ -2768,15 +2815,16 @@ export class SldSubstationEditor extends LitElement {
       ${bottomIndicator}
       ${bottomGrounded}
     </g>
-    <g class="preview">${preview
+    <g class="preview">${
+      preview
         ? [
-          this.renderLabel(equipment),
-          ...Array.from(equipment.querySelectorAll('Text')).map(text =>
-            this.renderLabel(text)
-          ),
-        ]
+            this.renderLabel(equipment),
+            ...Array.from(equipment.querySelectorAll('Text')).map(text =>
+              this.renderLabel(text)
+            ),
+          ]
         : nothing
-      }</g>`;
+    }</g>`;
   }
 
   renderBusBar(busBar: Element) {
@@ -2787,9 +2835,7 @@ export class SldSubstationEditor extends LitElement {
 
     let handleClick = () => {
       const parent = Array.from(
-        this.substation.querySelectorAll(
-          ':root > Substation > VoltageLevel'
-        )
+        this.substation.querySelectorAll(':root > Substation > VoltageLevel')
       ).find(vl => containsRect(vl, x, y, w, h));
       if (parent)
         this.dispatchEvent(
@@ -2801,7 +2847,7 @@ export class SldSubstationEditor extends LitElement {
           })
         );
     };
-    if (this.disabled) handleClick = () => { };
+    if (this.disabled) handleClick = () => {};
 
     let placingTarget = svg``;
     placingTarget = svg`<rect x="${x}" y="${y}" width="${w}" height="${h}"
@@ -2809,10 +2855,11 @@ export class SldSubstationEditor extends LitElement {
           @click=${handleClick}
         />`;
 
-    return svg`<g class="bus preview" id="${busBar.closest('Substation') === this.substation
-      ? identity(busBar)
-      : nothing
-      }">
+    return svg`<g class="bus preview" id="${
+      busBar.closest('Substation') === this.substation
+        ? identity(busBar)
+        : nothing
+    }">
       <title>${busBar.getAttribute('name')}</title>
       ${this.renderLabel(busBar)}
       ${Array.from(busBar.querySelectorAll('Text')).map(text =>
@@ -2852,7 +2899,7 @@ export class SldSubstationEditor extends LitElement {
     const targetSize = 0.5;
     const pointerEvents =
       !this.placing &&
-        (!this.resizingBR || (this.resizingBR === bay && isBusBar(bay)))
+      (!this.resizingBR || (this.resizingBR === bay && isBusBar(bay)))
         ? 'all'
         : 'none';
     sections.forEach(section => {
@@ -3004,7 +3051,10 @@ export class SldSubstationEditor extends LitElement {
       cNode.closest('Substation') === this.substation
         ? identity(cNode)
         : nothing;
-    return svg`<g class="${classMap({ node: true, disabled: this.disabled })}" id="${id}" >
+    return svg`<g class="${classMap({
+      node: true,
+      disabled: this.disabled,
+    })}" id="${id}" >
         <title>${cNode.getAttribute('pathName')}</title>
         ${circles}
         ${lines}
@@ -3052,9 +3102,13 @@ export class SldSubstationEditor extends LitElement {
       color: #bb1326;
     }
 
-    .disabled {
+    .disabled:not(.selectable) {
       pointer-events: none;
       opacity: 0.2;
+    }
+
+    .disabled.selectable > text {
+      pointer-events: all;
     }
 
     * {
