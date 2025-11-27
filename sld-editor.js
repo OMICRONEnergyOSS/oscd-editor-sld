@@ -12,7 +12,7 @@ import '@material/mwc-snackbar';
 import '@material/mwc-textfield';
 import { getReference, identity } from '@openscd/oscd-scl';
 import { bayGraphic, eqRingPath, equipmentGraphic, movePath, ptrIcon, resizeBRPath, resizePath, resizeTLPath, symbols, voltageLevelGraphic, zigZag2WTransform, zigZagPath, } from './icons.js';
-import { attributes, connectionStartPoints, elementPath, isBusBar, isEqType, newConnectEvent, newPlaceEvent, newPlaceLabelEvent, newResizeEvent, newResizeTLEvent, newRotateEvent, newStartConnectEvent, newStartPlaceEvent, newStartPlaceLabelEvent, newStartResizeBREvent, newStartResizeTLEvent, prettyPrint, privType, removeNode, removeTerminal, ringedEqTypes, robotoDataURL, singleTerminal, sldNs, svgNs, uniqueName, uuid, xlinkNs, xmlBoolean, } from './util.js';
+import { attributes, connectionStartPoints, elementPath, getSLDAttributes, isBusBar, isEqType, newConnectEvent, newPlaceEvent, newPlaceLabelEvent, newResizeEvent, newResizeTLEvent, newRotateEvent, newStartConnectEvent, newStartPlaceEvent, newStartPlaceLabelEvent, newStartResizeBREvent, newStartResizeTLEvent, prettyPrint, privType, removeNode, removeTerminal, ringedEqTypes, robotoDataURL, setSLDAttributes, singleTerminal, sldNs, svgNs, uniqueName, updateSLDAttributes, uuid, xlinkNs, xmlBoolean, } from './util.js';
 const parentTags = {
     ConductingEquipment: ['Bay'],
     Bay: ['VoltageLevel'],
@@ -157,17 +157,17 @@ function copy(element, nsp) {
             if (terminal.getAttribute('connectivityNode') ===
                 cNode.getAttribute('pathName'))
                 clone
-                    .querySelector(`[*|uuid="${terminal.getAttributeNS(sldNs, 'uuid')}"]`)
+                    .querySelector(`[*|uuid="${getSLDAttributes(terminal, 'uuid')}"]`)
                     ?.remove();
         });
     });
     Array.from(clone.querySelectorAll('Terminal, NeutralPoint')).forEach(terminal => {
-        const oldUUID = terminal.getAttributeNS(sldNs, 'uuid');
+        const oldUUID = getSLDAttributes(terminal, 'uuid');
         if (!oldUUID)
             return;
         const newUUID = uuid();
-        Array.from(clone.querySelectorAll(`Vertex[*|uuid="${oldUUID}"`)).forEach(vertex => vertex.setAttributeNS(sldNs, `${nsp}:uuid`, newUUID));
-        terminal.setAttributeNS(sldNs, `${nsp}:uuid`, newUUID);
+        Array.from(clone.querySelectorAll(`Vertex[*|uuid="${oldUUID}"`)).forEach(vertex => setSLDAttributes(vertex, nsp, { uuid: newUUID }));
+        setSLDAttributes(terminal, nsp, { uuid: newUUID });
     });
     return clone;
 }
@@ -231,7 +231,7 @@ let SLDEditor = class SLDEditor extends LitElement {
         super(...arguments);
         this.docVersion = -1;
         this.gridSize = 32;
-        this.nsp = 'esld';
+        this.nsp = 'eosld';
         this.placingOffset = [0, 0];
         this.mouseX = 0;
         this.mouseY = 0;
@@ -459,22 +459,10 @@ let SLDEditor = class SLDEditor extends LitElement {
     }
     flipElement(element) {
         const { flip, kind } = attributes(element);
-        const edits = [
-            {
-                element,
-                // attributes: {
-                //   [`${this.nsp}:flip`]: {
-                //     namespaceURI: sldNs,
-                //     value: flip ? null : 'true',
-                //   },
-                // },
-                attributesNS: {
-                    [sldNs]: {
-                        [`${this.nsp}:flip`]: flip ? null : 'true',
-                    },
-                },
-            },
-        ];
+        const flipEdit = updateSLDAttributes(element, this.nsp, {
+            flip: flip ? null : 'true',
+        });
+        const edits = [flipEdit];
         if (element.tagName === 'PowerTransformer') {
             const winding = element.querySelector('TransformerWinding');
             Array.from(winding.querySelectorAll('Terminal')).forEach(terminal => edits.push(...removeTerminal(terminal)));
@@ -487,8 +475,10 @@ let SLDEditor = class SLDEditor extends LitElement {
     addTextTo(element) {
         const { pos: [x, y], } = attributes(element);
         const text = this.doc.createElementNS(this.doc.documentElement.namespaceURI, 'Text');
-        text.setAttributeNS(sldNs, `${this.nsp}:lx`, x.toString());
-        text.setAttributeNS(sldNs, `${this.nsp}:ly`, (y < 2 ? y + 1 : y - 1).toString());
+        setSLDAttributes(text, this.nsp, {
+            lx: x.toString(),
+            ly: (y < 2 ? y + 1 : y - 1).toString(),
+        });
         this.dispatchEvent(newEditEventV2({
             node: text,
             parent: element,
@@ -636,7 +626,7 @@ let SLDEditor = class SLDEditor extends LitElement {
                 },
             },
         ];
-        const kind = transformer.getAttributeNS(sldNs, 'kind');
+        const kind = getSLDAttributes(transformer, 'kind');
         const windingCount = transformer.querySelectorAll('TransformerWinding').length;
         if (kind === 'auto' || (kind === 'earthing' && windingCount === 2))
             items.unshift({
@@ -1024,17 +1014,10 @@ let SLDEditor = class SLDEditor extends LitElement {
           <mwc-icon slot="graphic">format_bold</mwc-icon>
         </mwc-list-item>`,
                 handler: () => {
-                    this.dispatchEvent(newEditEventV2({
-                        element: text,
-                        // attributes: {
-                        //   [`${this.nsp}:weight`]: { namespaceURI: sldNs, value: '500' },
-                        // },
-                        attributesNS: {
-                            [sldNs]: {
-                                [`${this.nsp}:weight`]: '500',
-                            },
-                        },
-                    }));
+                    const makeBold = updateSLDAttributes(text, this.nsp, {
+                        weight: '500',
+                    });
+                    this.dispatchEvent(newEditEventV2(makeBold));
                 },
             });
         if (weight !== 300)
@@ -1044,17 +1027,10 @@ let SLDEditor = class SLDEditor extends LitElement {
           <mwc-icon slot="graphic">format_clear</mwc-icon>
         </mwc-list-item>`,
                 handler: () => {
-                    this.dispatchEvent(newEditEventV2({
-                        element: text,
-                        // attributes: {
-                        //   [`${this.nsp}:weight`]: { namespaceURI: sldNs, value: null },
-                        // },
-                        attributesNS: {
-                            [sldNs]: {
-                                [`${this.nsp}:weight`]: null,
-                            },
-                        },
-                    }));
+                    const removeFormat = updateSLDAttributes(text, this.nsp, {
+                        weight: null,
+                    });
+                    this.dispatchEvent(newEditEventV2(removeFormat));
                 },
             });
         if (color.toUpperCase() !== '#BB1326')
@@ -1067,20 +1043,10 @@ let SLDEditor = class SLDEditor extends LitElement {
           <mwc-icon slot="graphic">format_color_text</mwc-icon>
         </mwc-list-item>`,
                 handler: () => {
-                    this.dispatchEvent(newEditEventV2({
-                        element: text,
-                        // attributes: {
-                        //   [`${this.nsp}:color`]: {
-                        //     namespaceURI: sldNs,
-                        //     value: '#BB1326',
-                        //   },
-                        // },
-                        attributesNS: {
-                            [sldNs]: {
-                                [`${this.nsp}:color`]: '#BB1326',
-                            },
-                        },
-                    }));
+                    const colorRed = updateSLDAttributes(text, this.nsp, {
+                        color: '#BB1326',
+                    });
+                    this.dispatchEvent(newEditEventV2(colorRed));
                 },
             });
         if (color.toUpperCase() !== '#12579B')
@@ -1093,20 +1059,10 @@ let SLDEditor = class SLDEditor extends LitElement {
           <mwc-icon slot="graphic">format_color_text</mwc-icon>
         </mwc-list-item>`,
                 handler: () => {
-                    this.dispatchEvent(newEditEventV2({
-                        element: text,
-                        // attributes: {
-                        //   [`${this.nsp}:color`]: {
-                        //     namespaceURI: sldNs,
-                        //     value: '#12579B',
-                        //   },
-                        // },
-                        attributesNS: {
-                            [sldNs]: {
-                                [`${this.nsp}:color`]: '#12579B',
-                            },
-                        },
-                    }));
+                    const colorBlue = updateSLDAttributes(text, this.nsp, {
+                        color: '#12579B',
+                    });
+                    this.dispatchEvent(newEditEventV2(colorBlue));
                 },
             });
         if (color !== '#000')
@@ -1116,20 +1072,10 @@ let SLDEditor = class SLDEditor extends LitElement {
           <mwc-icon slot="graphic">format_color_reset</mwc-icon>
         </mwc-list-item>`,
                 handler: () => {
-                    this.dispatchEvent(newEditEventV2({
-                        element: text,
-                        // attributes: {
-                        //   [`${this.nsp}:color`]: {
-                        //     namespaceURI: sldNs,
-                        //     value: null,
-                        //   },
-                        // },
-                        attributesNS: {
-                            [sldNs]: {
-                                [`${this.nsp}:color`]: null,
-                            },
-                        },
-                    }));
+                    const colorReset = updateSLDAttributes(text, this.nsp, {
+                        color: null,
+                    });
+                    this.dispatchEvent(newEditEventV2(colorReset));
                 },
             });
         return items;
@@ -1497,19 +1443,11 @@ let SLDEditor = class SLDEditor extends LitElement {
             this.resizeSubstationUI.close();
             if (newW === oldW.toString() && newH === oldH.toString())
                 return;
-            this.dispatchEvent(newEditEventV2({
-                element: this.substation,
-                // attributes: {
-                //   [`${this.nsp}:w`]: { namespaceURI: sldNs, value: newW },
-                //   [`${this.nsp}:h`]: { namespaceURI: sldNs, value: newH },
-                // },
-                attributesNS: {
-                    [sldNs]: {
-                        [`${this.nsp}:w`]: newW,
-                        [`${this.nsp}:h`]: newH,
-                    },
-                },
-            }));
+            const resizeEdit = updateSLDAttributes(this.substation, this.nsp, {
+                w: newW,
+                h: newH,
+            });
+            this.dispatchEvent(newEditEventV2(resizeEdit));
         }}
           >resize</mwc-button
         >
@@ -2292,7 +2230,7 @@ let SLDEditor = class SLDEditor extends LitElement {
             ? 'all'
             : 'none';
         sections.forEach(section => {
-            const busBar = xmlBoolean(section.getAttribute('bus'));
+            const busBar = xmlBoolean(section.getAttributeNS(sldNs, 'bus'));
             const vertices = Array.from(section.getElementsByTagNameNS(sldNs, 'Vertex'));
             let i = 0;
             while (i < vertices.length - 1) {
@@ -2312,7 +2250,8 @@ let SLDEditor = class SLDEditor extends LitElement {
                     handleContextMenu = (e) => this.openMenu(bay, e);
                 }
                 if (busBar && this.resizingBR === bay) {
-                    if (section !== sections.find(s => xmlBoolean(s.getAttribute('bus'))))
+                    if (section !==
+                        sections.find(s => xmlBoolean(s.getAttributeNS(sldNs, 'bus'))))
                         return;
                     circles.length = 0;
                     const { pos: [vX, vY], dim: [vW, vH], } = attributes(bay.parentElement);

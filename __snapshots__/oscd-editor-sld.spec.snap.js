@@ -1,8 +1,8 @@
 /* @web/test-runner snapshot v1 */
 export const snapshots = {};
 
-snapshots["SLD Editor given a voltage level opens a menu on voltage level right click"] = 
-`<menu
+snapshots["SLD Editor given a voltage level opens a menu on voltage level right click"] =
+  `<menu
   id="sld-context-menu"
   style="top: -73px; left: 0px;"
 >
@@ -103,22 +103,25 @@ snapshots["SLD Editor given a voltage level opens a menu on voltage level right 
 `;
 /* end snapshot SLD Editor given a voltage level opens a menu on voltage level right click */
 
-snapshots["SLD Editor given a voltage level allows placing a new bus bar"] = 
-`<Bay
-  h="8"
-  lx="5"
-  ly="3"
-  name="BB1"
-  smth:w="1"
-  x="5"
-  y="3"
->
+snapshots["SLD Editor given a voltage level allows placing a new bus bar"] =
+  `<Bay name="BB1">
+  <Private type="OpenSCD-SLD-Layout">
+    <SLDAttributes
+      smth:h="8"
+      smth:lx="5"
+      smth:ly="3"
+      smth:w="1"
+      smth:x="5"
+      smth:y="3"
+    >
+    </SLDAttributes>
+  </Private>
   <ConnectivityNode
     name="L"
     pathName="S1/V1/BB1/L"
   >
-    <Private type="Transpower-SLD-Vertices">
-      <Section bus="true">
+    <Private type="OpenSCD-SLD-Layout">
+      <Section smth:bus="true">
         <Vertex
           smth:x="5.5"
           smth:y="3.5"
@@ -136,61 +139,76 @@ snapshots["SLD Editor given a voltage level allows placing a new bus bar"] =
 `;
 /* end snapshot SLD Editor given a voltage level allows placing a new bus bar */
 
-snapshots["SLD Editor given a bay updates reparented bays' connectivity node paths"] = 
-`<SCL
+snapshots["SLD Editor given a bay updates reparented bays' connectivity node paths"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-    </VoltageLevel>
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="3"
-        esld:lx="18"
-        esld:ly="3"
-        esld:w="3"
-        esld:x="18"
-        esld:y="3"
-        name="B2"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+    </VoltageLevel>
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B2">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="3"
+            eosld:lx="18"
+            eosld:ly="3"
+            eosld:w="3"
+            eosld:x="18"
+            eosld:y="3"
+          >
+          </SLDAttributes>
+        </Private>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B2/L1"
         >
         </ConnectivityNode>
       </Bay>
-      <Bay
-        esld:h="1"
-        esld:lx="20"
-        esld:ly="11"
-        esld:w="1"
-        esld:x="20"
-        esld:y="11"
-        name="B1"
-      >
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="1"
+            eosld:lx="20"
+            eosld:ly="11"
+            eosld:w="1"
+            eosld:x="20"
+            eosld:y="11"
+          >
+          </SLDAttributes>
+        </Private>
       </Bay>
     </VoltageLevel>
   </Substation>
@@ -198,149 +216,209 @@ snapshots["SLD Editor given a bay updates reparented bays' connectivity node pat
 `;
 /* end snapshot SLD Editor given a bay updates reparented bays' connectivity node paths */
 
-snapshots["SLD Editor given conducting equipment copies equipment on shift click"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment copies equipment on shift click"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="2.5"
-          esld:ly="3"
-          esld:rot="1"
-          esld:x="3"
-          esld:y="3"
           name="CBR2"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="2.5"
+              eosld:ly="3"
+              eosld:rot="1"
+              eosld:x="3"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -349,8 +427,8 @@ snapshots["SLD Editor given conducting equipment copies equipment on shift click
 `;
 /* end snapshot SLD Editor given conducting equipment copies equipment on shift click */
 
-snapshots["SLD Editor given conducting equipment opens a menu on equipment right click"] = 
-`<menu
+snapshots["SLD Editor given conducting equipment opens a menu on equipment right click"] =
+  `<menu
   id="sld-context-menu"
   style="top: 477px; left: 750px;"
 >
@@ -509,46 +587,60 @@ snapshots["SLD Editor given conducting equipment opens a menu on equipment right
 `;
 /* end snapshot SLD Editor given conducting equipment opens a menu on equipment right click */
 
-snapshots["SLD Editor given conducting equipment grounds equipment on connection point right click"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment grounds equipment on connection point right click"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="grounded"
@@ -575,95 +667,136 @@ snapshots["SLD Editor given conducting equipment grounds equipment on connection
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -672,223 +805,60 @@ snapshots["SLD Editor given conducting equipment grounds equipment on connection
 `;
 /* end snapshot SLD Editor given conducting equipment grounds equipment on connection point right click */
 
-snapshots["SLD Editor given conducting equipment connects equipment on connection point and equipment click"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment connects equipment on connect menu item select"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B1/L1"
-            name="T2"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-        </ConductingEquipment>
-        <ConnectivityNode
-          name="L1"
-          pathName="S1/V1/B1/L1"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section>
-              <Vertex
-                esld:x="4.16"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
           </Private>
-        </ConnectivityNode>
-      </Bay>
-    </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
-          name="CTR1"
-          type="CTR"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
-          name="DIS1"
-          type="DIS"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B1/L1"
-            name="T2"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
-          name="NEW1"
-          type="NEW"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
-          name="VTR1"
-          type="VTR"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
-          name="DIS2"
-          type="DIS"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
-          name="BAT1"
-          type="BAT"
-        >
-          <Terminal name="erroneous">
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
-          name="SMC1"
-          type="SMC"
-        >
-        </ConductingEquipment>
-      </Bay>
-    </VoltageLevel>
-  </Substation>
-</SCL>
-`;
-/* end snapshot SLD Editor given conducting equipment connects equipment on connection point and equipment click */
-
-snapshots["SLD Editor given conducting equipment connects equipment on connect menu item select"] = 
-`<SCL
-  revision="B"
-  version="2007"
-  xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
->
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
-          name="CBR1"
-          type="CBR"
-        >
           <Terminal
             bayName="B1"
             cNodeName="L2"
@@ -897,6 +867,10 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -906,27 +880,31 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L2"
           pathName="S1/V1/B1/L2"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.16"
-                esld:y="4.5"
+                eosld:x="4.16"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="19.5"
-                esld:y="4.5"
+                eosld:x="19.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="19.5"
-                esld:y="3.16"
+                eosld:x="19.5"
+                eosld:y="3.16"
               >
               </Vertex>
             </Section>
@@ -936,26 +914,26 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17"
-                esld:y="4.5"
+                eosld:x="17"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17"
-                esld:y="3.5"
+                eosld:x="17"
+                eosld:y="3.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.16"
-                esld:y="3.5"
+                eosld:x="17.16"
+                eosld:y="3.5"
               >
               </Vertex>
             </Section>
@@ -963,33 +941,44 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -998,17 +987,26 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L2"
@@ -1017,6 +1015,10 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -1026,17 +1028,26 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L2"
@@ -1045,17 +1056,26 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -1064,17 +1084,26 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L2"
@@ -1083,49 +1112,63 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L2"
           pathName="S1/V2/B1/L2"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="20.5"
-                esld:y="4.5"
+                eosld:x="20.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="20.5"
-                esld:y="4.84"
+                eosld:x="20.5"
+                eosld:y="4.84"
               >
               </Vertex>
             </Section>
@@ -1135,26 +1178,26 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="18.84"
-                esld:y="4.5"
+                eosld:x="18.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="4.5"
+                eosld:x="18"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -1167,36 +1210,45 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
 `;
 /* end snapshot SLD Editor given conducting equipment connects equipment on connect menu item select */
 
-snapshots["SLD Editor given conducting equipment retargets grounded terminals when reparenting equipment"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment retargets grounded terminals when reparenting equipment"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConnectivityNode
           name="grounded"
           pathName="S1/V1/B1/grounded"
@@ -1204,34 +1256,45 @@ snapshots["SLD Editor given conducting equipment retargets grounded terminals wh
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="18.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="19"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="18.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="19"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="grounded"
@@ -1243,76 +1306,111 @@ snapshots["SLD Editor given conducting equipment retargets grounded terminals wh
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="grounded"
@@ -1326,46 +1424,60 @@ snapshots["SLD Editor given conducting equipment retargets grounded terminals wh
 `;
 /* end snapshot SLD Editor given conducting equipment retargets grounded terminals when reparenting equipment */
 
-snapshots["SLD Editor given conducting equipment with established connectivity uniquely names new connectivity nodes"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity uniquely names new connectivity nodes"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L2"
@@ -1374,6 +1486,10 @@ snapshots["SLD Editor given conducting equipment with established connectivity u
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -1383,32 +1499,36 @@ snapshots["SLD Editor given conducting equipment with established connectivity u
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L2"
           pathName="S1/V1/B1/L2"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.16"
-                esld:y="4.5"
+                eosld:x="4.16"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17"
-                esld:y="4.5"
+                eosld:x="17"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17"
-                esld:y="5.5"
+                eosld:x="17"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -1418,16 +1538,16 @@ snapshots["SLD Editor given conducting equipment with established connectivity u
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -1435,33 +1555,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity u
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L2"
@@ -1470,17 +1601,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity u
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -1489,59 +1629,88 @@ snapshots["SLD Editor given conducting equipment with established connectivity u
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -1550,46 +1719,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity u
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity uniquely names new connectivity nodes */
 
-snapshots["SLD Editor given conducting equipment with established connectivity connects equipment on connection point and connectivity node click"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity connects equipment on connection point and connectivity node click"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -1598,51 +1781,55 @@ snapshots["SLD Editor given conducting equipment with established connectivity c
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
+                eosld:x="11.5"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -1650,33 +1837,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity c
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -1685,17 +1883,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity c
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -1704,59 +1911,88 @@ snapshots["SLD Editor given conducting equipment with established connectivity c
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -1765,46 +2001,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity c
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity connects equipment on connection point and connectivity node click */
 
-snapshots["SLD Editor given conducting equipment with established connectivity avoids short circuit connections"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity avoids short circuit connections"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -1813,22 +2063,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity a
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -1836,43 +2090,59 @@ snapshots["SLD Editor given conducting equipment with established connectivity a
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -1881,59 +2151,88 @@ snapshots["SLD Editor given conducting equipment with established connectivity a
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -1942,46 +2241,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity a
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity avoids short circuit connections */
 
-snapshots["SLD Editor given conducting equipment with established connectivity keeps connection paths simple"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity keeps connection paths simple"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -1990,97 +2303,101 @@ snapshots["SLD Editor given conducting equipment with established connectivity k
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="8.5"
-                esld:y="4.5"
+                eosld:x="8.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="8.5"
-                esld:y="5.5"
+                eosld:x="8.5"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="8.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="8.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="10"
-                esld:y="4.5"
+                eosld:x="8.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="10"
-                esld:y="4.5"
+                eosld:x="8.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="19.5"
-                esld:y="3.84"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="19.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="8.5"
-                esld:y="4.5"
+                eosld:x="10"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="3.5"
+                eosld:x="10"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="10"
-                esld:y="3.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="19.5"
+                eosld:y="3.84"
               >
               </Vertex>
               <Vertex
-                esld:x="10"
-                esld:y="4.5"
+                eosld:x="19.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="8.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="17.16"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="10"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="10"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -2088,33 +2405,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity k
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2123,17 +2451,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity k
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2142,17 +2479,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity k
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2161,17 +2507,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity k
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2180,39 +2535,58 @@ snapshots["SLD Editor given conducting equipment with established connectivity k
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -2221,46 +2595,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity k
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity keeps connection paths simple */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment on rotation"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment on rotation"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2269,22 +2657,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -2292,43 +2684,59 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="0"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="0"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2337,57 +2745,86 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="0"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="0"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -2396,76 +2833,101 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment on rotation */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies horizontal connection paths when disconnecting"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies horizontal connection paths when disconnecting"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="2"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="2"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2474,6 +2936,10 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -2483,17 +2949,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L2"
@@ -2502,27 +2977,41 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L2"
@@ -2531,27 +3020,41 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2560,73 +3063,82 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L2"
           pathName="S1/V2/B1/L2"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="8.5"
-                esld:y="4.5"
+                eosld:x="8.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="8.5"
-                esld:y="3.5"
+                eosld:x="8.5"
+                eosld:y="3.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.16"
-                esld:y="3.5"
+                eosld:x="17.16"
+                eosld:y="3.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
+                eosld:x="11.5"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -2636,26 +3148,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -2668,46 +3180,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies horizontal connection paths when disconnecting */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies vertical connection paths when disconnecting"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies vertical connection paths when disconnecting"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2716,51 +3242,55 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
+                eosld:x="11.5"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -2768,33 +3298,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2803,6 +3344,10 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -2812,17 +3357,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2831,47 +3385,71 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2880,44 +3458,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -2930,46 +3517,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies vertical connection paths when disconnecting */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies when disconnecting only where possible"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies when disconnecting only where possible"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -2978,80 +3579,84 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="8.5"
-                esld:y="4.5"
+                eosld:x="8.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="8.5"
-                esld:y="4.5"
+                eosld:x="8.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="3.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="8.5"
-                esld:y="3.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="17.16"
+                eosld:y="3.5"
               >
               </Vertex>
               <Vertex
-                esld:x="8.5"
-                esld:y="4.5"
+                eosld:x="8.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="8.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -3059,33 +3664,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3094,6 +3710,10 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -3103,17 +3723,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3122,27 +3751,41 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3151,27 +3794,41 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3180,44 +3837,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -3230,56 +3896,75 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies when disconnecting only where possible */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment upon being moved"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment upon being moved"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="3"
-          esld:ly="2.5"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="2"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3"
+              eosld:ly="2.5"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="2"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3288,32 +3973,36 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
+                eosld:x="11.5"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -3321,33 +4010,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3356,6 +4056,10 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -3365,47 +4069,71 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3414,44 +4142,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -3464,138 +4201,193 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment upon being moved */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment removes superfluous connectivity nodes when disconnecting"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment removes superfluous connectivity nodes when disconnecting"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="0"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="0"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="2"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="2"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -3604,45 +4396,59 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment removes superfluous connectivity nodes when disconnecting */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment keeps internal connectivity nodes when moving containers"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment keeps internal connectivity nodes when moving containers"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S2"
-  >
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="14"
-      esld:ly="2"
-      esld:w="23"
-      esld:x="14"
-      esld:y="2"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="15"
-        esld:ly="3"
-        esld:w="6"
-        esld:x="15"
-        esld:y="3"
-        name="B1"
+  <Substation name="S2">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="14"
+          eosld:ly="2"
+          eosld:w="23"
+          eosld:x="14"
+          eosld:y="2"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="15"
+            eosld:ly="3"
+            eosld:w="6"
+            eosld:x="15"
+            eosld:y="3"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="16"
-          esld:ly="8.5"
-          esld:rot="3"
-          esld:x="16"
-          esld:y="6"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="16"
+              eosld:ly="8.5"
+              eosld:rot="3"
+              eosld:x="16"
+              eosld:y="6"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3651,57 +4457,86 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S2"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="16"
-          esld:ly="5.5"
-          esld:rot="1"
-          esld:x="17"
-          esld:y="5"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="16"
+              eosld:ly="5.5"
+              eosld:rot="1"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="4.5"
-          esld:rot="2"
-          esld:x="18"
-          esld:y="4"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="4.5"
+              eosld:rot="2"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="16"
-          esld:ly="4"
-          esld:rot="3"
-          esld:x="16"
-          esld:y="4"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="16"
+              eosld:ly="4"
+              eosld:rot="3"
+              eosld:x="16"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="6"
-          esld:rot="0"
-          esld:x="19"
-          esld:y="5"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="6"
+              eosld:rot="0"
+              eosld:x="19"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="18"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="18"
-          esld:y="8"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="18"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="18"
+              eosld:y="8"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3710,44 +4545,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S2"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="9"
-          esld:rot="3"
-          esld:x="20"
-          esld:y="8"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="9"
+              eosld:rot="3"
+              eosld:x="20"
+              eosld:y="8"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S2/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="18.16"
-                esld:y="8.5"
+                eosld:x="18.16"
+                eosld:y="8.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17"
-                esld:y="8.5"
+                eosld:x="17"
+                eosld:y="8.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17"
-                esld:y="6.5"
+                eosld:x="17"
+                eosld:y="6.5"
               >
               </Vertex>
               <Vertex
-                esld:x="16.84"
-                esld:y="6.5"
+                eosld:x="16.84"
+                eosld:y="6.5"
               >
               </Vertex>
             </Section>
@@ -3756,39 +4600,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
       </Bay>
     </VoltageLevel>
   </Substation>
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -3797,46 +4655,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment keeps internal connectivity nodes when moving containers */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes conducting equipment on delete menu item select"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes conducting equipment on delete menu item select"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3845,22 +4717,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -3868,33 +4744,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -3903,59 +4790,88 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -3964,55 +4880,72 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes conducting equipment on delete menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes bays on delete menu item select"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes bays on delete menu item select"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-    </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+    </VoltageLevel>
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -4021,57 +4954,86 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -4080,44 +5042,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -4130,46 +5101,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes bays on delete menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes voltage levels on delete menu item select"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes voltage levels on delete menu item select"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
@@ -4178,105 +5163,133 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes voltage levels on delete menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar keeps the bus bar when moving containers"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar keeps the bus bar when moving containers"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:w="2"
-        h="1"
-        lx="12"
-        ly="3"
-        name="BB1"
-        x="12"
-        y="3"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="BB1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="1"
+            eosld:lx="12"
+            eosld:ly="3"
+            eosld:w="2"
+            eosld:x="12"
+            eosld:y="3"
+          >
+          </SLDAttributes>
+        </Private>
         <ConnectivityNode
           name="L"
           pathName="S1/V1/BB1/L"
         >
-          <Private type="Transpower-SLD-Vertices">
-            <Section bus="true">
+          <Private type="OpenSCD-SLD-Layout">
+            <Section eosld:bus="true">
               <Vertex
-                esld:x="12.5"
-                esld:y="3.5"
+                eosld:x="12.5"
+                eosld:y="3.5"
               >
               </Vertex>
               <Vertex
-                esld:x="13.5"
-                esld:y="3.5"
+                eosld:x="13.5"
+                eosld:y="3.5"
               >
               </Vertex>
             </Section>
           </Private>
         </ConnectivityNode>
       </Bay>
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
-      >
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="3"
-        esld:w="6"
-        esld:x="16"
-        esld:y="3"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="3"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="3"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="8.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="6"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="8.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="6"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -4285,57 +5298,86 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="5.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="5"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="5.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="4.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="4"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="4.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="4"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="6"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="5"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="6"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="8"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="8"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -4344,44 +5386,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="9"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="8"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="9"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="8"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="8.5"
+                eosld:x="19.16"
+                eosld:y="8.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="8.5"
+                eosld:x="18"
+                eosld:y="8.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="6.5"
+                eosld:x="18"
+                eosld:y="6.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="6.5"
+                eosld:x="17.84"
+                eosld:y="6.5"
               >
               </Vertex>
             </Section>
@@ -4394,133 +5445,424 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar keeps the bus bar when moving containers */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar does not merge bus bar sections with feeder sections"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment connects equipment on connection point and equipment click"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:w="2"
-        h="1"
-        lx="12"
-        ly="3"
-        name="BB1"
-        x="12"
-        y="3"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
-        <ConnectivityNode
-          name="L"
-          pathName="S1/V1/BB1/L"
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
         >
-          <Private type="Transpower-SLD-Vertices">
-            <Section bus="true">
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          desc="CBR description"
+          name="CBR1"
+          type="CBR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T2"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConnectivityNode
+          name="L1"
+          pathName="S1/V1/B1/L1"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section>
               <Vertex
-                esld:x="12.5"
-                esld:y="3.5"
+                eosld:x="4.16"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="13.5"
-                esld:y="3.5"
+                eosld:x="17"
+                eosld:y="4.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="17"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
           </Private>
         </ConnectivityNode>
       </Bay>
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="2"
-          esld:x="4"
-          esld:y="4"
-          name="CBR1"
-          type="CBR"
-        >
-        </ConductingEquipment>
-      </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
-            connectivityNode="S1/V2/B1/L1"
-            name="T2"
-            substationName="S1"
-            voltageLevelName="V2"
-          >
-          </Terminal>
-          <Terminal
-            bayName="B1"
-            cNodeName="L2"
-            connectivityNode="S1/V2/B1/L2"
+            connectivityNode="S1/V1/B1/L1"
             name="T1"
             substationName="S1"
-            voltageLevelName="V2"
+            voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="NEW1"
+          type="NEW"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="VTR1"
+          type="VTR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="DIS2"
+          type="DIS"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="BAT1"
+          type="BAT"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal name="erroneous">
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="SMC1"
+          type="SMC"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+      </Bay>
+    </VoltageLevel>
+  </Substation>
+</SCL>
+`;
+/* end snapshot SLD Editor given conducting equipment connects equipment on connection point and equipment click */
+
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar does not merge bus bar sections with feeder sections"] =
+  `<SCL
+  revision="B"
+  version="2007"
+  xmlns="http://www.iec.ch/61850/2003/SCL"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
+>
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
+      >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="BB1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="1"
+            eosld:lx="12"
+            eosld:ly="3"
+            eosld:w="2"
+            eosld:x="12"
+            eosld:y="3"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConnectivityNode
+          name="L"
+          pathName="S1/V1/BB1/L"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section eosld:bus="true">
+              <Vertex
+                eosld:x="12.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="13.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          desc="CBR description"
+          name="CBR1"
+          type="CBR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="2"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+      </Bay>
+    </VoltageLevel>
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          name="CTR1"
+          type="CTR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V2/B1/L1"
+            name="T2"
+            substationName="S1"
+            voltageLevelName="V2"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+          <Terminal
+            bayName="B1"
+            cNodeName="L2"
+            connectivityNode="S1/V2/B1/L2"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V2"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="DIS1"
+          type="DIS"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L2"
@@ -4529,47 +5871,71 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -4578,44 +5944,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L2"
           pathName="S1/V2/B1/L2"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
+                eosld:x="11.5"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -4625,26 +6000,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -4657,75 +6032,92 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar does not merge bus bar sections with feeder sections */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar resizes the bus bar on resize menu item select"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar resizes the bus bar on resize menu item select"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:w="1"
-        h="2"
-        lx="12"
-        ly="3"
-        name="BB1"
-        x="12"
-        y="3"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="BB1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="2"
+            eosld:lx="12"
+            eosld:ly="3"
+            eosld:w="1"
+            eosld:x="12"
+            eosld:y="3"
+          >
+          </SLDAttributes>
+        </Private>
         <ConnectivityNode
           name="L"
           pathName="S1/V1/BB1/L"
         >
-          <Private type="Transpower-SLD-Vertices">
-            <Section bus="true">
+          <Private type="OpenSCD-SLD-Layout">
+            <Section eosld:bus="true">
               <Vertex
-                esld:x="12.5"
-                esld:y="3.5"
+                eosld:x="12.5"
+                eosld:y="3.5"
               >
               </Vertex>
               <Vertex
-                esld:x="12.5"
-                esld:y="4.5"
+                eosld:x="12.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
           </Private>
         </ConnectivityNode>
       </Bay>
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
-      >
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -4734,51 +6126,55 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
+                eosld:x="11.5"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -4786,33 +6182,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -4821,6 +6228,10 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -4830,17 +6241,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -4849,47 +6269,71 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -4898,44 +6342,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -4948,98 +6401,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar resizes the bus bar on resize menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies equipment on copy menu item select"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar deletes the bus bar on delete menu item select"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:w="2"
-        h="1"
-        lx="12"
-        ly="3"
-        name="BB1"
-        x="12"
-        y="3"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
-        <ConnectivityNode
-          name="L"
-          pathName="S1/V1/BB1/L"
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
         >
-          <Private type="Transpower-SLD-Vertices">
-            <Section bus="true">
-              <Vertex
-                esld:x="12.5"
-                esld:y="3.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="13.5"
-                esld:y="3.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="17.16"
-                esld:y="3.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="13.5"
-                esld:y="3.5"
-              >
-              </Vertex>
-            </Section>
-          </Private>
-        </ConnectivityNode>
-      </Bay>
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
-      >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="2.5"
-          esld:ly="3"
-          esld:rot="1"
-          esld:x="3"
-          esld:y="3"
-          name="CBR2"
-          type="CBR"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
           name="CBR1"
           type="CBR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -5048,51 +6463,55 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
+                eosld:x="11.5"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -5100,33 +6519,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -5135,6 +6565,10 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -5144,17 +6578,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -5163,56 +6606,71 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
-          <Terminal
-            bayName="BB1"
-            cNodeName="L"
-            connectivityNode="S1/V1/BB1/L"
-            name="T1"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -5221,597 +6679,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
-              >
-              </Vertex>
-            </Section>
-          </Private>
-        </ConnectivityNode>
-      </Bay>
-    </VoltageLevel>
-  </Substation>
-</SCL>
-`;
-/* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies equipment on copy menu item select */
-
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar moves the bus bar on move menu item select"] = 
-`<SCL
-  revision="B"
-  version="2007"
-  xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
->
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:w="2"
-        h="1"
-        lx="1"
-        ly="4"
-        name="BB1"
-        x="1"
-        y="4"
-      >
-        <ConnectivityNode
-          name="L"
-          pathName="S1/V1/BB1/L"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section bus="true">
-              <Vertex
-                esld:x="1.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="2.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-          </Private>
-        </ConnectivityNode>
-      </Bay>
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
-          name="CBR1"
-          type="CBR"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B1/L1"
-            name="T1"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-        </ConductingEquipment>
-        <ConnectivityNode
-          name="L1"
-          pathName="S1/V1/B1/L1"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section>
-              <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-          </Private>
-        </ConnectivityNode>
-      </Bay>
-    </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
-          name="CTR1"
-          type="CTR"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V2/B1/L1"
-            name="T2"
-            substationName="S1"
-            voltageLevelName="V2"
-          >
-          </Terminal>
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B1/L1"
-            name="T1"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
-          name="DIS1"
-          type="DIS"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B1/L1"
-            name="T2"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
-          name="NEW1"
-          type="NEW"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
-          name="VTR1"
-          type="VTR"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
-          name="DIS2"
-          type="DIS"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
-          name="BAT1"
-          type="BAT"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V2/B1/L1"
-            name="T1"
-            substationName="S1"
-            voltageLevelName="V2"
-          >
-          </Terminal>
-          <Terminal name="erroneous">
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
-          name="SMC1"
-          type="SMC"
-        >
-        </ConductingEquipment>
-        <ConnectivityNode
-          name="L1"
-          pathName="S1/V2/B1/L1"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section>
-              <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="18"
-                esld:y="7.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="18"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
-              >
-              </Vertex>
-            </Section>
-          </Private>
-        </ConnectivityNode>
-      </Bay>
-    </VoltageLevel>
-  </Substation>
-</SCL>
-`;
-/* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar moves the bus bar on move menu item select */
-
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar deletes the bus bar on delete menu item select"] = 
-`<SCL
-  revision="B"
-  version="2007"
-  xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
->
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
-          name="CBR1"
-          type="CBR"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B1/L1"
-            name="T1"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-        </ConductingEquipment>
-        <ConnectivityNode
-          name="L1"
-          pathName="S1/V1/B1/L1"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section>
-              <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-          </Private>
-        </ConnectivityNode>
-      </Bay>
-    </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
-          name="CTR1"
-          type="CTR"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V2/B1/L1"
-            name="T2"
-            substationName="S1"
-            voltageLevelName="V2"
-          >
-          </Terminal>
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B1/L1"
-            name="T1"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
-          name="DIS1"
-          type="DIS"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B1/L1"
-            name="T2"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
-          name="NEW1"
-          type="NEW"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
-          name="VTR1"
-          type="VTR"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
-          name="DIS2"
-          type="DIS"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
-          name="BAT1"
-          type="BAT"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V2/B1/L1"
-            name="T1"
-            substationName="S1"
-            voltageLevelName="V2"
-          >
-          </Terminal>
-          <Terminal name="erroneous">
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
-          name="SMC1"
-          type="SMC"
-        >
-        </ConductingEquipment>
-        <ConnectivityNode
-          name="L1"
-          pathName="S1/V2/B1/L1"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section>
-              <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="18"
-                esld:y="7.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="18"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -5824,45 +6738,59 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar deletes the bus bar on delete menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies bays on copy menu item select"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies bays on copy menu item select"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="5"
-        esld:ly="8"
-        esld:w="6"
-        esld:x="5"
-        esld:y="8"
-        name="B2"
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B2">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="5"
+            eosld:ly="8"
+            eosld:w="6"
+            eosld:x="5"
+            eosld:y="8"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="6"
-          esld:ly="13.5"
-          esld:rot="3"
-          esld:x="6"
-          esld:y="11"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="6"
+              eosld:ly="13.5"
+              eosld:rot="3"
+              eosld:x="6"
+              eosld:y="11"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B2"
             cNodeName="L1"
@@ -5871,264 +6799,10 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="6"
-          esld:ly="10.5"
-          esld:rot="1"
-          esld:x="7"
-          esld:y="10"
-          name="DIS1"
-          type="DIS"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="9"
-          esld:ly="9.5"
-          esld:rot="2"
-          esld:x="8"
-          esld:y="9"
-          name="NEW1"
-          type="NEW"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="6"
-          esld:ly="9"
-          esld:rot="3"
-          esld:x="6"
-          esld:y="9"
-          name="VTR1"
-          type="VTR"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="10"
-          esld:ly="11"
-          esld:rot="0"
-          esld:x="9"
-          esld:y="10"
-          name="DIS2"
-          type="DIS"
-        >
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="8"
-          esld:ly="13"
-          esld:rot="3"
-          esld:x="8"
-          esld:y="13"
-          name="BAT1"
-          type="BAT"
-        >
-          <Terminal
-            bayName="B2"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B2/L1"
-            name="T1"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-          <Terminal name="erroneous">
-          </Terminal>
-        </ConductingEquipment>
-        <ConductingEquipment
-          esld:lx="11"
-          esld:ly="14"
-          esld:rot="3"
-          esld:x="10"
-          esld:y="13"
-          name="SMC1"
-          type="SMC"
-        >
-        </ConductingEquipment>
-        <ConnectivityNode
-          name="L1"
-          pathName="S1/V1/B2/L1"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section>
-              <Vertex
-                esld:x="8.16"
-                esld:y="13.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="7"
-                esld:y="13.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="7"
-                esld:y="11.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="6.84"
-                esld:y="11.5"
-              >
-              </Vertex>
-            </Section>
-          </Private>
-        </ConnectivityNode>
-      </Bay>
-      <Bay
-        esld:w="2"
-        h="1"
-        lx="12"
-        ly="3"
-        name="BB1"
-        x="12"
-        y="3"
-      >
-        <ConnectivityNode
-          name="L"
-          pathName="S1/V1/BB1/L"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section bus="true">
-              <Vertex
-                esld:x="12.5"
-                esld:y="3.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="13.5"
-                esld:y="3.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="17.16"
-                esld:y="3.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="13.5"
-                esld:y="3.5"
-              >
-              </Vertex>
-            </Section>
-          </Private>
-        </ConnectivityNode>
-      </Bay>
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
-          name="CBR1"
-          type="CBR"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V1/B1/L1"
-            name="T1"
-            substationName="S1"
-            voltageLevelName="V1"
-          >
-          </Terminal>
-        </ConductingEquipment>
-        <ConnectivityNode
-          name="L1"
-          pathName="S1/V1/B1/L1"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section>
-              <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
-              >
-              </Vertex>
-            </Section>
-          </Private>
-        </ConnectivityNode>
-      </Bay>
-    </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
-          name="CTR1"
-          type="CTR"
-        >
-          <Terminal
-            bayName="B1"
-            cNodeName="L1"
-            connectivityNode="S1/V2/B1/L1"
-            name="T2"
-            substationName="S1"
-            voltageLevelName="V2"
-          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -6138,17 +6812,24 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="6"
+              eosld:ly="10.5"
+              eosld:rot="1"
+              eosld:x="7"
+              eosld:y="10"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -6157,27 +6838,39 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="9"
+              eosld:ly="9.5"
+              eosld:rot="2"
+              eosld:x="8"
+              eosld:y="9"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="6"
+              eosld:ly="9"
+              eosld:rot="3"
+              eosld:x="6"
+              eosld:y="9"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="BB1"
             cNodeName="L"
@@ -6186,27 +6879,400 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="10"
+              eosld:ly="11"
+              eosld:rot="0"
+              eosld:x="9"
+              eosld:y="10"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="8"
+              eosld:ly="13"
+              eosld:rot="3"
+              eosld:x="8"
+              eosld:y="13"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B2"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B2/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+          <Terminal name="erroneous">
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="SMC1"
+          type="SMC"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="11"
+              eosld:ly="14"
+              eosld:rot="3"
+              eosld:x="10"
+              eosld:y="13"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConnectivityNode
+          name="L1"
+          pathName="S1/V1/B2/L1"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section>
+              <Vertex
+                eosld:x="8.16"
+                eosld:y="13.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="7"
+                eosld:y="13.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="7"
+                eosld:y="11.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="6.84"
+                eosld:y="11.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+      <Bay name="BB1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="1"
+            eosld:lx="12"
+            eosld:ly="3"
+            eosld:w="2"
+            eosld:x="12"
+            eosld:y="3"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConnectivityNode
+          name="L"
+          pathName="S1/V1/BB1/L"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section eosld:bus="true">
+              <Vertex
+                eosld:x="12.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="13.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="17.16"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="13.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          desc="CBR description"
+          name="CBR1"
+          type="CBR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConnectivityNode
+          name="L1"
+          pathName="S1/V1/B1/L1"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section>
+              <Vertex
+                eosld:x="4.84"
+                eosld:y="4.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="17.16"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="18.16"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+    </VoltageLevel>
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          name="CTR1"
+          type="CTR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V2/B1/L1"
+            name="T2"
+            substationName="S1"
+            voltageLevelName="V2"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="DIS1"
+          type="DIS"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T2"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="NEW1"
+          type="NEW"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="VTR1"
+          type="VTR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="BB1"
+            cNodeName="L"
+            connectivityNode="S1/V1/BB1/L"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="DIS2"
+          type="DIS"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="BAT1"
+          type="BAT"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -6215,44 +7281,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -6265,124 +7340,60 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies bays on copy menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies voltage levels on move handle shift click"] = 
-`<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies voltage levels on move handle shift click"] =
+  `<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
-  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
 >
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S2"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="7"
-      esld:ly="7"
-      esld:w="13"
-      esld:x="7"
-      esld:y="7"
-      name="V1"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="8"
-        esld:ly="8"
-        esld:w="6"
-        esld:x="8"
-        esld:y="8"
-        name="B1"
+  <Substation name="S2">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
       >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="7"
+          eosld:ly="7"
+          eosld:w="13"
+          eosld:x="7"
+          eosld:y="7"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="8"
+            eosld:ly="8"
+            eosld:w="6"
+            eosld:x="8"
+            eosld:y="8"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
           desc="CBR description"
-          esld:lx="9.5"
-          esld:ly="10"
-          esld:rot="1"
-          esld:x="10"
-          esld:y="10"
           name="CBR1"
           type="CBR"
         >
-        </ConductingEquipment>
-      </Bay>
-    </VoltageLevel>
-  </Substation>
-  <Substation
-    esld:h="25"
-    esld:w="50"
-    name="S1"
-  >
-    <VoltageLevel
-      esld:h="13"
-      esld:lx="1"
-      esld:ly="1"
-      esld:w="13"
-      esld:x="1"
-      esld:y="1"
-      name="V1"
-    >
-      <Bay
-        esld:w="2"
-        h="1"
-        lx="12"
-        ly="3"
-        name="BB1"
-        x="12"
-        y="3"
-      >
-        <ConnectivityNode
-          name="L"
-          pathName="S1/V1/BB1/L"
-        >
-          <Private type="Transpower-SLD-Vertices">
-            <Section bus="true">
-              <Vertex
-                esld:x="12.5"
-                esld:y="3.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="13.5"
-                esld:y="3.5"
-              >
-              </Vertex>
-            </Section>
-            <Section>
-              <Vertex
-                esld:x="17.16"
-                esld:y="3.5"
-              >
-              </Vertex>
-              <Vertex
-                esld:x="13.5"
-                esld:y="3.5"
-              >
-              </Vertex>
-            </Section>
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="9.5"
+              eosld:ly="10"
+              eosld:rot="1"
+              eosld:x="10"
+              eosld:y="10"
+            >
+            </SLDAttributes>
           </Private>
-        </ConnectivityNode>
-      </Bay>
-      <Bay
-        esld:h="6"
-        esld:lx="2"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="2"
-        esld:y="2"
-        name="B1"
-      >
-        <ConductingEquipment
-          desc="CBR description"
-          esld:lx="3.5"
-          esld:ly="4"
-          esld:rot="1"
-          esld:x="4"
-          esld:y="4"
-          name="CBR1"
-          type="CBR"
-        >
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -6391,51 +7402,161 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+      </Bay>
+    </VoltageLevel>
+  </Substation>
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
+      >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="BB1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="1"
+            eosld:lx="12"
+            eosld:ly="3"
+            eosld:w="2"
+            eosld:x="12"
+            eosld:y="3"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConnectivityNode
+          name="L"
+          pathName="S1/V1/BB1/L"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section eosld:bus="true">
+              <Vertex
+                eosld:x="12.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="13.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="17.16"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="13.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          desc="CBR description"
+          name="CBR1"
+          type="CBR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V1/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="4.84"
-                esld:y="4.5"
+                eosld:x="4.84"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="17.16"
-                esld:y="5.5"
+                eosld:x="17.16"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="5.5"
+                eosld:x="11.5"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
             <Section>
               <Vertex
-                esld:x="11.5"
-                esld:y="4.5"
+                eosld:x="11.5"
+                eosld:y="4.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18.16"
-                esld:y="4.5"
+                eosld:x="18.16"
+                eosld:y="4.5"
               >
               </Vertex>
             </Section>
@@ -6443,33 +7564,44 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
         </ConnectivityNode>
       </Bay>
     </VoltageLevel>
-    <VoltageLevel
-      esld:h="23"
-      esld:lx="15"
-      esld:ly="1"
-      esld:w="23"
-      esld:x="15"
-      esld:y="1"
-      name="V2"
-    >
-      <Bay
-        esld:h="6"
-        esld:lx="16"
-        esld:ly="2"
-        esld:w="6"
-        esld:x="16"
-        esld:y="2"
-        name="B1"
-      >
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="7.5"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="5"
           name="CTR1"
           type="CTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -6478,6 +7610,10 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal
             bayName="B1"
@@ -6487,17 +7623,26 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="4.5"
-          esld:rot="1"
-          esld:x="18"
-          esld:y="4"
           name="DIS1"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -6506,27 +7651,41 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="20"
-          esld:ly="3.5"
-          esld:rot="2"
-          esld:x="19"
-          esld:y="3"
           name="NEW1"
           type="NEW"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="17"
-          esld:ly="3"
-          esld:rot="3"
-          esld:x="17"
-          esld:y="3"
           name="VTR1"
           type="VTR"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="BB1"
             cNodeName="L"
@@ -6535,27 +7694,41 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V1"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="21"
-          esld:ly="5"
-          esld:rot="0"
-          esld:x="20"
-          esld:y="4"
           name="DIS2"
           type="DIS"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="19"
-          esld:ly="7"
-          esld:rot="3"
-          esld:x="19"
-          esld:y="7"
           name="BAT1"
           type="BAT"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
           <Terminal
             bayName="B1"
             cNodeName="L1"
@@ -6564,44 +7737,53 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
             substationName="S1"
             voltageLevelName="V2"
           >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
           </Terminal>
           <Terminal name="erroneous">
           </Terminal>
         </ConductingEquipment>
         <ConductingEquipment
-          esld:lx="22"
-          esld:ly="8"
-          esld:rot="3"
-          esld:x="21"
-          esld:y="7"
           name="SMC1"
           type="SMC"
         >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
         </ConductingEquipment>
         <ConnectivityNode
           name="L1"
           pathName="S1/V2/B1/L1"
         >
-          <Private type="Transpower-SLD-Vertices">
+          <Private type="OpenSCD-SLD-Layout">
             <Section>
               <Vertex
-                esld:x="19.16"
-                esld:y="7.5"
+                eosld:x="19.16"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="7.5"
+                eosld:x="18"
+                eosld:y="7.5"
               >
               </Vertex>
               <Vertex
-                esld:x="18"
-                esld:y="5.5"
+                eosld:x="18"
+                eosld:y="5.5"
               >
               </Vertex>
               <Vertex
-                esld:x="17.84"
-                esld:y="5.5"
+                eosld:x="17.84"
+                eosld:y="5.5"
               >
               </Vertex>
             </Section>
@@ -6613,4 +7795,783 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 </SCL>
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies voltage levels on move handle shift click */
+
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies equipment on copy menu item select"] =
+  `<SCL
+  revision="B"
+  version="2007"
+  xmlns="http://www.iec.ch/61850/2003/SCL"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
+>
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
+      >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="BB1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="1"
+            eosld:lx="12"
+            eosld:ly="3"
+            eosld:w="2"
+            eosld:x="12"
+            eosld:y="3"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConnectivityNode
+          name="L"
+          pathName="S1/V1/BB1/L"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section eosld:bus="true">
+              <Vertex
+                eosld:x="12.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="13.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="17.16"
+                eosld:y="3.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="13.5"
+                eosld:y="3.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          desc="CBR description"
+          name="CBR2"
+          type="CBR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="2.5"
+              eosld:ly="3"
+              eosld:rot="1"
+              eosld:x="3"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          desc="CBR description"
+          name="CBR1"
+          type="CBR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConnectivityNode
+          name="L1"
+          pathName="S1/V1/B1/L1"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section>
+              <Vertex
+                eosld:x="4.84"
+                eosld:y="4.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="17.16"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="18.16"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+    </VoltageLevel>
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          name="CTR1"
+          type="CTR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V2/B1/L1"
+            name="T2"
+            substationName="S1"
+            voltageLevelName="V2"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="DIS1"
+          type="DIS"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T2"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="NEW1"
+          type="NEW"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="VTR1"
+          type="VTR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="BB1"
+            cNodeName="L"
+            connectivityNode="S1/V1/BB1/L"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="DIS2"
+          type="DIS"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="BAT1"
+          type="BAT"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V2/B1/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V2"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+          <Terminal name="erroneous">
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="SMC1"
+          type="SMC"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConnectivityNode
+          name="L1"
+          pathName="S1/V2/B1/L1"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section>
+              <Vertex
+                eosld:x="19.16"
+                eosld:y="7.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="18"
+                eosld:y="7.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="18"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="17.84"
+                eosld:y="5.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+    </VoltageLevel>
+  </Substation>
+</SCL>
+`;
+/* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies equipment on copy menu item select */
+
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar moves the bus bar on move menu item select"] =
+  `<SCL
+  revision="B"
+  version="2007"
+  xmlns="http://www.iec.ch/61850/2003/SCL"
+  xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0"
+>
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <SLDAttributes
+        eosld:h="25"
+        eosld:w="50"
+      >
+      </SLDAttributes>
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="13"
+          eosld:lx="1"
+          eosld:ly="1"
+          eosld:w="13"
+          eosld:x="1"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="BB1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="1"
+            eosld:lx="1"
+            eosld:ly="4"
+            eosld:w="2"
+            eosld:x="1"
+            eosld:y="4"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConnectivityNode
+          name="L"
+          pathName="S1/V1/BB1/L"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section eosld:bus="true">
+              <Vertex
+                eosld:x="1.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="2.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="2"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="2"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          desc="CBR description"
+          name="CBR1"
+          type="CBR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="3.5"
+              eosld:ly="4"
+              eosld:rot="1"
+              eosld:x="4"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConnectivityNode
+          name="L1"
+          pathName="S1/V1/B1/L1"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section>
+              <Vertex
+                eosld:x="4.84"
+                eosld:y="4.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="17.16"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+            <Section>
+              <Vertex
+                eosld:x="11.5"
+                eosld:y="4.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="18.16"
+                eosld:y="4.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+    </VoltageLevel>
+    <VoltageLevel name="V2">
+      <Private type="OpenSCD-SLD-Layout">
+        <SLDAttributes
+          eosld:h="23"
+          eosld:lx="15"
+          eosld:ly="1"
+          eosld:w="23"
+          eosld:x="15"
+          eosld:y="1"
+        >
+        </SLDAttributes>
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <SLDAttributes
+            eosld:h="6"
+            eosld:lx="16"
+            eosld:ly="2"
+            eosld:w="6"
+            eosld:x="16"
+            eosld:y="2"
+          >
+          </SLDAttributes>
+        </Private>
+        <ConductingEquipment
+          name="CTR1"
+          type="CTR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="7.5"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="5"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V2/B1/L1"
+            name="T2"
+            substationName="S1"
+            voltageLevelName="V2"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="DIS1"
+          type="DIS"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="4.5"
+              eosld:rot="1"
+              eosld:x="18"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V1/B1/L1"
+            name="T2"
+            substationName="S1"
+            voltageLevelName="V1"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="NEW1"
+          type="NEW"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="20"
+              eosld:ly="3.5"
+              eosld:rot="2"
+              eosld:x="19"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="VTR1"
+          type="VTR"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="17"
+              eosld:ly="3"
+              eosld:rot="3"
+              eosld:x="17"
+              eosld:y="3"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="DIS2"
+          type="DIS"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="21"
+              eosld:ly="5"
+              eosld:rot="0"
+              eosld:x="20"
+              eosld:y="4"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="BAT1"
+          type="BAT"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="19"
+              eosld:ly="7"
+              eosld:rot="3"
+              eosld:x="19"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
+          <Terminal
+            bayName="B1"
+            cNodeName="L1"
+            connectivityNode="S1/V2/B1/L1"
+            name="T1"
+            substationName="S1"
+            voltageLevelName="V2"
+          >
+            <Private type="OpenSCD-SLD-Layout">
+              <SLDAttributes>
+              </SLDAttributes>
+            </Private>
+          </Terminal>
+          <Terminal name="erroneous">
+          </Terminal>
+        </ConductingEquipment>
+        <ConductingEquipment
+          name="SMC1"
+          type="SMC"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <SLDAttributes
+              eosld:lx="22"
+              eosld:ly="8"
+              eosld:rot="3"
+              eosld:x="21"
+              eosld:y="7"
+            >
+            </SLDAttributes>
+          </Private>
+        </ConductingEquipment>
+        <ConnectivityNode
+          name="L1"
+          pathName="S1/V2/B1/L1"
+        >
+          <Private type="OpenSCD-SLD-Layout">
+            <Section>
+              <Vertex
+                eosld:x="19.16"
+                eosld:y="7.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="18"
+                eosld:y="7.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="18"
+                eosld:y="5.5"
+              >
+              </Vertex>
+              <Vertex
+                eosld:x="17.84"
+                eosld:y="5.5"
+              >
+              </Vertex>
+            </Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+    </VoltageLevel>
+  </Substation>
+</SCL>
+`;
+/* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar moves the bus bar on move menu item select */
 

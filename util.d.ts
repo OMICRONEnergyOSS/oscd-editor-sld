@@ -1,6 +1,6 @@
 import { EditV2 } from '@openscd/oscd-api';
-export declare const privType = "Transpower-SLD-Vertices";
-export declare const sldNs = "https://transpower.co.nz/SCL/SSD/SLD/v0";
+export declare const privType = "OpenSCD-SLD-Layout";
+export declare const sldNs = "https://openscd.org/SCL/SSD/SLD/v0";
 export declare const xmlnsNs = "http://www.w3.org/2000/xmlns/";
 export declare const svgNs = "http://www.w3.org/2000/svg";
 export declare const xlinkNs = "http://www.w3.org/1999/xlink";
@@ -26,6 +26,11 @@ export type Attrs = {
 };
 export declare function isTransformerKind(kind: string | null): kind is TransformerKind;
 export declare function xmlBoolean(value?: string | null): boolean;
+export declare function setSLDAttributes(element: Element, nsPrefix: string, values: Record<string, string>): void;
+export declare function updateSLDAttributes(element: Element, nsPrefix: string, values: Partial<Record<string, string | null>>): EditV2;
+export declare function getSLDAttributes(element: Element, key: string): string | null;
+export declare function busSections(element: Element): Element[];
+export declare function nonBusSections(element: Element): Element[];
 export declare function isBusBar(element: Element): boolean;
 export declare function attributes(element: Element): Attrs;
 export declare function elementPath(element: Element, ...rest: string[]): string;

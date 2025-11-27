@@ -1,6 +1,6 @@
 import { getReference } from '@openscd/oscd-scl';
-export const privType = 'Transpower-SLD-Vertices';
-export const sldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
+export const privType = 'OpenSCD-SLD-Layout';
+export const sldNs = 'https://openscd.org/SCL/SSD/SLD/v0';
 export const xmlnsNs = 'http://www.w3.org/2000/xmlns/';
 export const svgNs = 'http://www.w3.org/2000/svg';
 export const xlinkNs = 'http://www.w3.org/1999/xlink';
@@ -59,9 +59,63 @@ export function isTransformerKind(kind) {
 export function xmlBoolean(value) {
     return ['true', '1'].includes(value?.trim() ?? 'false');
 }
+function sections(element) {
+    return Array.from(element.querySelectorAll(`:scope Private[type="${privType}"] > Section`));
+}
+function sldAttributes(element, nsPrefix) {
+    const sldAttrs = element.querySelector(`:scope > Private[type="${privType}"] > SLDAttributes`);
+    if (sldAttrs)
+        return sldAttrs;
+    if (!nsPrefix)
+        return null;
+    const priv = element.ownerDocument.createElement('Private');
+    priv.setAttribute('type', privType);
+    element.insertBefore(priv, getReference(element, 'Private'));
+    const sldAttrsNew = element.ownerDocument.createElementNS(sldNs, `${nsPrefix}:SLDAttributes`);
+    priv.insertBefore(sldAttrsNew, null);
+    return sldAttrsNew;
+}
+export function setSLDAttributes(element, nsPrefix, values) {
+    const isSectionOrVertex = ['Section', 'Vertex'].includes(element.localName);
+    if (isSectionOrVertex) {
+        Object.entries(values).forEach(([key, value]) => {
+            element.setAttributeNS(sldNs, `${nsPrefix}:${key}`, value);
+        });
+    }
+    else {
+        Object.entries(values).forEach(([key, value]) => sldAttributes(element, nsPrefix)?.setAttributeNS(sldNs, `${nsPrefix}:${key}`, value));
+    }
+}
+export function updateSLDAttributes(element, nsPrefix, values) {
+    const isSecOrVert = ['Section', 'Vertex'].includes(element.localName);
+    const toBeUpdated = isSecOrVert ? element : sldAttributes(element, nsPrefix);
+    return {
+        element: toBeUpdated,
+        attributesNS: {
+            [sldNs]: Object.fromEntries(Object.entries(values).map(([key, value]) => [
+                `${nsPrefix}:${key}`,
+                value,
+            ])),
+        },
+    };
+}
+export function getSLDAttributes(element, key) {
+    const isSecOrVert = ['Section', 'Vertex'].includes(element.localName);
+    if (isSecOrVert)
+        return element.getAttributeNS(sldNs, key);
+    return sldAttributes(element)?.getAttributeNS(sldNs, key) ?? null;
+}
+export function busSections(element) {
+    return sections(element).filter(section => getSLDAttributes(section, 'bus') === 'true');
+}
+export function nonBusSections(element) {
+    return sections(element).filter(section => !getSLDAttributes(section, 'bus'));
+}
+function containsBusSection(element) {
+    return busSections(element).length > 0;
+}
 export function isBusBar(element) {
-    return (element.tagName === 'Bay' &&
-        xmlBoolean(element.querySelector('Section[bus]')?.getAttribute('bus')));
+    return element.tagName === 'Bay' && containsBusSection(element);
 }
 export function attributes(element) {
     const [x, y, w, h, rotVal, labelX, labelY] = [
@@ -72,16 +126,16 @@ export function attributes(element) {
         'rot',
         'lx',
         'ly',
-    ].map(name => parseFloat(element.getAttributeNS(sldNs, name) ?? '0'));
-    const weight = parseInt(element.getAttributeNS(sldNs, 'weight') ?? '300', 10);
+    ].map(name => parseFloat(getSLDAttributes(element, name) ?? '0'));
+    const weight = parseInt(getSLDAttributes(element, 'weight') ?? '300', 10);
     const pos = [x, y].map(d => Math.max(0, d));
     const dim = [w, h].map(d => Math.max(1, d));
     const label = [labelX, labelY].map(d => Math.max(0, d));
-    const bus = xmlBoolean(element.getAttribute('bus'));
-    const flip = xmlBoolean(element.getAttributeNS(sldNs, 'flip'));
-    const kindVal = element.getAttributeNS(sldNs, 'kind');
+    const bus = xmlBoolean(getSLDAttributes(element, 'bus'));
+    const flip = xmlBoolean(getSLDAttributes(element, 'flip'));
+    const kindVal = getSLDAttributes(element, 'kind');
     const kind = isTransformerKind(kindVal) ? kindVal : 'default';
-    const color = element.getAttributeNS(sldNs, 'color') || '#000';
+    const color = getSLDAttributes(element, 'color') || '#000';
     const rot = (((rotVal % 4) + 4) % 4);
     return { pos, dim, label, flip, rot, bus, weight, color, kind };
 }
@@ -98,14 +152,15 @@ export function elementPath(element, ...rest) {
     return pathString(...pedigree, ...rest);
 }
 function collinear(v0, v1, v2) {
-    const [[x0, y0], [x1, y1], [x2, y2]] = [v0, v1, v2].map(vertex => ['x', 'y'].map(name => vertex.getAttributeNS(sldNs, name)));
+    const [[x0, y0], [x1, y1], [x2, y2]] = [v0, v1, v2].map(vertex => ['x', 'y'].map(name => getSLDAttributes(vertex, name)));
     return (x0 === x1 && x1 === x2) || (y0 === y1 && y1 === y2);
 }
 export function removeNode(node) {
     const edits = [];
-    if (xmlBoolean(node.querySelector(`Section[bus]`)?.getAttribute('bus'))) {
-        Array.from(node.querySelectorAll('Section:not([bus])')).forEach(section => edits.push({ node: section }));
-        const sections = Array.from(node.querySelectorAll('Section[bus]'));
+    if (containsBusSection(node)) {
+        nonBusSections(node).forEach(section => edits.push({ node: section }));
+        // eslint-disable-next-line no-shadow
+        const sections = busSections(node);
         const busSection = sections[0];
         Array.from(busSection.children)
             .slice(1)
@@ -128,10 +183,10 @@ function reverseSection(section) {
     return edits;
 }
 function healSectionCut(cut) {
-    const [x, y] = ['x', 'y'].map(name => cut.getAttributeNS(sldNs, name));
+    const [x, y] = ['x', 'y'].map(name => getSLDAttributes(cut, name));
     const isCut = (vertex) => vertex !== cut &&
-        vertex.getAttributeNS(sldNs, 'x') === x &&
-        vertex.getAttributeNS(sldNs, 'y') === y;
+        getSLDAttributes(vertex, 'x') === x &&
+        getSLDAttributes(vertex, 'y') === y;
     const cutVertices = Array.from(cut.closest('Private').getElementsByTagNameNS(sldNs, 'Section')).flatMap(section => Array.from(section.children).filter(isCut));
     const cutSections = cutVertices.map(v => v.parentElement);
     if (cutSections.length > 2)
@@ -271,7 +326,7 @@ export function removeTerminal(terminal) {
         return edits;
     }
     const priv = cNode?.querySelector(`Private[type="${privType}"]`);
-    const vertex = priv?.querySelector(`Vertex[*|uuid="${terminal.getAttributeNS(sldNs, 'uuid')}"]`);
+    const vertex = priv?.querySelector(`Vertex[*|uuid="${getSLDAttributes(terminal, 'uuid')}"]`);
     const section = vertex?.parentElement;
     if (!section)
         return edits;
