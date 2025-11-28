@@ -102,6 +102,8 @@ export class SldEditor extends LitElement {
 
   @property({ type: Boolean }) disabled = false;
 
+  @property() selectable: string[] = [];
+
   @state() gridSize = 32;
 
   @state() nsp = 'eoscd';
@@ -149,7 +151,6 @@ export class SldEditor extends LitElement {
         `xmlns:${this.nsp}`,
         sldNs
       );
-
   }
 
   reset() {
@@ -158,7 +159,9 @@ export class SldEditor extends LitElement {
     this.placing = undefined;
     this.placingLabel = undefined;
     this.connecting = undefined;
-    this.dispatchEvent(new CustomEvent('sld-editor-in-action', { detail: false }));
+    this.dispatchEvent(
+      new CustomEvent('sld-editor-in-action', { detail: false })
+    );
   }
 
   resetWithOffset() {
@@ -169,13 +172,17 @@ export class SldEditor extends LitElement {
   startResizingBottomRight(element: Element | undefined) {
     this.reset();
     this.resizingBR = element;
-    this.dispatchEvent(new CustomEvent('sld-editor-in-action', { detail: true }));
+    this.dispatchEvent(
+      new CustomEvent('sld-editor-in-action', { detail: true })
+    );
   }
 
   startResizingTopLeft(element: Element | undefined) {
     this.reset();
     this.resizingTL = element;
-    this.dispatchEvent(new CustomEvent('sld-editor-in-action', { detail: true }));
+    this.dispatchEvent(
+      new CustomEvent('sld-editor-in-action', { detail: true })
+    );
   }
 
   startPlacing(element: Element | undefined, offset: Point = [0, 0]) {
@@ -184,20 +191,26 @@ export class SldEditor extends LitElement {
     this.reset();
     this.placing = element;
     this.placingOffset = offset;
-    this.dispatchEvent(new CustomEvent('sld-editor-in-action', { detail: true }));
+    this.dispatchEvent(
+      new CustomEvent('sld-editor-in-action', { detail: true })
+    );
   }
 
   startPlacingLabel(element: Element | undefined, offset: Point = [0, 0]) {
     this.reset();
     this.placingLabel = element;
     this.placingOffset = offset;
-    this.dispatchEvent(new CustomEvent('sld-editor-in-action', { detail: true }));
+    this.dispatchEvent(
+      new CustomEvent('sld-editor-in-action', { detail: true })
+    );
   }
 
   startConnecting(detail: StartConnectDetail) {
     this.reset();
     this.connecting = detail;
-    this.dispatchEvent(new CustomEvent('sld-editor-in-action', { detail: true }));
+    this.dispatchEvent(
+      new CustomEvent('sld-editor-in-action', { detail: true })
+    );
   }
 
   rotateElement(element: Element) {
@@ -295,10 +308,10 @@ export class SldEditor extends LitElement {
         label: [descLX, descLY],
       } = attributes(descendant);
       const newAttributes: { x: string; y: string; lx?: string; ly?: string } =
-      {
-        x: (descX + dx).toString(),
-        y: (descY + dy).toString(),
-      };
+        {
+          x: (descX + dx).toString(),
+          y: (descY + dy).toString(),
+        };
       if (descendant.localName !== 'Vertex') {
         newAttributes.lx = (descLX + dx).toString();
         newAttributes.ly = (descLY + dy).toString();
@@ -372,8 +385,8 @@ export class SldEditor extends LitElement {
               this.doc.querySelectorAll(
                 `Terminal[connectivityNode="${cNode.getAttribute('pathName')}"],
                      NeutralPoint[connectivityNode="${cNode.getAttribute(
-                  'pathName'
-                )}"]`
+                       'pathName'
+                     )}"]`
               )
             ).find(terminal => terminal.closest(element.tagName) !== element)
           )
@@ -587,6 +600,7 @@ export class SldEditor extends LitElement {
           .connecting=${this.connecting}
           .showLabels=${this.showLabels}
           .disabled=${this.disabled}
+          .selectable=${this.selectable}
           @oscd-sld-start-resize-br=${({ detail }: StartEvent) => {
             this.startResizingBottomRight(detail);
           }}
