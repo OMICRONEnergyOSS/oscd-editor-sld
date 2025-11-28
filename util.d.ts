@@ -32,6 +32,7 @@ export declare function getSLDAttributes(element: Element, key: string): string 
 export declare function busSections(element: Element): Element[];
 export declare function nonBusSections(element: Element): Element[];
 export declare function isBusBar(element: Element): boolean;
+export declare function makeBusBar(doc: XMLDocument, nsp: string): Element;
 export declare function attributes(element: Element): Attrs;
 export declare function elementPath(element: Element, ...rest: string[]): string;
 export declare function removeNode(node: Element): EditV2[];

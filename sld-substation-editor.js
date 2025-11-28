@@ -233,6 +233,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         this.gridSize = 32;
         this.nsp = 'esld';
         this.placingOffset = [0, 0];
+        this.disabled = false;
         this.mouseX = 0;
         this.mouseY = 0;
         this.mouseX2 = 0;
@@ -1268,7 +1269,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         }
         const menu = this.renderMenu();
         return html `<section>
-      <h2>
+      <h2 class="${classMap({ disabled: this.disabled })}">
         ${this.substation.getAttribute('name')}
         <mwc-icon-button
           label="Edit Substation"
@@ -1317,6 +1318,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         stroke-width="0.06"
         fill="none"
         @mousemove=${(e) => {
+            if (this.disabled)
+                return;
             const [x, y] = this.svgCoordinates(e.clientX, e.clientY);
             this.mouseX = Math.floor(x);
             this.mouseY = Math.floor(y);
@@ -1488,11 +1491,23 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         const fontSize = element.tagName === 'ConductingEquipment' ? 0.45 : 0.6;
         let events = 'none';
         let handleClick = nothing;
-        if (this.idle) {
+        if (this.idle && !this.disabled) {
             events = 'all';
             const offset = [this.mouseX2 - x - 0.5, this.mouseY2 - y + 0.5];
             handleClick = () => this.dispatchEvent(newStartPlaceLabelEvent(element, offset));
         }
+        let auxclick = nothing;
+        if (!this.disabled)
+            auxclick = (e) => {
+                if (e.button === 1) {
+                    // middle mouse button
+                    this.dispatchEvent(newEditWizardEvent(element));
+                    e.preventDefault();
+                }
+            };
+        let contextmenu = nothing;
+        if (!this.disabled)
+            contextmenu = (e) => this.openMenu(element, e);
         const id = element.closest('Substation') === this.substation &&
             element.tagName !== 'Text'
             ? identity(element)
@@ -1501,21 +1516,16 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             label: true,
             container: (element.tagName === 'Bay' && !isBusBar(element)) ||
                 element.tagName === 'VoltageLevel',
+            disabled: this.disabled,
         });
         return svg `<g class="${classes}" id="label:${id}"
                  transform="rotate(${deg} ${x + 0.5} ${y - 0.5})">
         <text x="${x + 0.1}" y="${y - 0.5}"
           alignment-baseline="central"
           @mousedown=${preventDefault}
-          @auxclick=${(e) => {
-            if (e.button === 1) {
-                // middle mouse button
-                this.dispatchEvent(newEditWizardEvent(element));
-                e.preventDefault();
-            }
-        }}
+          @auxclick=${auxclick}
           @click=${handleClick}
-          @contextmenu=${(e) => this.openMenu(element, e)}
+          @contextmenu=${contextmenu}
           pointer-events="${events}" fill="${color}" font-weight="${weight}"
           font-size="${fontSize}px" font-family="Roboto, sans-serif"
           style="cursor: default;">
@@ -1530,11 +1540,27 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         let [x, y] = this.renderedPosition(bayOrVL);
         const offset = [this.mouseX - x, this.mouseY - y];
         let { dim: [w, h], } = attributes(bayOrVL);
+        const right = x + w - 1;
+        const bottom = y + h - 1;
         let handleClick = (e) => {
             if (this.idle)
                 this.dispatchEvent(newStartPlaceEvent(e.shiftKey ? copy(bayOrVL, this.nsp) : bayOrVL, offset));
         };
         let invalid = false;
+        let contextmenu = (e) => this.openMenu(bayOrVL, e);
+        if (this.disabled)
+            contextmenu = () => { };
+        let auxclick = ({ clientX, clientY, button }) => {
+            if (button !== 1)
+                return;
+            const mouse = this.svgCoordinates(clientX, clientY);
+            if (distance(mouse, [x, y]) < distance(mouse, [right, bottom]))
+                this.dispatchEvent(newStartResizeTLEvent(bayOrVL));
+            else
+                this.dispatchEvent(newStartResizeBREvent(bayOrVL));
+        };
+        if (this.disabled)
+            auxclick = () => { };
         if (this.resizingBR === bayOrVL) {
             w = Math.max(1, this.mouseX - x + 1);
             h = Math.max(1, this.mouseY - y + 1);
@@ -1547,8 +1573,6 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             else
                 invalid = true;
         }
-        const right = x + w - 1;
-        const bottom = y + h - 1;
         if (this.resizingTL === bayOrVL) {
             w = Math.max(1, x + w - this.mouseX);
             h = Math.max(1, y + h - this.mouseY);
@@ -1592,7 +1616,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             (this.resizingBR?.parentElement === bayOrVL && isBusBar(this.resizingBR)))
             resizingTarget = svg `<rect x="${x}" y="${y}" width="${w}" height="${h}"
         @click=${handleClick || nothing} fill="url(#grid)" />`;
-        const resizeBRHandle = this.idle
+        const resizeBRHandle = this.idle && !this.disabled
             ? svg `<svg xmlns="${svgNs}" height="1" width="1" fill="black"
           opacity="0.83" class="handle"
           @click=${() => this.dispatchEvent(newStartResizeBREvent(bayOrVL))}
@@ -1601,7 +1625,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
           ${resizeBRPath}
         </svg>`
             : nothing;
-        const resizeTLhandle = this.idle
+        const resizeTLhandle = this.idle && !this.disabled
             ? svg `<svg xmlns="${svgNs}" height="1" width="1" fill="black"
           opacity="0.83" class="handle"
           @click=${() => this.dispatchEvent(newStartResizeTLEvent(bayOrVL))}
@@ -1610,10 +1634,21 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
           ${resizeTLPath}
         </svg>`
             : nothing;
-        const clickthrough = !this.idle &&
-            this.placing !== bayOrVL &&
-            this.resizingBR !== bayOrVL &&
-            this.resizingTL !== bayOrVL;
+        const clickthrough = this.disabled ||
+            (!this.idle &&
+                this.placing !== bayOrVL &&
+                this.resizingBR !== bayOrVL &&
+                this.resizingTL !== bayOrVL);
+        let strokeColor;
+        if (invalid) {
+            strokeColor = '#BB1326';
+        }
+        else if (isVL) {
+            strokeColor = '#F5E214';
+        }
+        else {
+            strokeColor = '#12579B';
+        }
         return svg `<g id="${bayOrVL.closest('Substation') === this.substation
             ? identity(bayOrVL)
             : nothing}" class=${classMap({
@@ -1622,21 +1657,11 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             preview,
         })} tabindex="0" pointer-events="${clickthrough ? 'none' : 'all'}" style="outline: none;">
       <rect x="${x}" y="${y}" width="${w}" height="${h}"
-        @contextmenu=${(e) => this.openMenu(bayOrVL, e)}
+        @contextmenu=${contextmenu}
         @click=${handleClick || nothing} @mousedown=${preventDefault}
-        @auxclick=${({ clientX, clientY, button }) => {
-            if (button !== 1)
-                return;
-            const mouse = this.svgCoordinates(clientX, clientY);
-            if (distance(mouse, [x, y]) < distance(mouse, [right, bottom]))
-                this.dispatchEvent(newStartResizeTLEvent(bayOrVL));
-            else
-                this.dispatchEvent(newStartResizeBREvent(bayOrVL));
-        }}
+        @auxclick=${auxclick}
         fill="white" stroke-dasharray="${isVL ? nothing : '0.18'}"
-        stroke="${
-        // eslint-disable-next-line no-nested-ternary
-        invalid ? '#BB1326' : isVL ? '#F5E214' : '#12579B'}" />
+        stroke="${strokeColor}" />
       ${Array.from(bayOrVL.children)
             .filter(isBay)
             .map(bay => this.renderContainer(bay))}
@@ -1913,7 +1938,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             this.resizingBR ||
             this.resizingTL ||
             this.placingLabel ||
-            (this.placing && this.placing !== winding.closest('PowerTransformer'))))
+            (this.placing && this.placing !== winding.closest('PowerTransformer')) ||
+            this.disabled))
             Object.entries(terminals).forEach(([name, point]) => {
                 if (!point)
                     return;
@@ -1984,7 +2010,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             ? svg `<rect width="1" height="1" fill="none"
               x="${this.mouseX}" y="${this.mouseY}" />`
             : nothing;
-        return svg `<g class="${classMap({ transformer: true, preview })}"
+        return svg `<g class="${classMap({ transformer: true, preview, disabled: this.disabled })}"
         pointer-events="all"
         @mousedown=${preventDefault}
         @auxclick=${(e) => {
@@ -2063,6 +2089,18 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                     }));
                 };
         }
+        let auxclick = (e) => {
+            if (e.button === 1) {
+                // middle mouse button
+                this.dispatchEvent(newRotateEvent(equipment));
+                e.preventDefault();
+            }
+        };
+        if (this.disabled)
+            auxclick = () => { };
+        let contextmenu = (e) => this.openMenu(equipment, e);
+        if (this.disabled)
+            contextmenu = () => { };
         const terminals = Array.from(equipment.children).filter(c => c.tagName === 'Terminal');
         const topTerminal = terminals.find(t => t.getAttribute('name') === 'T1');
         const bottomTerminal = terminals.find(t => t.getAttribute('name') !== 'T1');
@@ -2071,7 +2109,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             this.resizingTL ||
             this.connecting ||
             this.placingLabel ||
-            (this.placing && this.placing !== equipment)
+            (this.placing && this.placing !== equipment) ||
+            this.disabled
             ? nothing
             : svg `<circle class="port" cx="0.5" cy="0" r="0.2" opacity="0.4"
       fill="#BB1326" stroke="#F5E214" pointer-events="${this.placing ? 'none' : nothing}"
@@ -2091,7 +2130,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                 this.mouseX === x &&
                 this.mouseY === y &&
                 this.nearestOpenTerminal(equipment) === 'T1') ||
-            topTerminal
+            topTerminal ||
+            this.disabled
             ? nothing
             : svg `<polygon points="0.3,0 0.7,0 0.5,0.4" 
                 fill="#BB1326" opacity="0.4" />`;
@@ -2105,7 +2145,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             this.connecting ||
             this.placingLabel ||
             (this.placing && this.placing !== equipment) ||
-            singleTerminal.has(eqType)
+            singleTerminal.has(eqType) ||
+            this.disabled
             ? nothing
             : svg `<circle class="port" cx="0.5" cy="1" r="0.2" opacity="0.4"
       fill="#BB1326" stroke="#F5E214" pointer-events="${this.placing ? 'none' : nothing}"
@@ -2126,7 +2167,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                 this.mouseY === y &&
                 this.nearestOpenTerminal(equipment) === 'T2') ||
             bottomTerminal ||
-            singleTerminal.has(eqType)
+            singleTerminal.has(eqType) ||
+            this.disabled
             ? nothing
             : svg `<polygon points="0.3,1 0.7,1 0.5,0.6" 
                 fill="#BB1326" opacity="0.4" />`;
@@ -2134,10 +2176,11 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             ? svg `<line x1="0.5" y1="1.1" x2="0.5" y2="0.84" stroke="black"
                 stroke-width="0.06" marker-start="url(#grounded)" />`
             : nothing;
-        const clickthrough = connect || (!this.idle && this.placing !== equipment);
+        const clickthrough = connect || (!this.idle && this.placing !== equipment) || this.disabled;
         return svg `<g class="${classMap({
             equipment: true,
             preview: this.placing === equipment,
+            disabled: this.disabled,
         })}"
     id="${equipment.closest('Substation') === this.substation
             ? identity(equipment)
@@ -2152,14 +2195,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
       <rect width="1" height="1" fill="none" pointer-events="${clickthrough ? 'none' : 'all'}"
         @mousedown=${preventDefault}
         @click=${handleClick}
-        @auxclick=${(e) => {
-            if (e.button === 1) {
-                // middle mouse button
-                this.dispatchEvent(newRotateEvent(equipment));
-                e.preventDefault();
-            }
-        }}
-        @contextmenu=${(e) => this.openMenu(equipment, e)}
+        @auxclick=${auxclick}
+        @contextmenu=${contextmenu}
       />
       ${topConnector}
       ${topIndicator}
@@ -2178,10 +2215,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
     renderBusBar(busBar) {
         const [x, y] = this.renderedPosition(busBar);
         const { dim: [w, h], } = attributes(busBar);
-        let placingTarget = svg ``;
-        placingTarget = svg `<rect x="${x}" y="${y}" width="${w}" height="${h}"
-          pointer-events="all" fill="none" 
-          @click=${() => {
+        let handleClick = () => {
             const parent = Array.from(this.substation.querySelectorAll(':root > Substation > VoltageLevel')).find(vl => containsRect(vl, x, y, w, h));
             if (parent)
                 this.dispatchEvent(newPlaceEvent({
@@ -2190,7 +2224,13 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                     element: busBar,
                     parent: parent,
                 }));
-        }}
+        };
+        if (this.disabled)
+            handleClick = () => { };
+        let placingTarget = svg ``;
+        placingTarget = svg `<rect x="${x}" y="${y}" width="${w}" height="${h}"
+          pointer-events="all" fill="none" 
+          @click=${handleClick}
         />`;
         return svg `<g class="bus preview" id="${busBar.closest('Substation') === this.substation
             ? identity(busBar)
@@ -2239,7 +2279,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                 let handleClick = nothing;
                 let handleAuxClick = nothing;
                 let handleContextMenu = nothing;
-                if (busBar && bay) {
+                if (busBar && bay && !this.disabled) {
                     const { pos: [x, y], } = attributes(bay);
                     const offset = [this.mouseX - x, this.mouseY - y];
                     handleClick = () => this.dispatchEvent(newStartPlaceEvent(bay, offset));
@@ -2249,7 +2289,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                     };
                     handleContextMenu = (e) => this.openMenu(bay, e);
                 }
-                if (busBar && this.resizingBR === bay) {
+                if (busBar && this.resizingBR === bay && !this.disabled) {
                     if (section !==
                         sections.find(s => xmlBoolean(s.getAttributeNS(sldNs, 'bus'))))
                         return;
@@ -2286,7 +2326,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
               width="1" height="1" fill="none" pointer-events="${pointerEvents}"
               @click=${handleClick} />`);
                 }
-                if (this.connecting)
+                if (this.connecting && !this.disabled)
                     handleClick = () => {
                         const { from, path, fromTerminal } = this.connecting;
                         if (from
@@ -2343,7 +2383,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         const id = cNode.closest('Substation') === this.substation
             ? identity(cNode)
             : nothing;
-        return svg `<g class="node" id="${id}" >
+        return svg `<g class="${classMap({ node: true, disabled: this.disabled })}" id="${id}" >
         <title>${cNode.getAttribute('pathName')}</title>
         ${circles}
         ${lines}
@@ -2391,6 +2431,11 @@ SldSubstationEditor.styles = css `
       color: #bb1326;
     }
 
+    .disabled {
+      pointer-events: none;
+      opacity: 0.2;
+    }
+
     * {
       user-select: none;
     }
@@ -2431,6 +2476,9 @@ __decorate([
 __decorate([
     property()
 ], SldSubstationEditor.prototype, "showLabels", void 0);
+__decorate([
+    property({ type: Boolean })
+], SldSubstationEditor.prototype, "disabled", void 0);
 __decorate([
     state()
 ], SldSubstationEditor.prototype, "idle", null);

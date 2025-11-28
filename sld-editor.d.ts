@@ -6,6 +6,7 @@ export declare class SldEditor extends LitElement {
     get docVersion(): number;
     set docVersion(value: number);
     private _docVersion;
+    disabled: boolean;
     gridSize: number;
     nsp: string;
     resizingBR?: Element;

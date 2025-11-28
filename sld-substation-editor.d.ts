@@ -30,6 +30,7 @@ export declare class SldSubstationEditor extends LitElement {
         fromTerminal: 'T1' | 'T2' | 'N1' | 'N2';
     };
     showLabels?: boolean;
+    disabled: boolean;
     get idle(): boolean;
     resizeSubstationUI: Dialog;
     substationWidthUI: TextField;

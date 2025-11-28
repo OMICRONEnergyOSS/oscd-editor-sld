@@ -39,8 +39,9 @@ let SldEditor = class SldEditor extends LitElement {
     constructor() {
         super(...arguments);
         this._docVersion = -1;
+        this.disabled = false;
         this.gridSize = 32;
-        this.nsp = 'esldoscd';
+        this.nsp = 'eoscd';
         this.placingOffset = [0, 0];
         this.showLabels = true;
         this.handleKeydown = ({ key }) => {
@@ -99,6 +100,8 @@ let SldEditor = class SldEditor extends LitElement {
         this.dispatchEvent(new CustomEvent('sld-editor-in-action', { detail: true }));
     }
     startPlacing(element, offset = [0, 0]) {
+        if (this.disabled)
+            return;
         this.reset();
         this.placing = element;
         this.placingOffset = offset;
@@ -390,6 +393,7 @@ let SldEditor = class SldEditor extends LitElement {
           .placingLabel=${this.placingLabel}
           .connecting=${this.connecting}
           .showLabels=${this.showLabels}
+          .disabled=${this.disabled}
           @oscd-sld-start-resize-br=${({ detail }) => {
             this.startResizingBottomRight(detail);
         }}
@@ -448,6 +452,9 @@ __decorate([
 __decorate([
     state()
 ], SldEditor.prototype, "_docVersion", void 0);
+__decorate([
+    property({ type: Boolean })
+], SldEditor.prototype, "disabled", void 0);
 __decorate([
     state()
 ], SldEditor.prototype, "gridSize", void 0);
