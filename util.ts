@@ -1,5 +1,5 @@
 import { EditV2 } from '@openscd/oscd-api';
-import { getReference } from '@openscd/oscd-scl';
+import { getReference } from '@openscd/scl-lib';
 
 export const privType = 'OpenSCD-SLD-Layout';
 export const sldNs = 'https://openscd.org/SCL/SSD/SLD/v0';
@@ -41,6 +41,16 @@ export const singleTerminal = new Set([
   'SMC',
   'VTR',
 ]);
+
+export type Style = {
+  // Fill and Stroke
+  fill?: string;
+  fillOpacity?: number | string;
+  stroke?: string;
+  strokeWidth?: number | string;
+  strokeOpacity?: number | string;
+  rx?: string | number;
+};
 
 /* eslint-disable no-bitwise */
 export function uuid() {
@@ -686,6 +696,16 @@ export function newStartConnectEvent(
   });
 }
 
+export type SelectDetail = { element: Element };
+export type SelectEvent = CustomEvent<SelectDetail>;
+export function newSelectEvent(element: Element): SelectEvent {
+  return new CustomEvent<SelectDetail>('oscd-sld-selected', {
+    bubbles: true,
+    composed: true,
+    detail: { element },
+  });
+}
+
 declare global {
   interface ElementEventMap {
     ['oscd-sld-resize']: ResizeEvent;
@@ -699,6 +719,7 @@ declare global {
     ['oscd-sld-start-place']: StartPlaceEvent;
     ['oscd-sld-start-place-label']: StartPlaceEvent;
     ['oscd-sld-start-connect']: StartConnectEvent;
+    ['oscd-sld-selected']: SelectEvent;
   }
 }
 

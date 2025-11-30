@@ -36,7 +36,7 @@
     "@omicronenergy/oscd-menu-save": "^0.0.2",
     "@omicronenergy/oscd-shell": "^0.0.9",
     "@openscd/oscd-api": "^0.1.5",
-    "@openscd/oscd-scl": "^0.0.2",
+    "@openscd/scl-lib": "^2.0.0",
     "lit": "^2.0.2"
   },
   "devDependencies": {

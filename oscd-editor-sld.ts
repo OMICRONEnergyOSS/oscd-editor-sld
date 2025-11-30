@@ -4,7 +4,7 @@ import { html as staticHtml, unsafeStatic } from 'lit/static-html.js';
 import { property, query, state } from 'lit/decorators.js';
 
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
-import { getReference } from '@openscd/oscd-scl';
+import { getReference } from '@openscd/scl-lib';
 
 import type { Dialog } from '@material/mwc-dialog';
 import type { IconButtonToggle } from '@material/mwc-icon-button-toggle';
@@ -26,6 +26,7 @@ import {
   sldNs,
   xmlnsNs,
 } from './util.js';
+import { convertSldLayout, hasOldNamespace } from './converter.js';
 
 const aboutContent = await fetch(new URL('about.html', import.meta.url)).then(
   res => res.text()
@@ -122,8 +123,18 @@ export default class OscdEditorSld extends LitElement {
     this.templateElements.BusBar = makeBusBar(this.doc, this.nsp);
   }
 
+  convertLsdAttributes() {
+    const convertEdits = convertSldLayout(this.doc, this.nsp);
+    this.dispatchEvent(newEditEventV2(convertEdits));
+  }
+
   render() {
     if (!this.doc) return html`<p>Please open an SCL document</p>`;
+    if (hasOldNamespace(this.doc))
+      return html`<mwc-button @click="${() => this.convertLsdAttributes()}"
+        >Convert SLD Layout</mwc-button
+      >`;
+
     return html`<main>
       <nav>
         ${Array.from(
@@ -375,7 +386,9 @@ export default class OscdEditorSld extends LitElement {
         .docVersion=${this.docVersion}
         .gridSize=${this.gridSize}
         .showLabels=${this.showLabels}
-        @sld-editor-in-action=${({ detail }: CustomEvent) => { this.inAction = detail; }}
+        @sld-editor-in-action=${({ detail }: CustomEvent) => {
+        this.inAction = detail;
+      }}
       >
       </sld-editor>
     </main>
