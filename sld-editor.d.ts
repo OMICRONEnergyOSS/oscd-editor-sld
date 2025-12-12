@@ -7,6 +7,7 @@ export declare class SldEditor extends LitElement {
     set docVersion(value: number);
     private _docVersion;
     disabled: boolean;
+    selectable: string[];
     gridSize: number;
     nsp: string;
     resizingBR?: Element;

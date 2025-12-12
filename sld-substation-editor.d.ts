@@ -31,6 +31,7 @@ export declare class SldSubstationEditor extends LitElement {
     };
     showLabels?: boolean;
     disabled: boolean;
+    selectable: string[];
     get idle(): boolean;
     resizeSubstationUI: Dialog;
     substationWidthUI: TextField;

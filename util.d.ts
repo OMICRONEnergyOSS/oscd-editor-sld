@@ -101,6 +101,11 @@ export type StartConnectDetail = {
 };
 export type StartConnectEvent = CustomEvent<StartConnectDetail>;
 export declare function newStartConnectEvent(detail: StartConnectDetail): StartConnectEvent;
+export type SelectDetail = {
+    element: Element;
+};
+export type SelectEvent = CustomEvent<SelectDetail>;
+export declare function newSelectEvent(element: Element): SelectEvent;
 declare global {
     interface ElementEventMap {
         ['oscd-sld-resize']: ResizeEvent;
@@ -114,6 +119,7 @@ declare global {
         ['oscd-sld-start-place']: StartPlaceEvent;
         ['oscd-sld-start-place-label']: StartPlaceEvent;
         ['oscd-sld-start-connect']: StartConnectEvent;
+        ['oscd-sld-selected']: SelectEvent;
     }
 }
 export declare function prettyPrint(xmlDoc: XMLDocument | Element): string;

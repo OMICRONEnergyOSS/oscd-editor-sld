@@ -143,6 +143,7 @@ describe('SLD Editor', () => {
     let element;
     let xmlEditor;
     let lastCalledWizard;
+    let lastSelectedElement;
     function queryUI({ scl, ui, }) {
         let target = getSldSubstationEditor(element).shadowRoot;
         if (scl) {
@@ -168,10 +169,14 @@ describe('SLD Editor', () => {
         @oscd-edit-wizard-request=${({ detail: { element: e }, }) => {
             lastCalledWizard = e;
         }}
+        @oscd-sld-selected=${({ detail: { element: e }, }) => {
+            lastSelectedElement = e;
+        }}
       ></sld-editor>`);
     });
     afterEach(async () => {
         lastCalledWizard = undefined;
+        lastSelectedElement = undefined;
         await sendMouse({ type: 'click', position: [0, 0] });
         await resetMouse();
     });
@@ -513,7 +518,10 @@ describe('SLD Editor', () => {
             // Move mouse to bay position to establish offset
             await sendMouse({
                 type: 'move',
-                position: [(currentX - 1) * 32 + 64 - 16, (currentY - 1) * 32 + 228 - 76],
+                position: [
+                    (currentX - 1) * 32 + 64 - 16,
+                    (currentY - 1) * 32 + 228 - 76,
+                ],
             });
             await element.updateComplete;
             // Use contextmenu approach for bay movement
@@ -537,7 +545,10 @@ describe('SLD Editor', () => {
             // Move mouse to bay position to establish offset
             await sendMouse({
                 type: 'move',
-                position: [(currentX - 1) * 32 + 64 - 16, (currentY - 1) * 32 + 228 - 76],
+                position: [
+                    (currentX - 1) * 32 + 64 - 16,
+                    (currentY - 1) * 32 + 228 - 76,
+                ],
             });
             await element.updateComplete;
             queryUI({ scl: 'Bay', ui: 'rect' }).dispatchEvent(new PointerEvent('click'));
@@ -564,7 +575,10 @@ describe('SLD Editor', () => {
             // Move mouse to bay position to establish offset
             await sendMouse({
                 type: 'move',
-                position: [(currentX - 1) * 32 + 64 - 16, (currentY - 1) * 32 + 228 - 76],
+                position: [
+                    (currentX - 1) * 32 + 64 - 16,
+                    (currentY - 1) * 32 + 228 - 76,
+                ],
             });
             await element.updateComplete;
             queryUI({ scl: 'Bay', ui: 'rect' }).dispatchEvent(new PointerEvent('click'));
@@ -635,7 +649,10 @@ describe('SLD Editor', () => {
                 const currentY = parseInt(sldAttribute(bus, 'y'), 10);
                 await sendMouse({
                     type: 'move',
-                    position: [(currentX - 1) * 32 + 64 - 16, (currentY - 1) * 32 + 228 - 76],
+                    position: [
+                        (currentX - 1) * 32 + 64 - 16,
+                        (currentY - 1) * 32 + 228 - 76,
+                    ],
                 });
                 await element.updateComplete;
                 // Use contextmenu approach for bus bar movement
@@ -653,7 +670,10 @@ describe('SLD Editor', () => {
                 // Move mouse to bus bar position to establish offset
                 await sendMouse({
                     type: 'move',
-                    position: [(currentX - 1) * 32 + 64 - 16, (currentY - 1) * 32 + 228 - 76],
+                    position: [
+                        (currentX - 1) * 32 + 64 - 16,
+                        (currentY - 1) * 32 + 228 - 76,
+                    ],
                 });
                 await element.updateComplete;
                 // Use contextmenu approach for bus bar resize instead of middle click
@@ -1272,7 +1292,10 @@ describe('SLD Editor', () => {
                         // Move mouse to bus bar position to establish offset
                         await sendMouse({
                             type: 'move',
-                            position: [(currentX - 1) * 32 + 64 - 16, (currentY - 1) * 32 + 228 - 76],
+                            position: [
+                                (currentX - 1) * 32 + 64 - 16,
+                                (currentY - 1) * 32 + 228 - 76,
+                            ],
                         });
                         await element.updateComplete;
                         queryUI({
@@ -1327,7 +1350,10 @@ describe('SLD Editor', () => {
                         const currentX = parseInt(initialX, 10);
                         await sendMouse({
                             type: 'move',
-                            position: [(currentX - 1) * 32 + 64 - 16, (currentY - 1) * 32 + 228 - 120],
+                            position: [
+                                (currentX - 1) * 32 + 64 - 16,
+                                (currentY - 1) * 32 + 228 - 120,
+                            ],
                         });
                         await element.updateComplete;
                         busLine.dispatchEvent(new PointerEvent('contextmenu', {
@@ -1514,6 +1540,17 @@ describe('SLD Editor', () => {
                 element.startPlacing(busBar);
                 expect(element).to.have.property('placing', undefined);
             });
+            it('send a selected event on voltage level label click', async () => {
+                element.selectable = ['S1>V1'];
+                element.requestUpdate();
+                await element.updateComplete;
+                // Click on equipment to start placing/moving
+                await sendMouse({
+                    type: 'click',
+                    position: middleOf(queryUI({ ui: '*[id="label:S1>V1"]' })),
+                });
+                expect(lastSelectedElement).to.equal(element.doc.querySelector('VoltageLevel[name="V1"]'));
+            });
         });
         describe('given a bay', () => {
             let sldSubstationEditor;
@@ -1543,7 +1580,10 @@ describe('SLD Editor', () => {
                 // Move mouse to bay position to establish offset
                 await sendMouse({
                     type: 'move',
-                    position: [(currentX - 1) * 32 + 64 - 16, (currentY - 1) * 32 + 228 - 76],
+                    position: [
+                        (currentX - 1) * 32 + 64 - 16,
+                        (currentY - 1) * 32 + 228 - 76,
+                    ],
                 });
                 await element.updateComplete;
                 expect(element).to.have.property('placing', undefined);
@@ -1555,12 +1595,29 @@ describe('SLD Editor', () => {
                 element.startPlacing(condEq);
                 expect(element).to.have.property('placing', undefined);
             });
+            it('send a selected event on bay label click', async () => {
+                element.selectable = ['S1>V1>B1'];
+                element.requestUpdate();
+                await element.updateComplete;
+                // Click on equipment to start placing/moving
+                await sendMouse({
+                    type: 'click',
+                    position: middleOf(queryUI({ ui: '*[id="label:S1>V1>B1"]' })),
+                });
+                expect(lastSelectedElement).to.equal(element.doc.querySelector('Bay[name="B1"]'));
+                await sendMouse({
+                    type: 'click',
+                    position: middleOf(queryUI({ ui: '*[id="label:S1>V2>B1"]' })),
+                });
+                expect(lastSelectedElement).to.not.equal(element.doc.querySelector('VoltageLevel[name="V2"]>Bay[type="B1"]'));
+            });
         });
         describe('given conducting equipment', () => {
             let sldSubstationEditor;
             beforeEach(async () => {
                 const doc = new DOMParser().parseFromString(equipmentDocString, 'application/xml');
                 element.doc = doc;
+                element.selectable = [];
                 await element.updateComplete;
                 sldSubstationEditor = getSldSubstationEditor(element);
                 await sldSubstationEditor.updateComplete;
@@ -1575,7 +1632,10 @@ describe('SLD Editor', () => {
             });
             it('does not allow to move conducting equipment', async () => {
                 // Click on equipment to start placing/moving
-                await sendMouse({ type: 'click', position: [150 - 16, 230 - 76] });
+                await sendMouse({
+                    type: 'click',
+                    position: middleOf(queryUI({ scl: '[type="CBR"]', ui: 'rect' })),
+                });
                 expect(element).to.have.property('placing', undefined);
             });
             it('does not rotate on auxclick', () => {
@@ -1599,6 +1659,49 @@ describe('SLD Editor', () => {
                     .shadowRoot.getElementById(identity(equipment))
                     .querySelector('circle');
                 expect(eqClickTarget).to.not.exist;
+            });
+            it('send a selected event on conducting equipment click', async () => {
+                element.selectable = ['S1>V1>B1>CBR1', 'S1>V2>B1>NEW1'];
+                element.requestUpdate();
+                await element.updateComplete;
+                // Click on equipment to start placing/moving
+                await sendMouse({
+                    type: 'click',
+                    position: middleOf(queryUI({ scl: '[type="CBR"]', ui: 'rect' })),
+                });
+                expect(lastSelectedElement).to.equal(element.doc.querySelector('[type="CBR"]'));
+                await sendMouse({
+                    type: 'click',
+                    position: middleOf(queryUI({ scl: '[type="VTR"]', ui: 'rect' })),
+                });
+                expect(lastSelectedElement).to.not.equal(element.doc.querySelector('[type="VTR"]'));
+                await sendMouse({
+                    type: 'click',
+                    position: middleOf(queryUI({ scl: '[type="NEW"]', ui: 'rect' })),
+                });
+                expect(lastSelectedElement).to.equal(element.doc.querySelector('[type="NEW"]'));
+            });
+            it('send a selected event on conducting equipment label click', async () => {
+                element.selectable = ['S1>V1>B1>CBR1', 'S1>V2>B1>NEW1'];
+                element.requestUpdate();
+                await element.updateComplete;
+                // Click on equipment to start placing/moving
+                const pos = middleOf(queryUI({ ui: '*[id="label:S1>V1>B1>CBR1"]' }));
+                await sendMouse({
+                    type: 'click',
+                    position: [pos[0], pos[1]],
+                });
+                expect(lastSelectedElement).to.equal(element.doc.querySelector('[type="CBR"]'));
+                await sendMouse({
+                    type: 'click',
+                    position: middleOf(queryUI({ ui: '*[id="label:S1>V2>B1>VTR1"]' })),
+                });
+                expect(lastSelectedElement).to.not.equal(element.doc.querySelector('[type="VTR"]'));
+                await sendMouse({
+                    type: 'click',
+                    position: middleOf(queryUI({ ui: '*[id="label:S1>V2>B1>NEW1"]' })),
+                });
+                expect(lastSelectedElement).to.equal(element.doc.querySelector('[type="NEW"]'));
             });
         });
     });

@@ -12,7 +12,7 @@ import '@material/mwc-snackbar';
 import '@material/mwc-textfield';
 import { getReference, identity } from '@openscd/oscd-scl';
 import { bayGraphic, eqRingPath, equipmentGraphic, movePath, ptrIcon, resizeBRPath, resizePath, resizeTLPath, symbols, voltageLevelGraphic, zigZag2WTransform, zigZagPath, } from './icons.js';
-import { attributes, connectionStartPoints, elementPath, getSLDAttributes, isBusBar, isEqType, newConnectEvent, newPlaceEvent, newPlaceLabelEvent, newResizeEvent, newResizeTLEvent, newRotateEvent, newStartConnectEvent, newStartPlaceEvent, newStartPlaceLabelEvent, newStartResizeBREvent, newStartResizeTLEvent, prettyPrint, privType, removeNode, removeTerminal, ringedEqTypes, robotoDataURL, setSLDAttributes, singleTerminal, sldNs, svgNs, uniqueName, updateSLDAttributes, uuid, xlinkNs, xmlBoolean, } from './util.js';
+import { attributes, connectionStartPoints, elementPath, getSLDAttributes, isBusBar, isEqType, newConnectEvent, newPlaceEvent, newPlaceLabelEvent, newResizeEvent, newResizeTLEvent, newRotateEvent, newSelectEvent, newStartConnectEvent, newStartPlaceEvent, newStartPlaceLabelEvent, newStartResizeBREvent, newStartResizeTLEvent, prettyPrint, privType, removeNode, removeTerminal, ringedEqTypes, robotoDataURL, setSLDAttributes, singleTerminal, sldNs, svgNs, uniqueName, updateSLDAttributes, uuid, xlinkNs, xmlBoolean, } from './util.js';
 const parentTags = {
     ConductingEquipment: ['Bay'],
     Bay: ['VoltageLevel'],
@@ -226,6 +226,9 @@ function renderMenuHeader(element) {
     ${footerGraphic}
   </mwc-list-item>`;
 }
+function isSelectable(element, selectable) {
+    return selectable.some(sel => identity(element) === sel);
+}
 let SldSubstationEditor = class SldSubstationEditor extends LitElement {
     constructor() {
         super(...arguments);
@@ -234,6 +237,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         this.nsp = 'esld';
         this.placingOffset = [0, 0];
         this.disabled = false;
+        this.selectable = [];
         this.mouseX = 0;
         this.mouseY = 0;
         this.mouseX2 = 0;
@@ -1496,6 +1500,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             const offset = [this.mouseX2 - x - 0.5, this.mouseY2 - y + 0.5];
             handleClick = () => this.dispatchEvent(newStartPlaceLabelEvent(element, offset));
         }
+        else if (this.disabled && isSelectable(element, this.selectable))
+            handleClick = () => this.dispatchEvent(newSelectEvent(element));
         let auxclick = nothing;
         if (!this.disabled)
             auxclick = (e) => {
@@ -1517,6 +1523,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             container: (element.tagName === 'Bay' && !isBusBar(element)) ||
                 element.tagName === 'VoltageLevel',
             disabled: this.disabled,
+            selectable: isSelectable(element, this.selectable),
         });
         return svg `<g class="${classes}" id="label:${id}"
                  transform="rotate(${deg} ${x + 0.5} ${y - 0.5})">
@@ -1938,7 +1945,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             this.resizingBR ||
             this.resizingTL ||
             this.placingLabel ||
-            (this.placing && this.placing !== winding.closest('PowerTransformer')) ||
+            (this.placing &&
+                this.placing !== winding.closest('PowerTransformer')) ||
             this.disabled))
             Object.entries(terminals).forEach(([name, point]) => {
                 if (!point)
@@ -2010,7 +2018,35 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             ? svg `<rect width="1" height="1" fill="none"
               x="${this.mouseX}" y="${this.mouseY}" />`
             : nothing;
-        return svg `<g class="${classMap({ transformer: true, preview, disabled: this.disabled })}"
+        let handleClick = nothing;
+        if (this.placing === transformer)
+            handleClick = (e) => {
+                if (this.placing === transformer) {
+                    const parent = Array.from(this.substation.querySelectorAll(':scope > VoltageLevel > Bay'))
+                        .concat(Array.from(this.substation.querySelectorAll(':scope > VoltageLevel')))
+                        .find(vl => containsRect(vl, x, y, 1, 1)) || this.substation;
+                    this.dispatchEvent(newPlaceEvent({
+                        element: transformer,
+                        parent,
+                        x,
+                        y,
+                    }));
+                }
+                if (!this.idle)
+                    return;
+                let placing = transformer;
+                if (e.shiftKey)
+                    placing = copy(transformer, this.nsp);
+                this.dispatchEvent(newStartPlaceEvent(placing, offset));
+            };
+        else if (this.disabled && isSelectable(transformer, this.selectable))
+            handleClick = () => this.dispatchEvent(newSelectEvent(transformer));
+        return svg `<g class="${classMap({
+            transformer: true,
+            preview,
+            disabled: this.disabled,
+            selectable: isSelectable(transformer, this.selectable),
+        })}"
         pointer-events="all"
         @mousedown=${preventDefault}
         @auxclick=${(e) => {
@@ -2020,25 +2056,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                 e.preventDefault();
             }
         }}
-        @click=${(e) => {
-            if (this.placing === transformer) {
-                const parent = Array.from(this.substation.querySelectorAll(':scope > VoltageLevel > Bay'))
-                    .concat(Array.from(this.substation.querySelectorAll(':scope > VoltageLevel')))
-                    .find(vl => containsRect(vl, x, y, 1, 1)) || this.substation;
-                this.dispatchEvent(newPlaceEvent({
-                    element: transformer,
-                    parent,
-                    x,
-                    y,
-                }));
-            }
-            if (!this.idle)
-                return;
-            let placing = transformer;
-            if (e.shiftKey)
-                placing = copy(transformer, this.nsp);
-            this.dispatchEvent(newStartPlaceEvent(placing, offset));
-        }}>
+        @click=${handleClick}>
         ${windings.map(w => this.renderTransformerWinding(w))}
         ${clickTarget}
       </g>
@@ -2089,6 +2107,12 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                     }));
                 };
         }
+        if (this.disabled && !isSelectable(equipment, this.selectable))
+            handleClick = () => { };
+        if (this.disabled && isSelectable(equipment, this.selectable))
+            handleClick = () => {
+                this.dispatchEvent(newSelectEvent(equipment));
+            };
         let auxclick = (e) => {
             if (e.button === 1) {
                 // middle mouse button
@@ -2176,11 +2200,14 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             ? svg `<line x1="0.5" y1="1.1" x2="0.5" y2="0.84" stroke="black"
                 stroke-width="0.06" marker-start="url(#grounded)" />`
             : nothing;
-        const clickthrough = connect || (!this.idle && this.placing !== equipment) || this.disabled;
+        const clickthrough = connect ||
+            (!this.idle && this.placing !== equipment) ||
+            (this.disabled && !isSelectable(equipment, this.selectable));
         return svg `<g class="${classMap({
             equipment: true,
             preview: this.placing === equipment,
             disabled: this.disabled,
+            selectable: isSelectable(equipment, this.selectable),
         })}"
     id="${equipment.closest('Substation') === this.substation
             ? identity(equipment)
@@ -2383,7 +2410,10 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         const id = cNode.closest('Substation') === this.substation
             ? identity(cNode)
             : nothing;
-        return svg `<g class="${classMap({ node: true, disabled: this.disabled })}" id="${id}" >
+        return svg `<g class="${classMap({
+            node: true,
+            disabled: this.disabled,
+        })}" id="${id}" >
         <title>${cNode.getAttribute('pathName')}</title>
         ${circles}
         ${lines}
@@ -2431,9 +2461,13 @@ SldSubstationEditor.styles = css `
       color: #bb1326;
     }
 
-    .disabled {
+    .disabled:not(.selectable) {
       pointer-events: none;
       opacity: 0.2;
+    }
+
+    .disabled.selectable > text {
+      pointer-events: all;
     }
 
     * {
@@ -2479,6 +2513,9 @@ __decorate([
 __decorate([
     property({ type: Boolean })
 ], SldSubstationEditor.prototype, "disabled", void 0);
+__decorate([
+    property()
+], SldSubstationEditor.prototype, "selectable", void 0);
 __decorate([
     state()
 ], SldSubstationEditor.prototype, "idle", null);

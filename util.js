@@ -468,6 +468,13 @@ export function newStartConnectEvent(detail) {
         detail,
     });
 }
+export function newSelectEvent(element) {
+    return new CustomEvent('oscd-sld-selected', {
+        bubbles: true,
+        composed: true,
+        detail: { element },
+    });
+}
 const prettifyXSLT = new DOMParser().parseFromString([
     // describes how we want to modify the XML - indent everything
     '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
