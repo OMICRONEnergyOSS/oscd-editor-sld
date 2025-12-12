@@ -9,6 +9,14 @@ export type EqType = (typeof eqTypes)[number];
 export declare function isEqType(str: string): str is EqType;
 export declare const ringedEqTypes: Set<string>;
 export declare const singleTerminal: Set<string>;
+export type Style = {
+    fill?: string;
+    fillOpacity?: number | string;
+    stroke?: string;
+    strokeWidth?: number | string;
+    strokeOpacity?: number | string;
+    rx?: string | number;
+};
 export declare function uuid(): string;
 declare const transformerKinds: readonly ["default", "auto", "earthing"];
 export type Point = [number, number];

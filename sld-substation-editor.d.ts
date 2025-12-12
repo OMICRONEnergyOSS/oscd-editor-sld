@@ -8,7 +8,7 @@ import '@material/mwc-list';
 import '@material/mwc-list/mwc-list-item.js';
 import '@material/mwc-snackbar';
 import '@material/mwc-textfield';
-import { Point } from './util.js';
+import { Point, Style } from './util.js';
 type MenuItem = {
     handler?: () => void;
     content: TemplateResult;
@@ -32,6 +32,10 @@ export declare class SldSubstationEditor extends LitElement {
     showLabels?: boolean;
     disabled: boolean;
     selectable: string[];
+    highlight: {
+        id: string;
+        style: Style;
+    }[];
     get idle(): boolean;
     resizeSubstationUI: Dialog;
     substationWidthUI: TextField;

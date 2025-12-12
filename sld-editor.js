@@ -41,6 +41,7 @@ let SldEditor = class SldEditor extends LitElement {
         this._docVersion = -1;
         this.disabled = false;
         this.selectable = [];
+        this.highlight = [];
         this.gridSize = 32;
         this.nsp = 'eoscd';
         this.placingOffset = [0, 0];
@@ -396,6 +397,7 @@ let SldEditor = class SldEditor extends LitElement {
           .showLabels=${this.showLabels}
           .disabled=${this.disabled}
           .selectable=${this.selectable}
+          .highlight=${this.highlight}
           @oscd-sld-start-resize-br=${({ detail }) => {
             this.startResizingBottomRight(detail);
         }}
@@ -460,6 +462,9 @@ __decorate([
 __decorate([
     property()
 ], SldEditor.prototype, "selectable", void 0);
+__decorate([
+    property()
+], SldEditor.prototype, "highlight", void 0);
 __decorate([
     state()
 ], SldEditor.prototype, "gridSize", void 0);

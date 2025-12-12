@@ -1,6 +1,6 @@
 import { LitElement } from 'lit';
 import './sld-substation-editor.js';
-import { ConnectDetail, Point, StartConnectDetail } from './util.js';
+import { ConnectDetail, Point, StartConnectDetail, Style } from './util.js';
 export declare class SldEditor extends LitElement {
     doc: XMLDocument;
     get docVersion(): number;
@@ -8,6 +8,10 @@ export declare class SldEditor extends LitElement {
     private _docVersion;
     disabled: boolean;
     selectable: string[];
+    highlight: {
+        id: string;
+        style: Style;
+    }[];
     gridSize: number;
     nsp: string;
     resizingBR?: Element;

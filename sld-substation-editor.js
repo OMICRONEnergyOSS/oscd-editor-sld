@@ -229,6 +229,38 @@ function renderMenuHeader(element) {
 function isSelectable(element, selectable) {
     return selectable.some(sel => identity(element) === sel);
 }
+function isToBeHighlighted(element, highlight) {
+    return highlight.some(h => identity(element) === h.id);
+}
+function getHighlightStyle(element, highlight) {
+    const style = highlight.find(h => identity(element) === h.id)?.style;
+    if (!style)
+        return '';
+    let styleStr = '';
+    if (style?.fill)
+        styleStr += `fill: ${style.fill}; `;
+    if (style?.fillOpacity)
+        styleStr += `fill-opacity: ${style.fillOpacity}; `;
+    if (style?.stroke)
+        styleStr += `stroke: ${style.stroke}; `;
+    if (style?.strokeWidth)
+        styleStr += `stroke-width: ${style.strokeWidth}; `;
+    if (style?.strokeOpacity)
+        styleStr += `stroke-opacity: ${style.strokeOpacity}; `;
+    if (style?.rx)
+        styleStr += `rx: ${style.rx}; `;
+    return styleStr;
+}
+function transformerHighlight(transformer, highlight) {
+    const style = getHighlightStyle(transformer, highlight);
+    const { pos: [x, y], } = attributes(transformer);
+    const nmWindings = transformer.querySelectorAll('TransformerWinding').length;
+    if (nmWindings === 3)
+        return svg `<rect x="${x - 0.8}" y="${y - 0.3}" width="2.6" height="2.6" style="${style}" pointer-events="none" />`;
+    if (nmWindings === 2)
+        return svg `<rect x="${x - 0.3}" y="${y - 0.3}" width="1.6" height="2.6" style="${style}" pointer-events="none" />`;
+    return svg `<rect x="${x - 0.3}" y="${y - 0.3}" width="1.6" height="1.6" style="${style}" pointer-events="none" />`;
+}
 let SldSubstationEditor = class SldSubstationEditor extends LitElement {
     constructor() {
         super(...arguments);
@@ -238,6 +270,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         this.placingOffset = [0, 0];
         this.disabled = false;
         this.selectable = [];
+        this.highlight = [];
         this.mouseX = 0;
         this.mouseY = 0;
         this.mouseX2 = 0;
@@ -1656,7 +1689,11 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         else {
             strokeColor = '#12579B';
         }
-        return svg `<g id="${bayOrVL.closest('Substation') === this.substation
+        const highlighted = isToBeHighlighted(bayOrVL, this.highlight);
+        const highlight = highlighted
+            ? svg `<rect x="${x}" y="${y}" width="${w}" height="${h}" style="${getHighlightStyle(bayOrVL, this.highlight)}" pointer-events="none" />`
+            : '';
+        return svg `${highlight}<g id="${bayOrVL.closest('Substation') === this.substation
             ? identity(bayOrVL)
             : nothing}" class=${classMap({
             voltagelevel: isVL,
@@ -1667,7 +1704,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         @contextmenu=${contextmenu}
         @click=${handleClick || nothing} @mousedown=${preventDefault}
         @auxclick=${auxclick}
-        fill="white" stroke-dasharray="${isVL ? nothing : '0.18'}"
+        fill="${highlighted ? 'none' : 'white'}" stroke-dasharray="${isVL ? nothing : '0.18'}"
         stroke="${strokeColor}" />
       ${Array.from(bayOrVL.children)
             .filter(isBay)
@@ -2041,7 +2078,20 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             };
         else if (this.disabled && isSelectable(transformer, this.selectable))
             handleClick = () => this.dispatchEvent(newSelectEvent(transformer));
-        return svg `<g class="${classMap({
+        else if (this.disabled || !this.idle)
+            handleClick = () => { };
+        else {
+            handleClick = (e) => {
+                let placing = transformer;
+                if (e.shiftKey)
+                    placing = copy(transformer, this.nsp);
+                this.dispatchEvent(newStartPlaceEvent(placing, offset));
+            };
+        }
+        const highlight = isToBeHighlighted(transformer, this.highlight)
+            ? transformerHighlight(transformer, this.highlight)
+            : '';
+        return svg `${highlight}<g class="${classMap({
             transformer: true,
             preview,
             disabled: this.disabled,
@@ -2203,7 +2253,10 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         const clickthrough = connect ||
             (!this.idle && this.placing !== equipment) ||
             (this.disabled && !isSelectable(equipment, this.selectable));
-        return svg `<g class="${classMap({
+        const highlight = isToBeHighlighted(equipment, this.highlight)
+            ? svg `<rect x="${x}" y="${y}" width="1" height="1" style="${getHighlightStyle(equipment, this.highlight)}" pointer-events="none" />`
+            : '';
+        return svg `${highlight}<g class="${classMap({
             equipment: true,
             preview: this.placing === equipment,
             disabled: this.disabled,
@@ -2516,6 +2569,9 @@ __decorate([
 __decorate([
     property()
 ], SldSubstationEditor.prototype, "selectable", void 0);
+__decorate([
+    property()
+], SldSubstationEditor.prototype, "highlight", void 0);
 __decorate([
     state()
 ], SldSubstationEditor.prototype, "idle", null);
