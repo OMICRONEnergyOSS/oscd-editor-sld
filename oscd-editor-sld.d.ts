@@ -27,6 +27,7 @@ export default class OscdEditorSld extends LitElement {
     connectedCallback(): void;
     disconnectedCallback(): void;
     updated(changedProperties: Map<string, any>): void;
+    convertLsdAttributes(): void;
     render(): import("lit-html").TemplateResult<1>;
     insertSubstation(): void;
     static styles: import("lit").CSSResult;

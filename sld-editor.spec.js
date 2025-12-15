@@ -2,7 +2,7 @@
 import { html } from 'lit';
 import { fixture, expect, aTimeout } from '@open-wc/testing';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
-import { identity } from '@openscd/oscd-scl';
+import { identity } from '@openscd/scl-lib';
 import { XMLEditor } from '@omicronenergy/oscd-editor';
 import { busSections, makeBusBar, setSLDAttributes } from './util.js';
 import './sld-editor.js';

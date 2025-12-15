@@ -3,7 +3,7 @@ import { html, LitElement } from 'lit';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { customElement, property, state } from 'lit/decorators.js';
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
-import { getReference } from '@openscd/oscd-scl';
+import { getReference } from '@openscd/scl-lib';
 import './sld-substation-editor.js';
 import { attributes, busSections, elementPath, getSLDAttributes, isBusBar, privType, removeNode, removeTerminal, reparentElement, setSLDAttributes, sldNs, updateSLDAttributes, uuid, xmlnsNs, } from './util.js';
 function cutSectionAt(section, index, [x, y], nsPrefix) {

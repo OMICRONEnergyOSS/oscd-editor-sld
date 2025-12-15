@@ -10,7 +10,7 @@ import '@material/mwc-list';
 import '@material/mwc-list/mwc-list-item.js';
 import '@material/mwc-snackbar';
 import '@material/mwc-textfield';
-import { getReference, identity } from '@openscd/oscd-scl';
+import { getReference, identity } from '@openscd/scl-lib';
 import { bayGraphic, eqRingPath, equipmentGraphic, movePath, ptrIcon, resizeBRPath, resizePath, resizeTLPath, symbols, voltageLevelGraphic, zigZag2WTransform, zigZagPath, } from './icons.js';
 import { attributes, connectionStartPoints, elementPath, getSLDAttributes, isBusBar, isEqType, newConnectEvent, newPlaceEvent, newPlaceLabelEvent, newResizeEvent, newResizeTLEvent, newRotateEvent, newSelectEvent, newStartConnectEvent, newStartPlaceEvent, newStartPlaceLabelEvent, newStartResizeBREvent, newStartResizeTLEvent, prettyPrint, privType, removeNode, removeTerminal, ringedEqTypes, robotoDataURL, setSLDAttributes, singleTerminal, sldNs, svgNs, uniqueName, updateSLDAttributes, uuid, xlinkNs, xmlBoolean, } from './util.js';
 const parentTags = {
