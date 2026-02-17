@@ -630,6 +630,17 @@ function equipmentSymbol(equipmentType: string): TemplateResult<2> {
   </symbol>`;
 }
 
+const iedSymbol = svg`<symbol
+    id="IED"
+    viewBox="0 0 25 25"
+    width="1" height="1"
+  >
+  <path
+    fill="currentColor"
+    d="M22 9V7h-2V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2h2v-2h-2v-2h2v-2h-2V9zm-4 10H4V5h14zM6 13h5v4H6zm6-6h4v3h-4zM6 7h5v5H6zm6 4h4v6h-4z"
+  />
+  </symbol>`;
+
 const groundedMarker = svg`<marker
   markerWidth="20" markerHeight="20"
   refX="12.5" refY="12.5"
@@ -695,6 +706,7 @@ export const symbols = svg`
   </pattern>
   ${eqTypes.map(eqType => equipmentSymbol(eqType))}
   ${equipmentSymbol('ConductingEquipment')}
+  ${iedSymbol}
   ${groundedMarker}
   ${arrowMarker}
   </defs>

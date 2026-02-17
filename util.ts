@@ -107,6 +107,7 @@ function sldAttributes(element: Element, nsPrefix?: string): Element | null {
 
   const doc = element.ownerDocument;
   const priv = doc.createElementNS(doc.documentElement.namespaceURI, 'Private');
+
   priv.setAttribute('type', privType);
   element.insertBefore(priv, getReference(element, 'Private'));
 
@@ -124,9 +125,13 @@ export function setSLDAttributes(
   nsPrefix: string,
   values: Record<string, string>
 ): void {
-  const isSectionOrVertex = ['Section', 'Vertex'].includes(element.localName);
+  const isDirectSldAttributesElement = [
+    'Section',
+    'Vertex',
+    'IEDName',
+  ].includes(element.localName);
 
-  if (isSectionOrVertex) {
+  if (isDirectSldAttributesElement) {
     Object.entries(values).forEach(([key, value]) => {
       element.setAttributeNS(sldNs, `${nsPrefix}:${key}`, value);
     });
@@ -146,8 +151,14 @@ export function updateSLDAttributes(
   nsPrefix: string,
   values: Partial<Record<string, string | null>>
 ): EditV2 {
-  const isSecOrVert = ['Section', 'Vertex'].includes(element.localName);
-  const toBeUpdated = isSecOrVert ? element : sldAttributes(element, nsPrefix)!;
+  const isDirectSldAttributesElement = [
+    'Section',
+    'Vertex',
+    'IEDName',
+  ].includes(element.localName);
+  const toBeUpdated = isDirectSldAttributesElement
+    ? element
+    : sldAttributes(element, nsPrefix)!;
 
   return {
     element: toBeUpdated,
@@ -163,8 +174,12 @@ export function updateSLDAttributes(
 }
 
 export function getSLDAttributes(element: Element, key: string): string | null {
-  const isSecOrVert = ['Section', 'Vertex'].includes(element.localName);
-  if (isSecOrVert) return element.getAttributeNS(sldNs, key);
+  const isDirectSldAttributesElement = [
+    'Section',
+    'Vertex',
+    'IEDName',
+  ].includes(element.localName);
+  if (isDirectSldAttributesElement) return element.getAttributeNS(sldNs, key);
 
   return sldAttributes(element)?.getAttributeNS(sldNs, key) ?? null;
 }
@@ -459,7 +474,10 @@ export function reparentElement(element: Element, parent: Element): EditV2[] {
     reference: getReference(parent, element.tagName),
   });
   const newName = uniqueName(element, parent);
-  if (newName !== element.getAttribute('name'))
+  if (
+    element.localName !== 'IEDName' &&
+    newName !== element.getAttribute('name')
+  )
     edits.push({ element, attributes: { name: newName } });
   edits.push(...updateConnectivityNodes(element, parent, newName));
   return edits;
