@@ -6,16 +6,24 @@ import { property, query, state } from 'lit/decorators.js';
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
 import { getReference } from '@openscd/scl-lib';
 
+import type { EditV2 } from '@openscd/oscd-api';
 import type { Dialog } from '@material/mwc-dialog';
 import type { IconButtonToggle } from '@material/mwc-icon-button-toggle';
+import type { Menu } from '@material/mwc-menu';
+import type { List, SingleSelectedEvent } from '@material/mwc-list';
+import type { ListItem } from '@material/mwc-list/mwc-list-item.js';
+import type { SldEditor } from './sld-editor.js';
+
 import '@material/mwc-button';
 import '@material/mwc-fab';
 import '@material/mwc-icon-button';
 import '@material/mwc-icon-button-toggle';
 import '@material/mwc-icon';
+import '@material/mwc-menu';
+import '@material/mwc-list';
+import '@material/mwc-list/mwc-list-item.js';
 
 import './sld-editor.js';
-import type { SldEditor } from './sld-editor.js';
 
 import { bayIcon, equipmentIcon, ptrIcon, voltageLevelIcon } from './icons.js';
 import {
@@ -57,9 +65,19 @@ export default class OscdEditorSld extends LitElement {
     return true;
   }
 
+  @state()
+  get showIeds(): boolean {
+    if (this.iedToggle) return this.iedToggle.on;
+    return true;
+  }
+
   @query('#labels') labelToggle?: IconButtonToggle;
 
+  @query('#ieds') iedToggle?: IconButtonToggle;
+
   @query('#about') about?: Dialog;
+
+  @query('#iedMenu') iedMenu?: Menu;
 
   @query('sld-editor') sldEditor?: SldEditor;
 
@@ -97,6 +115,8 @@ export default class OscdEditorSld extends LitElement {
   }
 
   updated(changedProperties: Map<string, any>) {
+    if (this.iedMenu)
+      this.iedMenu.anchor = this.iedMenu.previousElementSibling as HTMLElement;
     if (!changedProperties.has('doc')) return;
     const sldNsPrefix = this.doc.documentElement.lookupPrefix(sldNs);
     if (sldNsPrefix) this.nsp = sldNsPrefix;
@@ -135,38 +155,52 @@ export default class OscdEditorSld extends LitElement {
         >Convert SLD Layout</mwc-button
       >`;
 
+    const ieds = Array.from(this.doc.querySelectorAll(':root > IED'));
+    const linkedIeds = Array.from(
+      this.doc.querySelectorAll(':root > Substation')
+    ).flatMap(sub => Array.from(sub.getElementsByTagNameNS(sldNs, 'IEDName')));
+    const unmatchedLinkedIeds = linkedIeds.filter(
+      linkedIed =>
+        !ieds.find(
+          ied =>
+            ied.getAttribute('name') === linkedIed.getAttributeNS(sldNs, 'name')
+        )
+    ).length;
+
     return html`<main>
       <nav>
-        ${Array.from(
-      this.doc.querySelectorAll(':root > Substation > VoltageLevel > Bay')
-    ).find(bay => !isBusBar(bay))
-        ? eqTypes
-          .map(
-            eqType => html`<mwc-fab
+        ${
+          Array.from(
+            this.doc.querySelectorAll(':root > Substation > VoltageLevel > Bay')
+          ).find(bay => !isBusBar(bay))
+            ? eqTypes
+                .map(
+                  eqType => html`<mwc-fab
                     mini
                     label="Add ${eqType}"
                     title="Add ${eqType}"
                     @click=${() => {
-                const element =
-                  this.templateElements.ConductingEquipment!.cloneNode() as Element;
-                element.setAttribute('type', eqType);
-                this.startPlacing(element);
-              }}
+                      const element =
+                        this.templateElements.ConductingEquipment!.cloneNode() as Element;
+                      element.setAttribute('type', eqType);
+                      this.startPlacing(element);
+                    }}
                     >${equipmentIcon(eqType)}</mwc-fab
                   >`
-          )
-          .concat()
-        : nothing
-      }${this.doc.querySelector(':root > Substation > VoltageLevel')
+                )
+                .concat()
+            : nothing
+        }${
+      this.doc.querySelector(':root > Substation > VoltageLevel')
         ? html`<mwc-fab
               mini
               icon="horizontal_rule"
               @click=${() => {
-            const element = this.templateElements.BusBar!.cloneNode(
-              true
-            ) as Element;
-            this.startPlacing(element);
-          }}
+                const element = this.templateElements.BusBar!.cloneNode(
+                  true
+                ) as Element;
+                this.startPlacing(element);
+              }}
               label="Add Bus Bar"
               title="Add Bus Bar"
             >
@@ -176,33 +210,167 @@ export default class OscdEditorSld extends LitElement {
               label="Add Bay"
               title="Add Bay"
               @click=${() => {
-            const element =
-              this.templateElements.Bay!.cloneNode() as Element;
-            this.startPlacing(element);
-          }}
+                const element =
+                  this.templateElements.Bay!.cloneNode() as Element;
+                this.startPlacing(element);
+              }}
               style="--mdc-theme-secondary: #12579B; --mdc-theme-on-secondary: white;"
             >
               ${bayIcon}
             </mwc-fab>`
         : nothing
-      }${Array.from(this.doc.documentElement.children).find(
+    }${
+      Array.from(this.doc.documentElement.children).find(
         c => c.tagName === 'Substation'
       )
         ? html`<mwc-fab
-            mini
-            label="Add VoltageLevel"
-            title="Add VoltageLevel"
-            @click=${() => {
-            const element =
-              this.templateElements.VoltageLevel!.cloneNode() as Element;
-            this.startPlacing(element);
-          }}
-            style="--mdc-theme-secondary: #F5E214;"
-          >
-            ${voltageLevelIcon}
-          </mwc-fab>`
+              mini
+              label="Add VoltageLevel"
+              title="Add VoltageLevel"
+              @click=${() => {
+                const element =
+                  this.templateElements.VoltageLevel!.cloneNode() as Element;
+                this.startPlacing(element);
+              }}
+              style="--mdc-theme-secondary: #F5E214;"
+            >
+              ${voltageLevelIcon}
+            </mwc-fab>
+            ${ieds.length > 0 || unmatchedLinkedIeds > 0
+              ? html`<mwc-fab
+                    mini
+                    icon="developer_board"
+                    label="Add IED"
+                    title="Add IED"
+                    @click=${() => {
+                      if (this.iedToggle) this.iedToggle.on = true;
+                      this.iedMenu?.show();
+                    }}
+                  ></mwc-fab>
+                  <mwc-menu
+                    fixed
+                    corner="BOTTOM_RIGHT"
+                    menuCorner="END"
+                    id="iedMenu"
+                    @selected=${(ev: SingleSelectedEvent) => {
+                      const selectedListItem = (ev.target as List)
+                        .selected! as ListItem;
+                      if (!selectedListItem) return;
+
+                      const name = selectedListItem.dataset.name!;
+                      selectedListItem.selected = false;
+
+                      if (name === 'Delete Unmatched') {
+                        const edits: EditV2[] = [];
+                        linkedIeds
+                          .filter(
+                            linkedIed =>
+                              !ieds.find(
+                                ied =>
+                                  ied.getAttribute('name') ===
+                                  linkedIed.getAttributeNS(sldNs, 'name')
+                              )
+                          )
+                          .forEach(unusedLinkedIed => {
+                            const parent = unusedLinkedIed.parentElement;
+                            if (
+                              parent?.tagName === 'Private' &&
+                              parent.getAttribute('type') ===
+                                'OpenSCD-SLD-Layout' &&
+                              parent.childElementCount === 1
+                            )
+                              edits.push({ node: parent });
+                            else edits.push({ node: unusedLinkedIed });
+                          });
+
+                        this.dispatchEvent(newEditEventV2(edits));
+                      } else {
+                        const element = this.insertOrGetIed(name, this.doc);
+                        this.iedMenu?.close();
+                        this.startPlacing(element);
+                      }
+                    }}
+                  >
+                    <mwc-list>
+                      ${unmatchedLinkedIeds > 0
+                        ? html`<mwc-list-item
+                            style="--mdc-theme-text-primary-on-background: #BB1326; --mdc-theme-text-icon-on-background: #BB1326;"
+                            graphic="control"
+                            hasMeta
+                            data-name="Delete Unmatched"
+                          >
+                            <span
+                              >Remove ${unmatchedLinkedIeds} missing
+                              IED${unmatchedLinkedIeds > 1 ? 's' : ''} from
+                              SLD</span
+                            >
+                            <mwc-icon slot="graphic">delete</mwc-icon>
+                          </mwc-list-item>`
+                        : nothing}
+                      ${Array.from(ieds)
+                        .sort((a, b) => {
+                          const aName = a.getAttribute('name')!;
+                          const bName = b.getAttribute('name')!;
+
+                          const aPlaced = linkedIeds.find(
+                            ied =>
+                              ied.getAttributeNS(sldNs, 'name') === aName &&
+                              ied.hasAttributeNS(sldNs, 'x')
+                          )
+                            ? 'A'
+                            : 'B';
+                          const bPlaced = linkedIeds.find(
+                            ied =>
+                              ied.getAttributeNS(sldNs, 'name') === bName &&
+                              ied.hasAttributeNS(sldNs, 'x')
+                          )
+                            ? 'A'
+                            : 'B';
+
+                          return `${bPlaced} ${bName.toLowerCase()}`.localeCompare(
+                            `${aPlaced} ${aName.toLowerCase()}`
+                          );
+                        })
+                        .map(ied => {
+                          const linkedIed = linkedIeds.find(
+                            lIed =>
+                              lIed.getAttributeNS(sldNs, 'name') ===
+                                ied.getAttribute('name') &&
+                              lIed.hasAttributeNS(sldNs, 'x')
+                          );
+
+                          return html`<mwc-list-item
+                            twoline
+                            graphic="control"
+                            ?hasMeta=${!!linkedIeds.find(
+                              placedIed =>
+                                ied.getAttribute('name') ===
+                                  placedIed.getAttributeNS(sldNs, 'name') &&
+                                placedIed.hasAttributeNS(sldNs, 'x')
+                            )}
+                            data-name="${ied.getAttribute('name')!}"
+                          >
+                            <span>${ied.getAttribute('name')!}</span>
+                            <span slot="secondary"
+                              >${[
+                                ied.getAttribute('manufacturer'),
+                                ied.getAttribute('type'),
+                                ied.getAttribute('desc'),
+                              ]
+                                .filter(a => !!a)
+                                .join(' - ')}</span
+                            >
+                            ${linkedIed
+                              ? html`<mwc-icon slot="meta">pin_drop</mwc-icon>`
+                              : nothing}
+                            <mwc-icon slot="graphic">developer_board</mwc-icon>
+                          </mwc-list-item>`;
+                        })}
+                    </mwc-list>
+                  </mwc-menu>`
+              : nothing}`
         : nothing
-      }<mwc-fab
+    }<mwc-fab
           mini
           icon="margin"
           @click=${() => this.insertSubstation()}
@@ -211,131 +379,133 @@ export default class OscdEditorSld extends LitElement {
           title="Add Substation"
         >
         </mwc-fab
-        >${Array.from(this.doc.documentElement.children).find(
-        c => c.tagName === 'Substation'
-      )
-        ? html`<mwc-fab
+        >${
+          Array.from(this.doc.documentElement.children).find(
+            c => c.tagName === 'Substation'
+          )
+            ? html`<mwc-fab
                   mini
                   label="Add Single Winding Auto Transformer"
                   title="Add Single Winding Auto Transformer"
                   @click=${() => {
-            const element =
-              this.templateElements.PowerTransformer!.cloneNode() as Element;
-            element.setAttribute('type', 'PTR');
-            setSLDAttributes(element, this.nsp, {
-              kind: 'auto',
-              rot: '3',
-            });
-            const winding =
-              this.templateElements.TransformerWinding!.cloneNode() as Element;
-            winding.setAttribute('type', 'PTW');
-            winding.setAttribute('name', 'W1');
-            element.appendChild(winding);
-            this.startPlacing(element);
-          }}
+                    const element =
+                      this.templateElements.PowerTransformer!.cloneNode() as Element;
+                    element.setAttribute('type', 'PTR');
+                    setSLDAttributes(element, this.nsp, {
+                      kind: 'auto',
+                      rot: '3',
+                    });
+                    const winding =
+                      this.templateElements.TransformerWinding!.cloneNode() as Element;
+                    winding.setAttribute('type', 'PTW');
+                    winding.setAttribute('name', 'W1');
+                    element.appendChild(winding);
+                    this.startPlacing(element);
+                  }}
                   >${ptrIcon(1, { kind: 'auto' })}</mwc-fab
                 ><mwc-fab
                   mini
                   label="Add Two Winding Auto Transformer"
                   title="Add Two Winding Auto Transformer"
                   @click=${() => {
-            const element =
-              this.templateElements.PowerTransformer!.cloneNode() as Element;
-            element.setAttribute('type', 'PTR');
-            setSLDAttributes(element, this.nsp, { kind: 'auto' });
-            const windings = [];
-            for (let i = 1; i <= 2; i += 1) {
-              const winding =
-                this.templateElements.TransformerWinding!.cloneNode() as Element;
-              winding.setAttribute('type', 'PTW');
-              winding.setAttribute('name', `W${i}`);
-              windings.push(winding);
-            }
-            element.append(...windings);
-            this.startPlacing(element);
-          }}
+                    const element =
+                      this.templateElements.PowerTransformer!.cloneNode() as Element;
+                    element.setAttribute('type', 'PTR');
+                    setSLDAttributes(element, this.nsp, { kind: 'auto' });
+                    const windings = [];
+                    for (let i = 1; i <= 2; i += 1) {
+                      const winding =
+                        this.templateElements.TransformerWinding!.cloneNode() as Element;
+                      winding.setAttribute('type', 'PTW');
+                      winding.setAttribute('name', `W${i}`);
+                      windings.push(winding);
+                    }
+                    element.append(...windings);
+                    this.startPlacing(element);
+                  }}
                   >${ptrIcon(2, { kind: 'auto' })}</mwc-fab
                 ><mwc-fab
                   mini
                   label="Add Two Winding Transformer"
                   title="Add Two Winding Transformer"
                   @click=${() => {
-            const element =
-              this.templateElements.PowerTransformer!.cloneNode() as Element;
-            element.setAttribute('type', 'PTR');
-            const windings = [];
-            for (let i = 1; i <= 2; i += 1) {
-              const winding =
-                this.templateElements.TransformerWinding!.cloneNode() as Element;
-              winding.setAttribute('type', 'PTW');
-              winding.setAttribute('name', `W${i}`);
-              windings.push(winding);
-            }
-            element.append(...windings);
-            this.startPlacing(element);
-          }}
+                    const element =
+                      this.templateElements.PowerTransformer!.cloneNode() as Element;
+                    element.setAttribute('type', 'PTR');
+                    const windings = [];
+                    for (let i = 1; i <= 2; i += 1) {
+                      const winding =
+                        this.templateElements.TransformerWinding!.cloneNode() as Element;
+                      winding.setAttribute('type', 'PTW');
+                      winding.setAttribute('name', `W${i}`);
+                      windings.push(winding);
+                    }
+                    element.append(...windings);
+                    this.startPlacing(element);
+                  }}
                   >${ptrIcon(2)}</mwc-fab
                 ><mwc-fab
                   mini
                   label="Add Three Winding Transformer"
                   title="Add Three Winding Transformer"
                   @click=${() => {
-            const element =
-              this.templateElements.PowerTransformer!.cloneNode() as Element;
-            element.setAttribute('type', 'PTR');
-            const windings = [];
-            for (let i = 1; i <= 3; i += 1) {
-              const winding =
-                this.templateElements.TransformerWinding!.cloneNode() as Element;
-              winding.setAttribute('type', 'PTW');
-              winding.setAttribute('name', `W${i}`);
-              windings.push(winding);
-            }
-            element.append(...windings);
-            this.startPlacing(element);
-          }}
+                    const element =
+                      this.templateElements.PowerTransformer!.cloneNode() as Element;
+                    element.setAttribute('type', 'PTR');
+                    const windings = [];
+                    for (let i = 1; i <= 3; i += 1) {
+                      const winding =
+                        this.templateElements.TransformerWinding!.cloneNode() as Element;
+                      winding.setAttribute('type', 'PTW');
+                      winding.setAttribute('name', `W${i}`);
+                      windings.push(winding);
+                    }
+                    element.append(...windings);
+                    this.startPlacing(element);
+                  }}
                   >${ptrIcon(3)}</mwc-fab
                 ><mwc-fab
                   mini
                   label="Add Single Winding Earthing Transformer"
                   title="Add Single Winding Earthing Transformer"
                   @click=${() => {
-            const element =
-              this.templateElements.PowerTransformer!.cloneNode() as Element;
-            element.setAttribute('type', 'PTR');
-            setSLDAttributes(element, this.nsp, { kind: 'earthing' });
-            const winding =
-              this.templateElements.TransformerWinding!.cloneNode() as Element;
-            winding.setAttribute('type', 'PTW');
-            winding.setAttribute('name', 'W1');
-            element.appendChild(winding);
-            this.startPlacing(element);
-          }}
+                    const element =
+                      this.templateElements.PowerTransformer!.cloneNode() as Element;
+                    element.setAttribute('type', 'PTR');
+                    setSLDAttributes(element, this.nsp, { kind: 'earthing' });
+                    const winding =
+                      this.templateElements.TransformerWinding!.cloneNode() as Element;
+                    winding.setAttribute('type', 'PTW');
+                    winding.setAttribute('name', 'W1');
+                    element.appendChild(winding);
+                    this.startPlacing(element);
+                  }}
                   >${ptrIcon(1, { kind: 'earthing' })}</mwc-fab
                 ><mwc-fab
                   mini
                   label="Add Two Winding Earthing Transformer"
                   title="Add Two Winding Earthing Transformer"
                   @click=${() => {
-            const element =
-              this.templateElements.PowerTransformer!.cloneNode() as Element;
-            element.setAttribute('type', 'PTR');
-            setSLDAttributes(element, this.nsp, { kind: 'earthing' });
-            const windings = [];
-            for (let i = 1; i <= 2; i += 1) {
-              const winding =
-                this.templateElements.TransformerWinding!.cloneNode() as Element;
-              winding.setAttribute('type', 'PTW');
-              winding.setAttribute('name', `W${i}`);
-              windings.push(winding);
-            }
-            element.append(...windings);
-            this.startPlacing(element);
-          }}
+                    const element =
+                      this.templateElements.PowerTransformer!.cloneNode() as Element;
+                    element.setAttribute('type', 'PTR');
+                    setSLDAttributes(element, this.nsp, { kind: 'earthing' });
+                    const windings = [];
+                    for (let i = 1; i <= 2; i += 1) {
+                      const winding =
+                        this.templateElements.TransformerWinding!.cloneNode() as Element;
+                      winding.setAttribute('type', 'PTW');
+                      winding.setAttribute('name', `W${i}`);
+                      windings.push(winding);
+                    }
+                    element.append(...windings);
+                    this.startPlacing(element);
+                  }}
                   >${ptrIcon(2, { kind: 'earthing' })}</mwc-fab
                 >`
-        : nothing
-      }${this.doc.querySelector('VoltageLevel, PowerTransformer')
+            : nothing
+        }${
+      this.doc.querySelector('VoltageLevel, PowerTransformer')
         ? html`<mwc-icon-button-toggle
             id="labels"
             label="Toggle Labels"
@@ -346,7 +516,23 @@ export default class OscdEditorSld extends LitElement {
             @click=${() => this.requestUpdate()}
           ></mwc-icon-button-toggle>`
         : nothing
-      }${this.doc.querySelector('Substation')
+    }${
+      (ieds.length > 0 || unmatchedLinkedIeds > 0) &&
+      this.doc.querySelector(':root > Substation')
+        ? html`<mwc-icon-button-toggle
+            id="ieds"
+            label="Toggle IEDs"
+            title="Toggle IEDs"
+            on
+            onIcon="developer_board"
+            offIcon="developer_board_off"
+            @click=${() => {
+              if (this.iedMenu) this.requestUpdate();
+            }}
+          ></mwc-icon-button-toggle>`
+        : nothing
+    }${
+      this.doc.querySelector('Substation')
         ? html`<mwc-icon-button
               icon="zoom_in"
               label="Zoom In"
@@ -359,36 +545,38 @@ export default class OscdEditorSld extends LitElement {
               label="Zoom Out"
               ?disabled=${this.gridSize < 4}
               title="Zoom Out (${Math.round(
-          (100 * (this.gridSize - 3)) / 32
-        )}%)"
+                (100 * (this.gridSize - 3)) / 32
+              )}%)"
               @click=${() => this.zoomOut()}
             ></mwc-icon-button>`
         : nothing
-      }
+    }
         </mwc-icon-button
-        >${this.inAction
-        ? html`<mwc-icon-button
+        >${
+          this.inAction
+            ? html`<mwc-icon-button
                 icon="close"
                 label="Cancel"
                 title="Cancel"
                 @click=${() => this.reset()}
               ></mwc-icon-button>`
-        : html`<mwc-icon-button
+            : html`<mwc-icon-button
                 icon="info"
                 label="About"
                 title="About"
                 @click=${() => this.about?.show()}
               ></mwc-icon-button>`
-      }
+        }
       </nav>
       <sld-editor 
         .doc="${this.doc}"
         .docVersion=${this.docVersion}
         .gridSize=${this.gridSize}
         .showLabels=${this.showLabels}
+        .showIeds=${this.showIeds}
         @sld-editor-in-action=${({ detail }: CustomEvent) => {
-        this.inAction = detail;
-      }}
+          this.inAction = detail;
+        }}
       >
       </sld-editor>
     </main>
@@ -398,6 +586,19 @@ export default class OscdEditorSld extends LitElement {
           close
         </mwc-button>
       </mwc-dialog>`}`;
+  }
+
+  insertOrGetIed(name: string, doc: XMLDocument): Element {
+    const linkedIed = Array.from(
+      doc.getElementsByTagNameNS(sldNs, 'IEDName') ?? []
+    ).find(lIed => lIed.getAttributeNS(sldNs, 'name') === name);
+
+    if (linkedIed) return linkedIed;
+
+    const newLinkedIed = doc.createElementNS(sldNs, `${this.nsp}:IEDName`);
+    newLinkedIed.setAttributeNS(sldNs, `${this.nsp}:name`, name);
+
+    return newLinkedIed;
   }
 
   insertSubstation() {

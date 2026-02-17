@@ -123,6 +123,9 @@ export class SldEditor extends LitElement {
 
   @state() showLabels: boolean = true;
 
+  @property()
+  showIeds?: boolean;
+
   @state()
   connecting?: {
     from: Element;
@@ -245,7 +248,10 @@ export class SldEditor extends LitElement {
 
   placeElement(element: Element, parent: Element, x: number, y: number) {
     const edits: EditV2[] = [];
-    if (element.parentElement !== parent) {
+    if (
+      element.parentElement !== parent &&
+      !(element.localName === 'IEDName' && element.namespaceURI === sldNs)
+    ) {
       edits.push(...reparentElement(element, parent));
     }
 
@@ -279,6 +285,14 @@ export class SldEditor extends LitElement {
           ly += 2;
         }
       }
+      if (
+        element.localName === 'IEDName' &&
+        element.namespaceURI === sldNs &&
+        !getSLDAttributes(element, 'lx')
+      ) {
+        lx += 1;
+        ly += 1;
+      }
       edits.push(
         updateSLDAttributes(element, this.nsp, {
           x: x.toString(),
@@ -305,22 +319,28 @@ export class SldEditor extends LitElement {
       element.querySelectorAll(
         'Bay, ConductingEquipment, PowerTransformer, Vertex'
       )
-    ).forEach(descendant => {
-      const {
-        pos: [descX, descY],
-        label: [descLX, descLY],
-      } = attributes(descendant);
-      const newAttributes: { x: string; y: string; lx?: string; ly?: string } =
-        {
+    )
+      .concat(Array.from(element.getElementsByTagNameNS(sldNs, 'IEDName')))
+      .forEach(descendant => {
+        const {
+          pos: [descX, descY],
+          label: [descLX, descLY],
+        } = attributes(descendant);
+        const newAttributes: {
+          x: string;
+          y: string;
+          lx?: string;
+          ly?: string;
+        } = {
           x: (descX + dx).toString(),
           y: (descY + dy).toString(),
         };
-      if (descendant.localName !== 'Vertex') {
-        newAttributes.lx = (descLX + dx).toString();
-        newAttributes.ly = (descLY + dy).toString();
-      }
-      edits.push(updateSLDAttributes(descendant, this.nsp, newAttributes));
-    });
+        if (descendant.localName !== 'Vertex') {
+          newAttributes.lx = (descLX + dx).toString();
+          newAttributes.ly = (descLY + dy).toString();
+        }
+        edits.push(updateSLDAttributes(descendant, this.nsp, newAttributes));
+      });
 
     if (
       element.tagName === 'ConductingEquipment' ||
@@ -438,7 +458,45 @@ export class SldEditor extends LitElement {
       }
     }
 
+    const oldParent = element.parentElement;
+
     this.dispatchEvent(newEditEventV2(edits));
+
+    const iedWrapEdits: EditV2[] = [];
+    if (element.localName === 'IEDName' && element.namespaceURI === sldNs) {
+      let privateElement = parent.querySelector(
+        ':scope > Private[type="OpenSCD-SLD-Layout"]'
+      );
+      if (!privateElement) {
+        privateElement = this.doc.createElementNS(
+          this.doc.documentElement.namespaceURI,
+          'Private'
+        );
+        privateElement.setAttribute('type', 'OpenSCD-SLD-Layout');
+        iedWrapEdits.push({
+          parent,
+          node: privateElement,
+          reference: getReference(parent, 'Private'),
+        });
+      }
+
+      if (element.parentElement !== privateElement)
+        iedWrapEdits.push({
+          parent: privateElement,
+          node: element,
+          reference: null,
+        });
+
+      if (
+        oldParent?.tagName === 'Private' &&
+        oldParent.getAttribute('type') === 'OpenSCD-SLD-Layout' &&
+        oldParent.childElementCount === 1 &&
+        oldParent !== privateElement
+      )
+        iedWrapEdits.push({ node: oldParent });
+    }
+
+    if (iedWrapEdits.length) this.dispatchEvent(newEditEventV2(iedWrapEdits));
     if (
       ['Bay', 'VoltageLevel'].includes(element.tagName) &&
       (!getSLDAttributes(element, 'w') || !getSLDAttributes(element, 'h'))
@@ -602,6 +660,7 @@ export class SldEditor extends LitElement {
           .placingLabel=${this.placingLabel}
           .connecting=${this.connecting}
           .showLabels=${this.showLabels}
+          .showIeds=${this.showIeds}
           .disabled=${this.disabled}
           .selectable=${this.selectable}
           .highlight=${this.highlight}

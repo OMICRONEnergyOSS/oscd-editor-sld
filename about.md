@@ -1,6 +1,6 @@
 The editor is based around a pick and place palette.
 
-It is designed to stay as close as possible to IEC 61850-6, but requires its own extension namespace, `https://transpower.co.nz/SCL/SSD/SLD/v0` for storing graphical properties of elements and the geometric routing of connectivity nodes (within a `Private` element).
+It is designed to stay as close as possible to IEC 61850-6, but requires its own extension namespace, `https://openscd.org/SCL/SSD/SLD/v0` for storing graphical properties of elements and the geometric routing of connectivity nodes (within a `Private` element).
 
 It allows drawing of multiple Substations. This can be used together with other plugins to add logical nodes and enhanced functionality.
 
@@ -91,9 +91,13 @@ A "Download" button is available for an SVG 1.1 export which can be readily used
 
 The tool currently supports a subset of possible transformers:
 
-- earthing transformers with one or two windings
-- auto-transformers with or without a tertiary
-- two and three winding transformers
+### IEDs
+
+Items representing IEDs are placed within the extension namespace and within
+the relevant Substation, VoltageLevel, or Bay element.
+These items will be shown on the drawing even if the corresponding IED has
+been removed.
+There is an option within the IED menu to remove all unmatched IEDs.
 
 ## Help
 
