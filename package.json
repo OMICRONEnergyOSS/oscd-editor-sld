@@ -35,10 +35,13 @@
     "@omicronenergy/oscd-editor-source": "^0.0.3",
     "@omicronenergy/oscd-menu-open": "^0.0.6",
     "@omicronenergy/oscd-menu-save": "^0.0.2",
+    "@omicronenergy/oscd-scl-dialogs": "^0.0.10",
     "@omicronenergy/oscd-shell": "^0.0.9",
+    "@open-wc/scoped-elements": "^3.0.6",
     "@openscd/oscd-api": "^0.1.5",
     "@openscd/scl-lib": "^2.0.0",
-    "lit": "^2.0.2"
+    "@webcomponents/scoped-custom-element-registry": "^0.0.10",
+    "lit": "^3.3.2"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",

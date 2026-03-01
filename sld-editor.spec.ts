@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-expressions */
+import '@webcomponents/scoped-custom-element-registry';
 import { html } from 'lit';
 import { fixture, expect, aTimeout } from '@open-wc/testing';
 

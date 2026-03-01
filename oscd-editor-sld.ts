@@ -2,28 +2,22 @@ import { LitElement, html, css, nothing } from 'lit';
 import { html as staticHtml, unsafeStatic } from 'lit/static-html.js';
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 import { property, query, state } from 'lit/decorators.js';
+import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
 import { getReference } from '@openscd/scl-lib';
 
 import type { EditV2 } from '@openscd/oscd-api';
-import type { Dialog } from '@material/mwc-dialog';
-import type { IconButtonToggle } from '@material/mwc-icon-button-toggle';
-import type { Menu } from '@material/mwc-menu';
-import type { List, SingleSelectedEvent } from '@material/mwc-list';
-import type { ListItem } from '@material/mwc-list/mwc-list-item.js';
-import type { SldEditor } from './sld-editor.js';
-
-import '@material/mwc-button';
-import '@material/mwc-fab';
-import '@material/mwc-icon-button';
-import '@material/mwc-icon-button-toggle';
-import '@material/mwc-icon';
-import '@material/mwc-menu';
-import '@material/mwc-list';
-import '@material/mwc-list/mwc-list-item.js';
-
-import './sld-editor.js';
+import { Button } from '@material/mwc-button';
+import { Dialog } from '@material/mwc-dialog';
+import { Fab } from '@material/mwc-fab';
+import { Icon } from '@material/mwc-icon';
+import { IconButton } from '@material/mwc-icon-button';
+import { IconButtonToggle } from '@material/mwc-icon-button-toggle';
+import { List, SingleSelectedEvent } from '@material/mwc-list';
+import { ListItem } from '@material/mwc-list/mwc-list-item.js';
+import { Menu } from '@material/mwc-menu';
+import { SldEditor } from './sld-editor.js';
 
 import { bayIcon, equipmentIcon, ptrIcon, voltageLevelIcon } from './icons.js';
 import {
@@ -40,7 +34,20 @@ const aboutContent = await fetch(new URL('about.html', import.meta.url)).then(
   res => res.text()
 );
 
-export default class OscdEditorSld extends LitElement {
+export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
+  static scopedElements = {
+    'mwc-button': Button,
+    'mwc-dialog': Dialog,
+    'mwc-fab': Fab,
+    'mwc-icon': Icon,
+    'mwc-icon-button': IconButton,
+    'mwc-icon-button-toggle': IconButtonToggle,
+    'mwc-list': List,
+    'mwc-list-item': ListItem,
+    'mwc-menu': Menu,
+    'sld-editor': SldEditor,
+  };
+
   @property()
   doc!: XMLDocument;
 
@@ -156,16 +163,55 @@ export default class OscdEditorSld extends LitElement {
       >`;
 
     const ieds = Array.from(this.doc.querySelectorAll(':root > IED'));
-    const linkedIeds = Array.from(
+    const iedRefs = Array.from(
       this.doc.querySelectorAll(':root > Substation')
     ).flatMap(sub => Array.from(sub.getElementsByTagNameNS(sldNs, 'IEDName')));
-    const unmatchedLinkedIeds = linkedIeds.filter(
-      linkedIed =>
+    const unusedIeds = ieds.filter(
+      ied =>
+        !iedRefs.find(
+          iedRef =>
+            ied.getAttribute('name') === iedRef.getAttributeNS(sldNs, 'name')
+        )
+    );
+
+    const unusedIedRefs = iedRefs.filter(
+      iedRef =>
         !ieds.find(
           ied =>
-            ied.getAttribute('name') === linkedIed.getAttributeNS(sldNs, 'name')
+            ied.getAttribute('name') === iedRef.getAttributeNS(sldNs, 'name')
         )
-    ).length;
+    );
+
+    const usedIedRefs = Array.from(ieds)
+      .sort((a, b) => {
+        const aName = a.getAttribute('name') ?? '';
+        const bName = b.getAttribute('name') ?? '';
+
+        const aIsUsed = iedRefs.some(
+          ied =>
+            ied.getAttributeNS(sldNs, 'name') === aName &&
+            ied.hasAttributeNS(sldNs, 'x')
+        );
+
+        const bIsUsed = iedRefs.some(
+          ied =>
+            ied.getAttributeNS(sldNs, 'name') === bName &&
+            ied.hasAttributeNS(sldNs, 'x')
+        );
+
+        if (aIsUsed !== bIsUsed) return aIsUsed ? -1 : 1;
+
+        return aName.localeCompare(bName, undefined, {
+          sensitivity: 'base',
+        });
+      })
+      .filter(ied =>
+        iedRefs.find(
+          lIed =>
+            lIed.getAttributeNS(sldNs, 'name') === ied.getAttribute('name') &&
+            lIed.hasAttributeNS(sldNs, 'x')
+        )
+      );
 
     return html`<main>
       <nav>
@@ -236,7 +282,7 @@ export default class OscdEditorSld extends LitElement {
             >
               ${voltageLevelIcon}
             </mwc-fab>
-            ${ieds.length > 0 || unmatchedLinkedIeds > 0
+            ${ieds.length > 0 || unusedIeds.length > 0
               ? html`<mwc-fab
                     mini
                     icon="developer_board"
@@ -262,17 +308,17 @@ export default class OscdEditorSld extends LitElement {
 
                       if (name === 'Delete Unmatched') {
                         const edits: EditV2[] = [];
-                        linkedIeds
+                        iedRefs
                           .filter(
-                            linkedIed =>
+                            referencedIed =>
                               !ieds.find(
                                 ied =>
                                   ied.getAttribute('name') ===
-                                  linkedIed.getAttributeNS(sldNs, 'name')
+                                  referencedIed.getAttributeNS(sldNs, 'name')
                               )
                           )
-                          .forEach(unusedLinkedIed => {
-                            const parent = unusedLinkedIed.parentElement;
+                          .forEach(unusedReferencedIed => {
+                            const parent = unusedReferencedIed.parentElement;
                             if (
                               parent?.tagName === 'Private' &&
                               parent.getAttribute('type') ===
@@ -280,7 +326,7 @@ export default class OscdEditorSld extends LitElement {
                               parent.childElementCount === 1
                             )
                               edits.push({ node: parent });
-                            else edits.push({ node: unusedLinkedIed });
+                            else edits.push({ node: unusedReferencedIed });
                           });
 
                         this.dispatchEvent(newEditEventV2(edits));
@@ -292,83 +338,67 @@ export default class OscdEditorSld extends LitElement {
                     }}
                   >
                     <mwc-list>
-                      ${unmatchedLinkedIeds > 0
+                      ${unusedIedRefs.length > 0
                         ? html`<mwc-list-item
-                            style="--mdc-theme-text-primary-on-background: #BB1326; --mdc-theme-text-icon-on-background: #BB1326;"
+                            style="--mdc-themes-text-primary-on-background: #BB1326; --mdc-theme-text-icon-on-background: #BB1326;"
                             graphic="control"
                             hasMeta
                             data-name="Delete Unmatched"
                           >
                             <span
-                              >Remove ${unmatchedLinkedIeds} missing
-                              IED${unmatchedLinkedIeds > 1 ? 's' : ''} from
-                              SLD</span
+                              >Remove reference to ${unusedIedRefs.length}
+                              missing IED${unusedIedRefs.length > 1 ? 's' : ''}
+                              from the SLD</span
                             >
                             <mwc-icon slot="graphic">delete</mwc-icon>
                           </mwc-list-item>`
                         : nothing}
-                      ${Array.from(ieds)
-                        .sort((a, b) => {
-                          const aName = a.getAttribute('name') ?? '';
-                          const bName = b.getAttribute('name') ?? '';
-
-                          const aIsPlaced = linkedIeds.some(
-                            ied =>
-                              ied.getAttributeNS(sldNs, 'name') === aName &&
-                              ied.hasAttributeNS(sldNs, 'x')
-                          );
-
-                          const bIsPlaced = linkedIeds.some(
-                            ied =>
-                              ied.getAttributeNS(sldNs, 'name') === bName &&
-                              ied.hasAttributeNS(sldNs, 'x')
-                          );
-
-                          // sort by placement
-                          if (aIsPlaced !== bIsPlaced) {
-                            return aIsPlaced ? -1 : 1;
-                          }
-
-                          // then sort alphabetically by name (case-insensitive)
-                          return aName.localeCompare(bName, undefined, {
-                            sensitivity: 'base',
-                          });
-                        })
-                        .map(ied => {
-                          const linkedIed = linkedIeds.find(
-                            lIed =>
-                              lIed.getAttributeNS(sldNs, 'name') ===
-                                ied.getAttribute('name') &&
-                              lIed.hasAttributeNS(sldNs, 'x')
-                          );
-
-                          return html`<mwc-list-item
-                            twoline
-                            graphic="control"
-                            ?hasMeta=${!!linkedIeds.find(
-                              placedIed =>
-                                ied.getAttribute('name') ===
-                                  placedIed.getAttributeNS(sldNs, 'name') &&
-                                placedIed.hasAttributeNS(sldNs, 'x')
-                            )}
-                            data-name="${ied.getAttribute('name')!}"
-                          >
-                            <span>${ied.getAttribute('name')!}</span>
-                            <span slot="secondary"
-                              >${[
-                                ied.getAttribute('manufacturer'),
-                                ied.getAttribute('type'),
-                                ied.getAttribute('desc'),
-                              ]
-                                .filter(a => !!a)
-                                .join(' - ')}</span
-                            >
-                            ${linkedIed
-                              ? html`<mwc-icon slot="meta">pin_drop</mwc-icon>`
-                              : nothing}
-                            <mwc-icon slot="graphic">developer_board</mwc-icon>
-                          </mwc-list-item>`;
-                        })}
+                      ${unusedIeds.length > 0
+                        ? html`<mwc-list-item noninteractive>
+                              <span><strong>Available IEDs</strong></span>
+                            </mwc-list-item>
+                            ${unusedIeds.map(
+                              ied => html` <mwc-list-item
+                                twoline
+                                data-name="${ied.getAttribute('name')!}"
+                              >
+                                <span>${ied.getAttribute('name')!}</span>
+                                <span slot="secondary">
+                                  ${[
+                                    ied.getAttribute('manufacturer'),
+                                    ied.getAttribute('type'),
+                                    ied.getAttribute('desc'),
+                                  ]
+                                    .filter(a => !!a)
+                                    .join(' - ')}
+                                </span>
+                              </mwc-list-item>`
+                            )}`
+                        : nothing}
+                      ${usedIedRefs.length > 0
+                        ? html`<mwc-list-item noninteractive>
+                              <span><strong>Used IEDs</strong></span>
+                            </mwc-list-item>
+                            ${usedIedRefs.map(
+                              ied => html`<mwc-list-item
+                                twoline
+                                hasMeta
+                                data-name="${ied.getAttribute('name')!}"
+                              >
+                                <span>${ied.getAttribute('name')!}</span>
+                                <span slot="secondary">
+                                  ${[
+                                    ied.getAttribute('manufacturer'),
+                                    ied.getAttribute('type'),
+                                    ied.getAttribute('desc'),
+                                  ]
+                                    .filter(a => !!a)
+                                    .join(' - ')}
+                                </span>
+                                <mwc-icon slot="meta">pin_drop</mwc-icon>
+                              </mwc-list-item>`
+                            )}`
+                        : nothing}
                     </mwc-list>
                   </mwc-menu>`
               : nothing}`
@@ -520,7 +550,7 @@ export default class OscdEditorSld extends LitElement {
           ></mwc-icon-button-toggle>`
         : nothing
     }${
-      (ieds.length > 0 || unmatchedLinkedIeds > 0) &&
+      (ieds.length > 0 || unusedIeds.length > 0) &&
       this.doc.querySelector(':root > Substation')
         ? html`<mwc-icon-button-toggle
             id="ieds"
