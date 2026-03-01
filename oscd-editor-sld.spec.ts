@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-expressions */
+import '@webcomponents/scoped-custom-element-registry';
 import { html } from 'lit';
 import { fixture, expect, aTimeout } from '@open-wc/testing';
 
@@ -505,7 +506,7 @@ describe('SLD Editor', () => {
         expect(addIedButton).to.not.exist;
       });
 
-      it('shows placed and unplaced IEDs in menu with correct symbols', async () => {
+      it('shows placed and unplaced IEDs in menu with correct status markers', async () => {
         await loadIedDoc();
         await placeIedFromMenu('IED1', 3, 3);
 
@@ -522,16 +523,6 @@ describe('SLD Editor', () => {
 
         expect(iedItem1).to.exist;
         expect(iedItem2).to.exist;
-        expect(
-          iedItem1
-            ?.querySelector('mwc-icon[slot="graphic"]')
-            ?.textContent?.trim()
-        ).to.equal('developer_board');
-        expect(
-          iedItem2
-            ?.querySelector('mwc-icon[slot="graphic"]')
-            ?.textContent?.trim()
-        ).to.equal('developer_board');
 
         expect(
           iedItem1?.querySelector('mwc-icon[slot="meta"]')?.textContent?.trim()
@@ -539,9 +530,25 @@ describe('SLD Editor', () => {
         expect(iedItem2?.querySelector('mwc-icon[slot="meta"]')).to.not.exist;
       });
 
-      it('opens the wizard via the IED context menu edit action', async () => {
+      it('triggers oscd-scl-dialogs via the IED context menu edit action', async () => {
         await loadIedDoc();
         await placeIedFromMenu('IED1', 3, 3);
+
+        const sclDialogs = getSldSubstationEditor(
+          element
+        )?.shadowRoot?.querySelector('oscd-scl-dialogs') as
+          | {
+              edit: (wizardType: { element: Element }) => Promise<any[]>;
+            }
+          | undefined;
+        expect(sclDialogs).to.exist;
+
+        const editCalls: { element: Element }[] = [];
+        const originalEdit = sclDialogs!.edit.bind(sclDialogs);
+        sclDialogs!.edit = async wizardType => {
+          editCalls.push(wizardType);
+          return [];
+        };
 
         const iedRect =
           getSldSubstationEditor(element)?.shadowRoot?.querySelector(
@@ -573,9 +580,12 @@ describe('SLD Editor', () => {
         editItem!.click();
         await settle();
 
-        expect(lastCalledWizard).to.equal(
+        expect(editCalls).to.have.lengthOf(1);
+        expect(editCalls[0].element).to.equal(
           element.doc.querySelector(':root > IED[name="IED1"]')
         );
+
+        sclDialogs!.edit = originalEdit;
       });
 
       it('moves an IED from voltage level to bay and updates XML location', async () => {

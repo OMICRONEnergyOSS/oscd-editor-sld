@@ -1,11 +1,12 @@
 import { html, LitElement } from 'lit';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { customElement, property, state } from 'lit/decorators.js';
+import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
 import { EditV2, SetAttributes } from '@openscd/oscd-api';
 import { getReference } from '@openscd/scl-lib';
 
-import './sld-substation-editor.js';
+import { SldSubstationEditor } from './sld-substation-editor.js';
 
 import {
   attributes,
@@ -83,7 +84,11 @@ function cutSectionAt(
 
 @customElement('sld-editor')
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export class SldEditor extends LitElement {
+export class SldEditor extends ScopedElementsMixin(LitElement) {
+  static scopedElements = {
+    'sld-substation-editor': SldSubstationEditor,
+  };
+
   @property() doc!: XMLDocument;
 
   @property()

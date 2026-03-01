@@ -8,23 +8,23 @@ import {
   SVGTemplateResult,
 } from 'lit';
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { createRef, Ref, ref } from 'lit/directives/ref.js';
+import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 
-import { EditV2 } from '@openscd/oscd-api';
+import { EditV2, SetAttributes } from '@openscd/oscd-api';
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
 
-import type { Dialog } from '@material/mwc-dialog';
-import type { SingleSelectedEvent } from '@material/mwc-list';
-import type { Snackbar } from '@material/mwc-snackbar';
-import type { TextField } from '@material/mwc-textfield';
-
-import '@material/mwc-dialog';
-import '@material/mwc-list';
-import '@material/mwc-list/mwc-list-item.js';
-import '@material/mwc-snackbar';
-import '@material/mwc-textfield';
+import { Button } from '@material/mwc-button';
+import { Dialog } from '@material/mwc-dialog';
+import { Icon } from '@material/mwc-icon';
+import { IconButton } from '@material/mwc-icon-button';
+import { List, SingleSelectedEvent } from '@material/mwc-list';
+import { ListItem } from '@material/mwc-list/mwc-list-item.js';
+import { Snackbar } from '@material/mwc-snackbar';
+import { TextField } from '@material/mwc-textfield';
+import { OscdSclDialogs } from '@omicronenergy/oscd-scl-dialogs/oscd-scl-dialogs.js';
 
 import { getReference, identity, removeIED } from '@openscd/scl-lib';
 import {
@@ -417,9 +417,21 @@ function transformerHighlight(
   }" width="1.6" height="1.6" style="${style}" pointer-events="none" />`;
 }
 
-@customElement('sld-substation-editor')
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-export class SldSubstationEditor extends LitElement {
+/** An editor [[`plugin`]] for editing the `Substation` section. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
+  static scopedElements = {
+    'mwc-button': Button,
+    'mwc-dialog': Dialog,
+    'mwc-icon': Icon,
+    'mwc-icon-button': IconButton,
+    'mwc-list': List,
+    'mwc-list-item': ListItem,
+    'mwc-snackbar': Snackbar,
+    'mwc-textfield': TextField,
+    'oscd-scl-dialogs': OscdSclDialogs,
+  };
+
   @property()
   doc!: XMLDocument;
 
@@ -494,6 +506,9 @@ export class SldSubstationEditor extends LitElement {
 
   @query('mwc-snackbar')
   groundHint!: Snackbar;
+
+  @query('oscd-scl-dialogs')
+  sclDialogs!: OscdSclDialogs;
 
   @state()
   mouseX = 0;
@@ -1293,7 +1308,7 @@ export class SldSubstationEditor extends LitElement {
             <span>Edit</span>
             <mwc-icon slot="graphic">edit</mwc-icon>
           </mwc-list-item>`,
-          handler: () => this.dispatchEvent(newEditWizardEvent(sclIed)),
+          handler: async () => this.openIedEditDialog(sclIed),
         },
         {
           content: html`<mwc-list-item
@@ -1339,6 +1354,39 @@ export class SldSubstationEditor extends LitElement {
     });
 
     return items;
+  }
+
+  private async openIedEditDialog(sclIed: Element): Promise<void> {
+    const edits = await this.sclDialogs.edit({ element: sclIed });
+
+    const iedNameEdit = [...edits.flat()].find(
+      edit =>
+        'element' in edit &&
+        edit.element.tagName === 'IED' &&
+        'attributes' in edit &&
+        'name' in attributes
+    ) as SetAttributes;
+    if (!iedNameEdit) return;
+
+    const newIedName = iedNameEdit.attributes!.name!;
+    const iedReference = Array.from(
+      this.doc.getElementsByTagNameNS(sldNs, 'IEDName')
+    ).find(
+      iedRef =>
+        iedRef.getAttributeNS(sldNs, 'name') === sclIed.getAttribute('name')
+    );
+    if (!iedReference) return;
+
+    const iedReferenceEdit = updateSLDAttributes(iedReference, this.nsp, {
+      name: newIedName,
+    });
+
+    this.dispatchEvent(
+      newEditEventV2([edits, iedReferenceEdit], {
+        title: 'Update IED',
+        squash: false,
+      })
+    );
   }
 
   busBarMenuItems(busBar: Element) {
@@ -2167,6 +2215,7 @@ export class SldSubstationEditor extends LitElement {
       >
         <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
       </mwc-snackbar>
+      <oscd-scl-dialogs></oscd-scl-dialogs>
     </section>`;
   }
 
