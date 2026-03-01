@@ -309,27 +309,30 @@ export default class OscdEditorSld extends LitElement {
                         : nothing}
                       ${Array.from(ieds)
                         .sort((a, b) => {
-                          const aName = a.getAttribute('name')!;
-                          const bName = b.getAttribute('name')!;
+                          const aName = a.getAttribute('name') ?? '';
+                          const bName = b.getAttribute('name') ?? '';
 
-                          const aPlaced = linkedIeds.find(
+                          const aIsPlaced = linkedIeds.some(
                             ied =>
                               ied.getAttributeNS(sldNs, 'name') === aName &&
                               ied.hasAttributeNS(sldNs, 'x')
-                          )
-                            ? 'A'
-                            : 'B';
-                          const bPlaced = linkedIeds.find(
+                          );
+
+                          const bIsPlaced = linkedIeds.some(
                             ied =>
                               ied.getAttributeNS(sldNs, 'name') === bName &&
                               ied.hasAttributeNS(sldNs, 'x')
-                          )
-                            ? 'A'
-                            : 'B';
-
-                          return `${bPlaced} ${bName.toLowerCase()}`.localeCompare(
-                            `${aPlaced} ${aName.toLowerCase()}`
                           );
+
+                          // sort by placement
+                          if (aIsPlaced !== bIsPlaced) {
+                            return aIsPlaced ? -1 : 1;
+                          }
+
+                          // then sort alphabetically by name (case-insensitive)
+                          return aName.localeCompare(bName, undefined, {
+                            sensitivity: 'base',
+                          });
                         })
                         .map(ied => {
                           const linkedIed = linkedIeds.find(
