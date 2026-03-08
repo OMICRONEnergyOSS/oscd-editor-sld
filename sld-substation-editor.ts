@@ -1298,7 +1298,9 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               edits.push({ node: sldLayoutPrivate });
             else edits.push({ node: referencedIed });
             edits.push(...removeIED({ node: sclIed }));
-            this.dispatchEvent(newEditEventV2(edits));
+            this.dispatchEvent(
+              newEditEventV2(edits, { title: 'Deleted IED', squash: false })
+            );
           },
         }
       );
@@ -1318,7 +1320,9 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         )
           edits.push({ node: sldLayoutPrivate });
         else edits.push({ node: referencedIed });
-        this.dispatchEvent(newEditEventV2(edits));
+        this.dispatchEvent(
+          newEditEventV2(edits, { title: 'Removed from SLD', squash: false })
+        );
       },
     });
 
@@ -1364,7 +1368,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     this.dispatchEvent(
       newEditEventV2([edits, iedReferenceEdit], {
-        title: 'Update IED',
+        title: 'Update IED from dialog',
         squash: false,
       })
     );
