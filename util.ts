@@ -180,13 +180,9 @@ export function setSLDAttributes(
   nsPrefix: string,
   values: Record<string, string>
 ): void {
-  const isDirectSldAttributesElement = [
-    'Section',
-    'Vertex',
-    'IEDName',
-  ].includes(element.localName);
+  const isSectionOrVertex = ['Section', 'Vertex'].includes(element.localName);
 
-  if (isDirectSldAttributesElement) {
+  if (isSectionOrVertex) {
     Object.entries(values).forEach(([key, value]) => {
       element.setAttributeNS(sldNs, `${nsPrefix}:${key}`, value);
     });
@@ -206,12 +202,8 @@ export function updateSLDAttributes(
   nsPrefix: string,
   values: Partial<Record<string, string | null>>
 ): EditV2 {
-  const isDirectSldAttributesElement = [
-    'Section',
-    'Vertex',
-    'IEDName',
-  ].includes(element.localName);
-  const toBeUpdated = isDirectSldAttributesElement
+  const isSectionOrVertex = ['Section', 'Vertex'].includes(element.localName);
+  const toBeUpdated = isSectionOrVertex
     ? element
     : sldAttributes(element, nsPrefix)!;
 
@@ -229,12 +221,8 @@ export function updateSLDAttributes(
 }
 
 export function getSLDAttributes(element: Element, key: string): string | null {
-  const isDirectSldAttributesElement = [
-    'Section',
-    'Vertex',
-    'IEDName',
-  ].includes(element.localName);
-  if (isDirectSldAttributesElement) return element.getAttributeNS(sldNs, key);
+  const isSectionOrVertex = ['Section', 'Vertex'].includes(element.localName);
+  if (isSectionOrVertex) return element.getAttributeNS(sldNs, key);
 
   return sldAttributes(element)?.getAttributeNS(sldNs, key) ?? null;
 }
