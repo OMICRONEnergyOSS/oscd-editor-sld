@@ -3,6 +3,7 @@ import {
   html,
   nothing,
   LitElement,
+  PropertyValues,
   svg,
   TemplateResult,
   SVGTemplateResult,
@@ -518,6 +519,26 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
   @state()
   mouseY = 0;
+
+  private iedResolutionCache = new Map<Element, Element | null>();
+
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
+    if (
+      changedProperties.has('doc') ||
+      changedProperties.has('docVersion') ||
+      changedProperties.has('substation')
+    ) {
+      this.iedResolutionCache.clear();
+    }
+  }
+
+  private resolvedIed(referencedIed: Element): Element | null {
+    if (!this.iedResolutionCache.has(referencedIed)) {
+      this.iedResolutionCache.set(referencedIed, resolveIed(referencedIed));
+    }
+
+    return this.iedResolutionCache.get(referencedIed) ?? null;
+  }
 
   @state()
   mouseX2 = 0;
@@ -1228,7 +1249,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
   }
 
   iedMenuItems(referencedIed: Element) {
-    const sclIed = resolveIed(referencedIed);
+    const sclIed = this.resolvedIed(referencedIed);
     const items: MenuItem[] = [
       {
         content: html`<mwc-list-item graphic="icon">
@@ -1314,7 +1335,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const edits = await this.sclDialogs.edit({ element: sclIed });
 
     const iedReference = iedReferences(this.doc).find(
-      iedRef => resolveIed(iedRef) === sclIed
+      iedRef => this.resolvedIed(iedRef) === sclIed
     );
     if (!iedReference) {
       this.dispatchEvent(
@@ -2182,7 +2203,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     let deg = 0;
     let text: string | null | TemplateResult<2>[] =
       element.getAttribute('name') ||
-      resolveIed(element)?.getAttribute('name') ||
+      this.resolvedIed(element)?.getAttribute('name') ||
       element.getAttributeNS(sldNs, 'name');
     let weight = 400;
     let color = 'black';
@@ -2208,7 +2229,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     }
 
     if (isIedReferenceElement(element) && !this.placing && !this.placingLabel)
-      color = resolveIed(element) ? color : '#BB1326';
+      color = this.resolvedIed(element) ? color : '#BB1326';
 
     const fontSize = element.tagName === 'ConductingEquipment' ? 0.45 : 0.6;
     let events = 'none';
@@ -2230,7 +2251,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           if (!isIedReferenceElement(element)) {
             this.dispatchEvent(newEditWizardEvent(element));
           } else {
-            const ied = resolveIed(element);
+            const ied = this.resolvedIed(element);
             if (ied) this.openIedEditDialog(ied);
           }
           e.preventDefault();
@@ -2246,7 +2267,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       if (element.localName !== 'Text' && !isIedReferenceElement(element))
         id = `${identity(element)}`;
       if (isIedReferenceElement(element))
-        id = `${resolveIed(element)?.getAttribute('name') ?? ''}`;
+        id = `${this.resolvedIed(element)?.getAttribute('name') ?? ''}`;
     }
     const classes = classMap({
       label: true,
@@ -3168,7 +3189,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       return svg``;
 
     const [x, y] = this.renderedPosition(referencedIed);
-    const name = resolveIed(referencedIed)?.getAttribute('name');
+    const name = this.resolvedIed(referencedIed)?.getAttribute('name');
 
     let handleClick: ((e: MouseEvent) => void) | symbol = nothing;
     if (
