@@ -309,10 +309,7 @@ function copy(element: Element, nsp: string): Element {
 }
 
 function renderMenuHeader(element: Element) {
-  let name =
-    element.getAttribute('name') ||
-    element.getAttributeNS(sldNs, 'name') ||
-    element.tagName;
+  let name = element.getAttribute('name') || element.tagName;
   let detail: string | null | TemplateResult<1> = element.getAttribute('desc');
   const type = element.getAttribute('type');
   if (type) {
@@ -553,8 +550,6 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
   @state()
   menu?: { element: Element; top: number; left: number };
-
-  private iedModifiedName?: string;
 
   coordinatesRef: Ref<HTMLElement> = createRef();
 
@@ -3235,7 +3230,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     })}"
       id="${
         referencedIed.closest('Substation') === this.substation && name
-          ? `IEDName-${name}`
+          ? `IEDRef-${name}`
           : nothing
       }"
       transform="translate(${x} ${y})">

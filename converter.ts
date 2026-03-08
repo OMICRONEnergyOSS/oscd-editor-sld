@@ -144,7 +144,7 @@ function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
       const lx = oldIed.getAttributeNS(oldNs, 'lx');
       const ly = oldIed.getAttributeNS(oldNs, 'ly');
 
-      const newIed = oldIed.ownerDocument!.createElementNS(
+      const iedReference = oldIed.ownerDocument!.createElementNS(
         newNs,
         `${nsd}:Reference`
       );
@@ -157,18 +157,23 @@ function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
         ? oldIed.ownerDocument!.querySelector(`:root > IED[name="${name}"]`)
         : null;
       if (sclIed)
-        newIed.setAttributeNS(newNs, `${nsd}:id`, String(identity(sclIed)));
-      else if (name) newIed.setAttributeNS(newNs, `${nsd}:id`, `IED[${name}]`);
-      newIed.setAttributeNS(newNs, `${nsd}:type`, 'IED');
+        iedReference.setAttributeNS(
+          newNs,
+          `${nsd}:id`,
+          String(identity(sclIed))
+        );
+      else if (name)
+        iedReference.setAttributeNS(newNs, `${nsd}:id`, `IED[${name}]`);
+      iedReference.setAttributeNS(newNs, `${nsd}:type`, 'IED');
 
       if (x) sldAttributes.setAttributeNS(newNs, `${nsd}:x`, x);
       if (y) sldAttributes.setAttributeNS(newNs, `${nsd}:y`, y);
       if (lx) sldAttributes.setAttributeNS(newNs, `${nsd}:lx`, lx);
       if (ly) sldAttributes.setAttributeNS(newNs, `${nsd}:ly`, ly);
 
-      newIed.appendChild(sldAttributes);
+      iedReference.appendChild(sldAttributes);
 
-      sldPrivateWithIEDs.appendChild(newIed);
+      sldPrivateWithIEDs.appendChild(iedReference);
     });
 
     const insertNewIeds: EditV2 = {
@@ -197,7 +202,7 @@ function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
   const substation = doc.querySelector(':root > Substation');
   if (!substation) return [];
 
-  const iedNamesWithLegacyLinks = new Set(
+  const oldLinkedIedNames = new Set(
     Array.from(
       substation.querySelectorAll(
         ':scope Private[type="OpenSCD-Linked-IEDs"] > IEDName'
@@ -242,10 +247,11 @@ function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
     const lx = ied.getAttributeNS(oldNs, 'lx');
     const ly = ied.getAttributeNS(oldNs, 'ly');
 
-    const linkedByLegacyIedName =
-      !!iedName && iedNamesWithLegacyLinks.has(iedName);
+    const referencedByOldIedName = !!iedName && oldLinkedIedNames.has(iedName);
 
-    if (!linkedByLegacyIedName) {
+    /* Only migrate IEDs which aren't already linked by IEDName elements. 
+    Previously without a migration tool, files exist with both coordinates. */
+    if (!referencedByOldIedName) {
       const iedReference = ied.ownerDocument!.createElementNS(
         newNs,
         `${nsd}:Reference`
@@ -374,10 +380,10 @@ export function convertSldLayout(doc: XMLDocument, nsd: string): EditV2 {
   );
 
   const substations = doc.querySelectorAll(':root > Substation');
+
   const iedMigration = Array.from(substations).flatMap(substation =>
     migrateOldIEDNames(substation, nsd)
   );
-
   const legacyIedCoordinateMigration = migrateLegacyIedCoordinates(doc, nsd);
 
   const namespaceEdits = replaceNamespace(doc, nsd);
