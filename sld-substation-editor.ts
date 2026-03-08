@@ -88,7 +88,6 @@ const parentTags: Partial<Record<string, string[]>> = {
   Bay: ['VoltageLevel'],
   VoltageLevel: ['Substation'],
   PowerTransformer: ['Bay', 'VoltageLevel', 'Substation'],
-  IEDName: ['Bay', 'VoltageLevel', 'Substation'],
   Reference: ['Bay', 'VoltageLevel', 'Substation'],
 };
 
