@@ -160,17 +160,12 @@ function sldAttributes(element: Element, nsPrefix?: string): Element | null {
   if (sldAttrs) return sldAttrs;
   if (!nsPrefix) return null;
 
-  const priv = element.ownerDocument.createElementNS(
-    element.ownerDocument.documentElement.namespaceURI,
-    'Private'
-  );
+  const doc = element.ownerDocument;
+  const priv = doc.createElementNS(doc.documentElement.namespaceURI, 'Private');
   priv.setAttribute('type', privType);
   element.insertBefore(priv, getReference(element, 'Private'));
 
-  const sldAttrsNew = element.ownerDocument.createElementNS(
-    sldNs,
-    `${nsPrefix}:SLDAttributes`
-  );
+  const sldAttrsNew = doc.createElementNS(sldNs, `${nsPrefix}:SLDAttributes`);
   priv.insertBefore(sldAttrsNew, null);
 
   return sldAttrsNew;
