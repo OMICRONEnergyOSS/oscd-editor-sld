@@ -1,5 +1,5 @@
 import { EditV2, SetAttributes } from '@openscd/oscd-api';
-import { getReference } from '@openscd/scl-lib';
+import { getReference, identity } from '@openscd/scl-lib';
 import { createElement } from '@openscd/scl-lib/dist/foundation/utils.js';
 
 const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
@@ -99,6 +99,13 @@ function copyConnNodePrivate(connNode: Element, nsd: string): EditV2[] {
   return [insertPrivate, removeOldPrivate];
 }
 
+/**
+ * Second-generation migration for legacy linked IED layout.
+ *
+ * This path migrates `OpenSCD-Linked-IEDs` entries (with `IEDName`) into
+ * `Private[type="OpenSCD-SLD-Layout"]` containers under the Substation section,
+ * using `Reference` elements with nested `SLDAttributes`.
+ */
 function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
   const oldIedPrivates = Array.from(
     substation.querySelectorAll(':scope Private[type="OpenSCD-Linked-IEDs"]')
@@ -139,14 +146,27 @@ function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
 
       const newIed = oldIed.ownerDocument!.createElementNS(
         newNs,
-        `${nsd}:IEDName`
+        `${nsd}:Reference`
+      );
+      const sldAttributes = oldIed.ownerDocument!.createElementNS(
+        newNs,
+        `${nsd}:SLDAttributes`
       );
 
-      if (name) newIed.setAttributeNS(newNs, `${nsd}:name`, name);
-      if (x) newIed.setAttributeNS(newNs, `${nsd}:x`, x);
-      if (y) newIed.setAttributeNS(newNs, `${nsd}:y`, y);
-      if (lx) newIed.setAttributeNS(newNs, `${nsd}:lx`, lx);
-      if (ly) newIed.setAttributeNS(newNs, `${nsd}:ly`, ly);
+      const sclIed = name
+        ? oldIed.ownerDocument!.querySelector(`:root > IED[name="${name}"]`)
+        : null;
+      if (sclIed)
+        newIed.setAttributeNS(newNs, `${nsd}:id`, String(identity(sclIed)));
+      else if (name) newIed.setAttributeNS(newNs, `${nsd}:id`, `IED[${name}]`);
+      newIed.setAttributeNS(newNs, `${nsd}:type`, 'IED');
+
+      if (x) sldAttributes.setAttributeNS(newNs, `${nsd}:x`, x);
+      if (y) sldAttributes.setAttributeNS(newNs, `${nsd}:y`, y);
+      if (lx) sldAttributes.setAttributeNS(newNs, `${nsd}:lx`, lx);
+      if (ly) sldAttributes.setAttributeNS(newNs, `${nsd}:ly`, ly);
+
+      newIed.appendChild(sldAttributes);
 
       sldPrivateWithIEDs.appendChild(newIed);
     });
@@ -159,6 +179,112 @@ function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
 
     const removeOldIeds: EditV2 = { node: oldIedPrivate };
     edits.push(insertNewIeds, removeOldIeds);
+  });
+
+  return edits;
+}
+
+/**
+ * Legacy migration for IED coordinates that were written directly on `IED`.
+ *
+ * In this earliest format, layout coordinates lived on the IED itself
+ * (`esld:x`, `esld:y`, `esld:lx`, `esld:ly`), which was problematic because many
+ * IED manufacturer tools did not retain these non-Private layout attributes.
+ * This migration moves those coordinates into Substation layout Private data by
+ * creating `Reference` + nested `SLDAttributes` and clearing the old IED attrs.
+ */
+function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
+  const substation = doc.querySelector(':root > Substation');
+  if (!substation) return [];
+
+  const iedNamesWithLegacyLinks = new Set(
+    Array.from(
+      substation.querySelectorAll(
+        ':scope Private[type="OpenSCD-Linked-IEDs"] > IEDName'
+      )
+    )
+      .map(iedName => iedName.getAttributeNS(oldNs, 'name'))
+      .filter((name): name is string => !!name)
+  );
+
+  const legacyIeds = Array.from(doc.querySelectorAll(':root > IED')).filter(
+    ied =>
+      ied.getAttributeNS(oldNs, 'x') !== null ||
+      ied.getAttributeNS(oldNs, 'y') !== null ||
+      ied.getAttributeNS(oldNs, 'lx') !== null ||
+      ied.getAttributeNS(oldNs, 'ly') !== null
+  );
+
+  if (legacyIeds.length === 0) return [];
+
+  const edits: EditV2[] = [];
+  let targetPrivate = substation.querySelector(
+    ':scope > Private[type="OpenSCD-SLD-Layout"]'
+  );
+
+  if (!targetPrivate) {
+    targetPrivate = createElement(substation.ownerDocument!, 'Private', {
+      type: 'OpenSCD-SLD-Layout',
+    });
+
+    const insertPrivate: EditV2 = {
+      parent: substation,
+      node: targetPrivate,
+      reference: getReference(substation, targetPrivate.tagName),
+    };
+    edits.push(insertPrivate);
+  }
+
+  legacyIeds.forEach(ied => {
+    const iedName = ied.getAttribute('name');
+    const x = ied.getAttributeNS(oldNs, 'x');
+    const y = ied.getAttributeNS(oldNs, 'y');
+    const lx = ied.getAttributeNS(oldNs, 'lx');
+    const ly = ied.getAttributeNS(oldNs, 'ly');
+
+    const linkedByLegacyIedName =
+      !!iedName && iedNamesWithLegacyLinks.has(iedName);
+
+    if (!linkedByLegacyIedName) {
+      const iedReference = ied.ownerDocument!.createElementNS(
+        newNs,
+        `${nsd}:Reference`
+      );
+      iedReference.setAttributeNS(newNs, `${nsd}:id`, String(identity(ied)));
+      iedReference.setAttributeNS(newNs, `${nsd}:type`, 'IED');
+
+      const sldAttributes = ied.ownerDocument!.createElementNS(
+        newNs,
+        `${nsd}:SLDAttributes`
+      );
+      if (x) sldAttributes.setAttributeNS(newNs, `${nsd}:x`, x);
+      if (y) sldAttributes.setAttributeNS(newNs, `${nsd}:y`, y);
+      if (lx) sldAttributes.setAttributeNS(newNs, `${nsd}:lx`, lx);
+      if (ly) sldAttributes.setAttributeNS(newNs, `${nsd}:ly`, ly);
+
+      iedReference.appendChild(sldAttributes);
+
+      const insertIedReference: EditV2 = {
+        parent: targetPrivate!,
+        node: iedReference,
+        reference: getReference(targetPrivate!, iedReference.tagName),
+      };
+      edits.push(insertIedReference);
+    }
+
+    const resetIedLegacyCoordinates: SetAttributes = {
+      element: ied,
+      attributes: {},
+      attributesNS: {
+        [`${oldNs}`]: {
+          [`${oldPrefix}:x`]: null,
+          [`${oldPrefix}:y`]: null,
+          [`${oldPrefix}:lx`]: null,
+          [`${oldPrefix}:ly`]: null,
+        },
+      },
+    };
+    edits.push(resetIedLegacyCoordinates);
   });
 
   return edits;
@@ -252,9 +378,17 @@ export function convertSldLayout(doc: XMLDocument, nsd: string): EditV2 {
     migrateOldIEDNames(substation, nsd)
   );
 
+  const legacyIedCoordinateMigration = migrateLegacyIedCoordinates(doc, nsd);
+
   const namespaceEdits = replaceNamespace(doc, nsd);
 
-  return [...privateEdits, ...sectionCopy, ...iedMigration, ...namespaceEdits];
+  return [
+    ...privateEdits,
+    ...sectionCopy,
+    ...iedMigration,
+    ...legacyIedCoordinateMigration,
+    ...namespaceEdits,
+  ];
 }
 
 export function hasOldNamespace(doc: XMLDocument): boolean {

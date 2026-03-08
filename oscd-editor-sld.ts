@@ -5,7 +5,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
-import { getReference } from '@openscd/scl-lib';
+import { getReference, identity } from '@openscd/scl-lib';
 
 import type { EditV2 } from '@openscd/oscd-api';
 import { Button } from '@material/mwc-button';
@@ -22,8 +22,12 @@ import { SldEditor } from './sld-editor.js';
 import { bayIcon, equipmentIcon, ptrIcon, voltageLevelIcon } from './icons.js';
 import {
   eqTypes,
+  getSLDAttributes,
+  iedReferences,
   isBusBar,
+  isIedReferenceElement,
   makeBusBar,
+  resolveIed,
   setSLDAttributes,
   sldNs,
   xmlnsNs,
@@ -150,7 +154,7 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
     this.templateElements.BusBar = makeBusBar(this.doc, this.nsp);
   }
 
-  convertLsdAttributes() {
+  convertSldAttributes() {
     const convertEdits = convertSldLayout(this.doc, this.nsp);
     this.dispatchEvent(newEditEventV2(convertEdits));
   }
@@ -158,46 +162,37 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
   render() {
     if (!this.doc) return html`<p>Please open an SCL document</p>`;
     if (hasOldNamespace(this.doc))
-      return html`<mwc-button @click="${() => this.convertLsdAttributes()}"
+      return html`<mwc-button @click="${() => this.convertSldAttributes()}"
         >Convert SLD Layout</mwc-button
       >`;
 
     const ieds = Array.from(this.doc.querySelectorAll(':root > IED'));
     const iedRefs = Array.from(
       this.doc.querySelectorAll(':root > Substation')
-    ).flatMap(sub => Array.from(sub.getElementsByTagNameNS(sldNs, 'IEDName')));
-    const unusedIeds = ieds.filter(
-      ied =>
-        !iedRefs.find(
-          iedRef =>
-            ied.getAttribute('name') === iedRef.getAttributeNS(sldNs, 'name')
-        )
-    );
+    ).flatMap(sub => iedReferences(sub));
 
-    const unusedIedRefs = iedRefs.filter(
-      iedRef =>
-        !ieds.find(
-          ied =>
-            ied.getAttribute('name') === iedRef.getAttributeNS(sldNs, 'name')
-        )
-    );
+    const refForIed = (ied: Element) =>
+      iedRefs.find(ref => {
+        if (isIedReferenceElement(ref))
+          return ref.getAttributeNS(sldNs, 'id') === identity(ied);
+
+        return ref.getAttributeNS(sldNs, 'name') === ied.getAttribute('name');
+      });
+
+    const unusedIeds = ieds.filter(ied => !refForIed(ied));
+
+    const unusedIedRefs = iedRefs.filter(iedRef => !resolveIed(iedRef));
 
     const usedIedRefs = Array.from(ieds)
       .sort((a, b) => {
         const aName = a.getAttribute('name') ?? '';
         const bName = b.getAttribute('name') ?? '';
 
-        const aIsUsed = iedRefs.some(
-          ied =>
-            ied.getAttributeNS(sldNs, 'name') === aName &&
-            ied.hasAttributeNS(sldNs, 'x')
-        );
+        const aRef = refForIed(a);
+        const aIsUsed = !!aRef && !!getSLDAttributes(aRef, 'x');
 
-        const bIsUsed = iedRefs.some(
-          ied =>
-            ied.getAttributeNS(sldNs, 'name') === bName &&
-            ied.hasAttributeNS(sldNs, 'x')
-        );
+        const bRef = refForIed(b);
+        const bIsUsed = !!bRef && !!getSLDAttributes(bRef, 'x');
 
         if (aIsUsed !== bIsUsed) return aIsUsed ? -1 : 1;
 
@@ -205,13 +200,7 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
           sensitivity: 'base',
         });
       })
-      .filter(ied =>
-        iedRefs.find(
-          lIed =>
-            lIed.getAttributeNS(sldNs, 'name') === ied.getAttribute('name') &&
-            lIed.hasAttributeNS(sldNs, 'x')
-        )
-      );
+      .filter(ied => !!getSLDAttributes(refForIed(ied) ?? ied, 'x'));
 
     return html`<main>
       <nav>
@@ -309,14 +298,7 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
                       if (name === 'Delete Unmatched') {
                         const edits: EditV2[] = [];
                         iedRefs
-                          .filter(
-                            referencedIed =>
-                              !ieds.find(
-                                ied =>
-                                  ied.getAttribute('name') ===
-                                  referencedIed.getAttributeNS(sldNs, 'name')
-                              )
-                          )
+                          .filter(referencedIed => !resolveIed(referencedIed))
                           .forEach(unusedReferencedIed => {
                             const parent = unusedReferencedIed.parentElement;
                             if (
@@ -331,7 +313,12 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
 
                         this.dispatchEvent(newEditEventV2(edits));
                       } else {
-                        const element = this.insertOrGetIed(name, this.doc);
+                        const ied = ieds.find(
+                          item => item.getAttribute('name') === name
+                        );
+                        if (!ied) return;
+
+                        const element = this.insertOrGetIed(ied, this.doc);
                         this.iedMenu?.close();
                         this.startPlacing(element);
                       }
@@ -621,17 +608,24 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
       </mwc-dialog>`}`;
   }
 
-  insertOrGetIed(name: string, doc: XMLDocument): Element {
-    const linkedIed = Array.from(
-      doc.getElementsByTagNameNS(sldNs, 'IEDName') ?? []
-    ).find(lIed => lIed.getAttributeNS(sldNs, 'name') === name);
+  insertOrGetIed(ied: Element, doc: XMLDocument): Element {
+    const referencedIed = iedReferences(doc).find(ref => {
+      if (isIedReferenceElement(ref))
+        return ref.getAttributeNS(sldNs, 'id') === identity(ied);
+      return false;
+    });
 
-    if (linkedIed) return linkedIed;
+    if (referencedIed) return referencedIed;
 
-    const newLinkedIed = doc.createElementNS(sldNs, `${this.nsp}:IEDName`);
-    newLinkedIed.setAttributeNS(sldNs, `${this.nsp}:name`, name);
+    const newIedReference = doc.createElementNS(sldNs, `${this.nsp}:Reference`);
+    newIedReference.setAttributeNS(
+      sldNs,
+      `${this.nsp}:id`,
+      String(identity(ied))
+    );
+    newIedReference.setAttributeNS(sldNs, `${this.nsp}:type`, 'IED');
 
-    return newLinkedIed;
+    return newIedReference;
   }
 
   insertSubstation() {

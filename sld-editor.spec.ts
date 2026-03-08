@@ -12,7 +12,15 @@ import { ListItem } from '@material/mwc-list/mwc-list-item.js';
 import { XMLEditor } from '@omicronenergy/oscd-editor';
 import { EditEventV2 } from '@openscd/oscd-api';
 import { SldSubstationEditor } from './sld-substation-editor.js';
-import { busSections, makeBusBar, setSLDAttributes } from './util.js';
+import {
+  busSections,
+  getSLDAttributes,
+  iedReferences,
+  makeBusBar,
+  resolveIed,
+  setSLDAttributes,
+  sldNs,
+} from './util.js';
 
 import type { SldEditor } from './sld-editor.js';
 import './sld-editor.js';
@@ -152,6 +160,28 @@ export const equipmentDocString = `<?xml version="1.0" encoding="UTF-8"?>
             <esldoscd:SLDAttributes esldoscd:x="21" esldoscd:y="7" esldoscd:rot="3" esldoscd:lx="22" esldoscd:ly="8" />
           </Private>
         </ConductingEquipment>
+      </Bay>
+    </VoltageLevel>
+  </Substation>
+</SCL>
+`;
+
+export const iedDocString = `<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" xmlns:eosld="https://openscd.org/SCL/SSD/SLD/v0">
+  <IED name="IED1" manufacturer="Dummy" />
+  <IED name="IED2" manufacturer="Dummy" />
+  <Substation name="S1">
+    <Private type="OpenSCD-SLD-Layout">
+      <eosld:SLDAttributes eosld:w="50" eosld:h="25" />
+    </Private>
+    <VoltageLevel name="V1">
+      <Private type="OpenSCD-SLD-Layout">
+        <eosld:SLDAttributes eosld:x="1" eosld:y="1" eosld:w="13" eosld:h="13" eosld:lx="1" eosld:ly="1" />
+      </Private>
+      <Bay name="B1">
+        <Private type="OpenSCD-SLD-Layout">
+          <eosld:SLDAttributes eosld:x="2" eosld:y="2" eosld:w="6" eosld:h="6" eosld:lx="2" eosld:ly="2" />
+        </Private>
       </Bay>
     </VoltageLevel>
   </Substation>
@@ -854,6 +884,446 @@ describe('SLD Editor', () => {
         expect(sldAttribute(bus!, 'w')).to.equal('3');
         expect(sldAttribute(bus!, 'h')).to.equal('1');
       });
+    });
+  });
+
+  describe('given IED references', () => {
+    let sldSubstationEditor: SldSubstationEditor;
+
+    async function settle() {
+      await aTimeout(20);
+      await element.updateComplete;
+      sldSubstationEditor = getSldSubstationEditor(element)!;
+      await sldSubstationEditor.updateComplete;
+    }
+
+    function referencedIed(name: string): Element | undefined {
+      const links = iedReferences(element.doc).filter(
+        ied => resolveIed(ied)?.getAttribute('name') === name
+      );
+      return links.find(ied => getSLDAttributes(ied, 'x') !== null) ?? links[0];
+    }
+
+    function iedAttr(name: string, attr: string): number {
+      const value = referencedIed(name)
+        ? getSLDAttributes(referencedIed(name)!, attr)
+        : null;
+      expect(value).to.exist;
+      return Number(value);
+    }
+
+    async function placeIedFromScl(name: string, x: number, y: number) {
+      const ied = element.doc.querySelector(`:root > IED[name="${name}"]`);
+      expect(ied).to.exist;
+
+      const reference = element.doc.createElementNS(
+        sldNs,
+        `${element.nsp}:Reference`
+      );
+      reference.setAttributeNS(sldNs, `${element.nsp}:id`, `${identity(ied)}`);
+      reference.setAttributeNS(sldNs, `${element.nsp}:type`, 'IED');
+
+      element.startPlacing(reference);
+      await settle();
+
+      sldSubstationEditor.mouseX = x;
+      sldSubstationEditor.mouseY = y;
+      sldSubstationEditor.requestUpdate();
+      await sldSubstationEditor.updateComplete;
+
+      const previewRect = sldSubstationEditor.shadowRoot?.querySelector(
+        'g.ied.preview rect'
+      ) as SVGElement;
+      expect(previewRect).to.exist;
+      previewRect.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await settle();
+    }
+
+    async function moveIed(name: string, x: number, y: number) {
+      const ied = referencedIed(name);
+      expect(ied).to.exist;
+      element.startPlacing(ied!);
+      await settle();
+
+      sldSubstationEditor.mouseX = x;
+      sldSubstationEditor.mouseY = y;
+      sldSubstationEditor.requestUpdate();
+      await sldSubstationEditor.updateComplete;
+
+      const previewRect = sldSubstationEditor.shadowRoot?.querySelector(
+        'g.ied.preview rect'
+      ) as SVGElement;
+      expect(previewRect).to.exist;
+      previewRect.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await settle();
+    }
+
+    beforeEach(async () => {
+      const doc = new DOMParser().parseFromString(
+        iedDocString,
+        'application/xml'
+      );
+      element.doc = doc;
+      await settle();
+    });
+
+    it('moves an IED from voltage level to bay and updates XML location', async () => {
+      await placeIedFromScl('IED1', 10, 10);
+      await moveIed('IED1', 4, 4);
+
+      const ied = referencedIed('IED1')!;
+      expect(ied.closest('Bay')?.getAttribute('name')).to.equal('B1');
+      expect(ied.closest('VoltageLevel')?.getAttribute('name')).to.equal('V1');
+    });
+
+    it('moves an IED from bay to substation and updates XML location', async () => {
+      await placeIedFromScl('IED1', 3, 3);
+      await moveIed('IED1', 20, 10);
+
+      const ied = referencedIed('IED1')!;
+      expect(ied.closest('Bay')).to.be.null;
+      expect(ied.closest('VoltageLevel')).to.be.null;
+      expect(ied.closest('Substation')?.getAttribute('name')).to.equal('S1');
+    });
+
+    it('moves an IED with its bay when the bay is moved', async () => {
+      await placeIedFromScl('IED1', 3, 3);
+
+      const oldIedX = iedAttr('IED1', 'x');
+      const oldIedY = iedAttr('IED1', 'y');
+
+      await sendMouse({ type: 'click', position: [176, 228] });
+      expect(element.placing).to.have.property('tagName', 'Bay');
+      await sendMouse({ type: 'click', position: [240, 292] });
+
+      const movedBay = element.doc.querySelector('Bay')!;
+      expect(sldAttribute(movedBay, 'x')).to.equal('4');
+      expect(sldAttribute(movedBay, 'y')).to.equal('4');
+      expect(iedAttr('IED1', 'x')).to.equal(oldIedX + 2);
+      expect(iedAttr('IED1', 'y')).to.equal(oldIedY + 2);
+    });
+
+    it('moves an IED label independently', async () => {
+      await placeIedFromScl('IED1', 10, 10);
+
+      const ied = referencedIed('IED1')!;
+      const oldLx = getSLDAttributes(ied, 'lx');
+      const oldLy = getSLDAttributes(ied, 'ly');
+
+      const label = sldSubstationEditor.shadowRoot?.querySelector(
+        '*[id="label:IED1"] text'
+      ) as SVGElement | null;
+      expect(label).to.exist;
+
+      const [labelX, labelY] = middleOf(label!);
+      await sendMouse({ type: 'move', position: [labelX, labelY] });
+      label!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await settle();
+
+      await sendMouse({ type: 'click', position: [432, 484] });
+      await settle();
+
+      expect(getSLDAttributes(ied, 'lx')).to.not.equal(oldLx);
+      expect(getSLDAttributes(ied, 'ly')).to.not.equal(oldLy);
+    });
+
+    it('triggers oscd-scl-dialogs on IED label middle-click', async () => {
+      await placeIedFromScl('IED1', 10, 10);
+
+      const sclDialogs = sldSubstationEditor.shadowRoot?.querySelector(
+        'oscd-scl-dialogs'
+      ) as
+        | {
+            edit: (editType: { element: Element }) => Promise<any[]>;
+          }
+        | undefined;
+      expect(sclDialogs).to.exist;
+
+      const editCalls: { element: Element }[] = [];
+      const originalEdit = sclDialogs!.edit.bind(sclDialogs);
+      sclDialogs!.edit = async editType => {
+        editCalls.push(editType);
+        return [];
+      };
+
+      const label = sldSubstationEditor.shadowRoot?.querySelector(
+        '*[id="label:IED1"] text'
+      ) as SVGElement | null;
+      expect(label).to.exist;
+
+      label!.dispatchEvent(
+        new PointerEvent('auxclick', {
+          bubbles: true,
+          composed: true,
+          button: 1,
+        })
+      );
+      await settle();
+
+      expect(editCalls).to.have.lengthOf(1);
+      expect(editCalls[0].element).to.equal(
+        element.doc.querySelector(':root > IED[name="IED1"]')
+      );
+
+      sclDialogs!.edit = originalEdit;
+    });
+
+    it('triggers oscd-scl-dialogs via the IED context menu edit action', async () => {
+      await placeIedFromScl('IED1', 3, 3);
+
+      const sclDialogs = sldSubstationEditor.shadowRoot?.querySelector(
+        'oscd-scl-dialogs'
+      ) as
+        | {
+            edit: (editType: { element: Element }) => Promise<any[]>;
+          }
+        | undefined;
+      expect(sclDialogs).to.exist;
+
+      const editCalls: { element: Element }[] = [];
+      const originalEdit = sclDialogs!.edit.bind(sclDialogs);
+      sclDialogs!.edit = async editType => {
+        editCalls.push(editType);
+        return [];
+      };
+
+      const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
+        '#IEDName-IED1 rect'
+      ) as SVGElement | null;
+      expect(iedRect).to.exist;
+
+      iedRect!.dispatchEvent(
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+          clientX: 200,
+          clientY: 200,
+        })
+      );
+      await settle();
+
+      const menu = sldSubstationEditor.shadowRoot?.querySelector(
+        'menu#sld-context-menu'
+      );
+      expect(menu).to.exist;
+
+      const items = Array.from(menu!.querySelectorAll('mwc-list-item'));
+      const editItem = items.find(item =>
+        item.textContent?.includes('Edit')
+      ) as ListItem | undefined;
+      expect(editItem).to.exist;
+      editItem!.click();
+      await settle();
+
+      expect(editCalls).to.have.lengthOf(1);
+      expect(editCalls[0].element).to.equal(
+        element.doc.querySelector(':root > IED[name="IED1"]')
+      );
+
+      sclDialogs!.edit = originalEdit;
+    });
+
+    it('renames an IED via context menu edit dialog', async () => {
+      await placeIedFromScl('IED1', 3, 3);
+
+      const sclDialogs = sldSubstationEditor.shadowRoot?.querySelector(
+        'oscd-scl-dialogs'
+      ) as
+        | {
+            edit: (editType: { element: Element }) => Promise<any[]>;
+          }
+        | undefined;
+      expect(sclDialogs).to.exist;
+
+      const originalEdit = sclDialogs!.edit.bind(sclDialogs);
+      sclDialogs!.edit = async ({ element: sclIed }) => [
+        [
+          {
+            element: sclIed,
+            attributes: { name: 'IED1_RENAMED' },
+            attributesNS: {},
+          },
+        ],
+      ];
+
+      const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
+        '#IEDName-IED1 rect'
+      ) as SVGElement | null;
+      expect(iedRect).to.exist;
+
+      iedRect!.dispatchEvent(
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+          clientX: 200,
+          clientY: 200,
+        })
+      );
+      await settle();
+
+      const menu = sldSubstationEditor.shadowRoot?.querySelector(
+        'menu#sld-context-menu'
+      );
+      expect(menu).to.exist;
+
+      const editItem = Array.from(menu!.querySelectorAll('mwc-list-item')).find(
+        item => item.textContent?.includes('Edit')
+      ) as ListItem | undefined;
+      expect(editItem).to.exist;
+      editItem!.click();
+      await settle();
+
+      expect(element.doc.querySelector(':root > IED[name="IED1"]')).to.not
+        .exist;
+      const renamedIed = element.doc.querySelector(
+        ':root > IED[name="IED1_RENAMED"]'
+      );
+      expect(renamedIed).to.exist;
+
+      const references = iedReferences(element.doc);
+      expect(references).to.have.lengthOf(1);
+      expect(references[0].getAttributeNS(sldNs, 'id')).to.equal(
+        'IED1_RENAMED'
+      );
+
+      sclDialogs!.edit = originalEdit;
+    });
+
+    it('moves an IED via the right-click context menu', async () => {
+      await placeIedFromScl('IED1', 10, 10);
+
+      const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
+        '#IEDName-IED1 rect'
+      ) as SVGElement | null;
+      expect(iedRect).to.exist;
+
+      iedRect!.dispatchEvent(
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        })
+      );
+      await settle();
+
+      const menu = sldSubstationEditor.shadowRoot?.querySelector(
+        'menu#sld-context-menu'
+      );
+      expect(menu).to.exist;
+
+      const items = Array.from(menu!.querySelectorAll('mwc-list-item'));
+      const moveItem = items.find(item =>
+        item.textContent?.includes('Move')
+      ) as ListItem | undefined;
+      expect(moveItem).to.exist;
+      moveItem!.click();
+      await settle();
+
+      expect(element.placing).to.exist;
+      expect(element.placing!.localName).to.equal('Reference');
+
+      sldSubstationEditor.mouseX = 15;
+      sldSubstationEditor.mouseY = 15;
+      sldSubstationEditor.requestUpdate();
+      await sldSubstationEditor.updateComplete;
+
+      const previewRect = sldSubstationEditor.shadowRoot?.querySelector(
+        'g.ied.preview rect'
+      ) as SVGElement;
+      expect(previewRect).to.exist;
+      previewRect.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await settle();
+
+      expect(iedAttr('IED1', 'x')).to.equal(15);
+      expect(iedAttr('IED1', 'y')).to.equal(15);
+    });
+
+    it('removes an IED from the SLD via right-click menu', async () => {
+      await placeIedFromScl('IED1', 10, 10);
+
+      let iedGroup = sldSubstationEditor.shadowRoot?.querySelector(
+        'g[id="IEDName-IED1"]'
+      );
+      expect(iedGroup).to.exist;
+
+      const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
+        '#IEDName-IED1 rect'
+      ) as SVGElement | null;
+      expect(iedRect).to.exist;
+
+      iedRect!.dispatchEvent(
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        })
+      );
+      await settle();
+
+      const menu = sldSubstationEditor.shadowRoot?.querySelector(
+        'menu#sld-context-menu'
+      );
+      expect(menu).to.exist;
+
+      const items = Array.from(menu!.querySelectorAll('mwc-list-item'));
+      const removeItem = items.find(item =>
+        item.textContent?.includes('Remove from SLD')
+      ) as ListItem | undefined;
+      expect(removeItem).to.exist;
+      removeItem!.click();
+      await settle();
+
+      const sclIed = element.doc.querySelector(':root > IED[name="IED1"]');
+      expect(sclIed).to.exist;
+
+      iedGroup = sldSubstationEditor.shadowRoot?.querySelector(
+        'g[id="IEDName-IED1"]'
+      );
+      expect(iedGroup).to.not.exist;
+    });
+
+    it('deletes an IED via right-click menu', async () => {
+      await placeIedFromScl('IED1', 10, 10);
+
+      let sclIed = element.doc.querySelector(':root > IED[name="IED1"]');
+      expect(sclIed).to.exist;
+
+      const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
+        '#IEDName-IED1 rect'
+      ) as SVGElement | null;
+      expect(iedRect).to.exist;
+
+      iedRect!.dispatchEvent(
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        })
+      );
+      await settle();
+
+      const menu = sldSubstationEditor.shadowRoot?.querySelector(
+        'menu#sld-context-menu'
+      );
+      expect(menu).to.exist;
+
+      const items = Array.from(menu!.querySelectorAll('mwc-list-item'));
+      const deleteItem = items.find(item =>
+        item.textContent?.includes('Delete IED')
+      ) as ListItem | undefined;
+      expect(deleteItem).to.exist;
+      deleteItem!.click();
+      await settle();
+
+      sclIed = element.doc.querySelector(':root > IED[name="IED1"]');
+      expect(sclIed).to.not.exist;
+
+      const iedGroup = sldSubstationEditor.shadowRoot?.querySelector(
+        'g[id="IEDName-IED1"]'
+      );
+      expect(iedGroup).to.not.exist;
     });
   });
 
