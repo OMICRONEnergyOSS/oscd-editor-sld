@@ -15,7 +15,9 @@ import {
   ConnectEvent,
   elementPath,
   getSLDAttributes,
+  iedReferences,
   isBusBar,
+  isIedReferenceElement,
   PlaceEvent,
   PlaceLabelEvent,
   Point,
@@ -253,10 +255,7 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
 
   placeElement(element: Element, parent: Element, x: number, y: number) {
     const edits: EditV2[] = [];
-    if (
-      element.parentElement !== parent &&
-      !(element.localName === 'IEDName' && element.namespaceURI === sldNs)
-    ) {
+    if (element.parentElement !== parent && !isIedReferenceElement(element)) {
       edits.push(...reparentElement(element, parent));
     }
 
@@ -290,11 +289,7 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
           ly += 2;
         }
       }
-      if (
-        element.localName === 'IEDName' &&
-        element.namespaceURI === sldNs &&
-        !getSLDAttributes(element, 'lx')
-      ) {
+      if (isIedReferenceElement(element) && !getSLDAttributes(element, 'lx')) {
         lx += 1;
         ly += 1;
       }
@@ -325,7 +320,7 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
         'Bay, ConductingEquipment, PowerTransformer, Vertex'
       )
     )
-      .concat(Array.from(element.getElementsByTagNameNS(sldNs, 'IEDName')))
+      .concat(iedReferences(element))
       .forEach(descendant => {
         const {
           pos: [descX, descY],
@@ -465,10 +460,8 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
 
     const oldParent = element.parentElement;
 
-    this.dispatchEvent(newEditEventV2(edits));
-
     const iedWrapEdits: EditV2[] = [];
-    if (element.localName === 'IEDName' && element.namespaceURI === sldNs) {
+    if (isIedReferenceElement(element)) {
       let privateElement = parent.querySelector(
         ':scope > Private[type="OpenSCD-SLD-Layout"]'
       );
@@ -489,7 +482,7 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
         iedWrapEdits.push({
           parent: privateElement,
           node: element,
-          reference: null,
+          reference: getReference(privateElement, element.localName),
         });
 
       if (
@@ -501,7 +494,10 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
         iedWrapEdits.push({ node: oldParent });
     }
 
-    if (iedWrapEdits.length) this.dispatchEvent(newEditEventV2(iedWrapEdits));
+    edits.push(...iedWrapEdits);
+
+    this.dispatchEvent(newEditEventV2(edits));
+
     if (
       ['Bay', 'VoltageLevel'].includes(element.tagName) &&
       (!getSLDAttributes(element, 'w') || !getSLDAttributes(element, 'h'))

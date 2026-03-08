@@ -46,6 +46,8 @@ import {
   connectionStartPoints,
   elementPath,
   getSLDAttributes,
+  iedReferences,
+  isIedReferenceElement,
   isBusBar,
   isEqType,
   newConnectEvent,
@@ -77,6 +79,7 @@ import {
   uuid,
   xlinkNs,
   xmlBoolean,
+  resolveIed,
 } from './util.js';
 
 const parentTags: Partial<Record<string, string[]>> = {
@@ -85,6 +88,7 @@ const parentTags: Partial<Record<string, string[]>> = {
   VoltageLevel: ['Substation'],
   PowerTransformer: ['Bay', 'VoltageLevel', 'Substation'],
   IEDName: ['Bay', 'VoltageLevel', 'Substation'],
+  Reference: ['Bay', 'VoltageLevel', 'Substation'],
 };
 
 type EditWizardDetial = { element: Element };
@@ -234,9 +238,7 @@ function preventDefault(e: MouseEvent) {
 function copy(element: Element, nsp: string): Element {
   const clone = element.cloneNode(true) as Element;
   if (['Bay', 'VoltageLevel'].includes(element.tagName)) {
-    Array.from(clone.getElementsByTagNameNS(sldNs, 'IEDName')).forEach(ied =>
-      ied.remove()
-    );
+    iedReferences(clone).forEach(ied => ied.remove());
   }
   const terminals = new Set<Element>(
     Array.from(element.querySelectorAll('Terminal, NeutralPoint'))
@@ -307,7 +309,7 @@ function copy(element: Element, nsp: string): Element {
 }
 
 function renderMenuHeader(element: Element) {
-  const name =
+  let name =
     element.getAttribute('name') ||
     element.getAttributeNS(sldNs, 'name') ||
     element.tagName;
@@ -337,9 +339,10 @@ function renderMenuHeader(element: Element) {
   else if (element.tagName === 'Bay') footerGraphic = bayGraphic;
   else if (element.tagName === 'VoltageLevel')
     footerGraphic = voltageLevelGraphic;
-  else if (element.localName === 'IEDName' && element.namespaceURI === sldNs)
+  else if (isIedReferenceElement(element)) {
+    name = 'IED';
     footerGraphic = html`<mwc-icon slot="graphic">developer_board</mwc-icon>`;
-  else if (element.tagName === 'Text') {
+  } else if (element.tagName === 'Text') {
     footerGraphic = html`<mwc-icon slot="graphic">title</mwc-icon>`;
     detail = element.textContent;
   }
@@ -561,9 +564,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const overlappingSibling = Array.from(
       this.substation.querySelectorAll(`${element.localName}, PowerTransformer`)
     )
-      .concat(
-        Array.from(this.substation.getElementsByTagNameNS(sldNs, 'IEDName'))
-      )
+      .concat(iedReferences(this.substation))
       .find(
         sibling =>
           sibling.closest(element.localName) !== element &&
@@ -577,7 +578,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const containingParent =
       element.tagName === 'VoltageLevel' ||
       element.tagName === 'PowerTransformer' ||
-      element.localName === 'IEDName'
+      isIedReferenceElement(element)
         ? containsRect(this.substation, x, y, w, h)
         : Array.from(
             this.substation.querySelectorAll(
@@ -603,7 +604,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       return false;
 
     const lostChild = Array.from(element.children)
-      .concat(Array.from(element.getElementsByTagNameNS(sldNs, 'IEDName')))
+      .concat(iedReferences(element))
       .find(child => {
         if (!parentTags[child.localName]?.includes(element.localName))
           return false;
@@ -623,7 +624,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     if (!this.canPlaceAt(element, x, y, w, h)) return false;
 
     const lostChild = Array.from(element.children)
-      .concat(Array.from(element.getElementsByTagNameNS(sldNs, 'IEDName')))
+      .concat(iedReferences(element))
       .find(child => {
         if (!parentTags[child.localName]?.includes(element.localName))
           return false;
@@ -644,9 +645,8 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       label: [x, y],
     } = attributes(element);
     const [offsetX, offsetY] =
-      element.localName === 'IEDName' &&
-      element.namespaceURI === sldNs &&
-      !element.hasAttributeNS(sldNs, 'x') &&
+      isIedReferenceElement(element) &&
+      !getSLDAttributes(element, 'x') &&
       preview
         ? [-1, -1]
         : this.placingOffset;
@@ -711,47 +711,11 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     }
   };
 
-  // TODO: To remove once discussion of alternatives completedds
-  //
-  // handleIedRenameCapture = (event: Event) => {
-  //   const edit = (event as CustomEvent).detail?.edit as
-  //     | { element: Element; attributes?: Record<string, string | null> }
-  //     | undefined;
-  //   if (!edit?.attributes || edit.element.tagName !== 'IED') return;
-  //   if (typeof edit.attributes.name !== 'string') return;
-  //   this.iedModifiedName = edit.element.getAttribute('name') ?? undefined;
-  // };
-
-  // handleIedRename = (event: Event) => {
-  //   const edit = (event as CustomEvent).detail?.edit as
-  //     | { element: Element; attributes?: Record<string, string | null> }
-  //     | undefined;
-  //   if (!edit?.attributes || edit.element.tagName !== 'IED') return;
-  //   if (typeof edit.attributes.name !== 'string') return;
-  //   if (!this.iedModifiedName) return;
-
-  //   const iedNameToModify = Array.from(
-  //     this.doc.getElementsByTagNameNS(sldNs, 'IEDName')
-  //   ).find(
-  //     iedName => iedName.getAttributeNS(sldNs, 'name') === this.iedModifiedName
-  //   );
-  //   if (!iedNameToModify) return;
-
-  //   const updateEdit = updateSLDAttributes(iedNameToModify, this.nsp, {
-  //     name: edit.attributes.name,
-  //   });
-  //   this.dispatchEvent(newEditEventV2(updateEdit));
-  //   this.iedModifiedName = undefined;
-  // };
-
   connectedCallback() {
     super.connectedCallback();
     window.addEventListener('keydown', this.handleKeydown);
     window.addEventListener('click', this.handleClick, true);
     window.addEventListener('click', this.positionCoordinates);
-    // TODO: Remove once discussion of alternatives complete
-    // window.addEventListener('oscd-edit-v2', this.handleIedRenameCapture, true);
-    // window.addEventListener('oscd-edit-v2', this.handleIedRename);
   }
 
   disconnectedCallback() {
@@ -759,14 +723,6 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     window.removeEventListener('keydown', this.handleKeydown);
     window.removeEventListener('click', this.handleClick);
     window.removeEventListener('click', this.positionCoordinates);
-
-    // TODO: Remove after discussion of alternatives complete
-    // window.removeEventListener(
-    //   'oscd-edit-v2',
-    //   this.handleIedRenameCapture,
-    //   true
-    // );
-    // window.removeEventListener('oscd-edit-v2', this.handleIedRename);
   }
 
   saveSVG() {
@@ -1271,11 +1227,8 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     return items;
   }
 
-  iedMenuItems(linkedIed: Element) {
-    const name = linkedIed.getAttributeNS(sldNs, 'name');
-    const sclIed = name
-      ? this.doc.querySelector(`:root > IED[name="${name}"]`)
-      : null;
+  iedMenuItems(referencedIed: Element) {
+    const sclIed = resolveIed(referencedIed);
     const items: MenuItem[] = [
       {
         content: html`<mwc-list-item graphic="icon">
@@ -1290,14 +1243,15 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
             ${movePath}
           </svg>
         </mwc-list-item>`,
-        handler: () => this.dispatchEvent(newStartPlaceEvent(linkedIed)),
+        handler: () => this.dispatchEvent(newStartPlaceEvent(referencedIed)),
       },
       {
         content: html`<mwc-list-item graphic="icon">
           <span>Move Label</span>
           <mwc-icon slot="graphic">text_rotation_none</mwc-icon>
         </mwc-list-item>`,
-        handler: () => this.dispatchEvent(newStartPlaceLabelEvent(linkedIed)),
+        handler: () =>
+          this.dispatchEvent(newStartPlaceLabelEvent(referencedIed)),
       },
     ];
 
@@ -1320,14 +1274,14 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           </mwc-list-item>`,
           handler: () => {
             const edits: EditV2[] = [];
-            const linkedParent = linkedIed.parentElement;
+            const sldLayoutPrivate = referencedIed.parentElement;
             if (
-              linkedParent?.tagName === 'Private' &&
-              linkedParent.getAttribute('type') === 'OpenSCD-SLD-Layout' &&
-              linkedParent.childElementCount === 1
+              sldLayoutPrivate?.tagName === 'Private' &&
+              sldLayoutPrivate.getAttribute('type') === 'OpenSCD-SLD-Layout' &&
+              sldLayoutPrivate.childElementCount === 1
             )
-              edits.push({ node: linkedParent });
-            else edits.push({ node: linkedIed });
+              edits.push({ node: sldLayoutPrivate });
+            else edits.push({ node: referencedIed });
             edits.push(...removeIED({ node: sclIed }));
             this.dispatchEvent(newEditEventV2(edits));
           },
@@ -1341,14 +1295,14 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       </mwc-list-item>`,
       handler: () => {
         const edits: EditV2[] = [];
-        const linkedParent = linkedIed.parentElement;
+        const sldLayoutPrivate = referencedIed.parentElement;
         if (
-          linkedParent?.tagName === 'Private' &&
-          linkedParent.getAttribute('type') === 'OpenSCD-SLD-Layout' &&
-          linkedParent.childElementCount === 1
+          sldLayoutPrivate?.tagName === 'Private' &&
+          sldLayoutPrivate.getAttribute('type') === 'OpenSCD-SLD-Layout' &&
+          sldLayoutPrivate.childElementCount === 1
         )
-          edits.push({ node: linkedParent });
-        else edits.push({ node: linkedIed });
+          edits.push({ node: sldLayoutPrivate });
+        else edits.push({ node: referencedIed });
         this.dispatchEvent(newEditEventV2(edits));
       },
     });
@@ -1359,27 +1313,39 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
   private async openIedEditDialog(sclIed: Element): Promise<void> {
     const edits = await this.sclDialogs.edit({ element: sclIed });
 
+    const iedReference = iedReferences(this.doc).find(
+      iedRef => resolveIed(iedRef) === sclIed
+    );
+    if (!iedReference) {
+      this.dispatchEvent(
+        newEditEventV2([edits], {
+          title: 'Update IED',
+          squash: false,
+        })
+      );
+      return;
+    }
+
     const iedNameEdit = [...edits.flat()].find(
       edit =>
         'element' in edit &&
         edit.element.tagName === 'IED' &&
         'attributes' in edit &&
-        'name' in attributes
+        !!edit.attributes &&
+        'name' in edit.attributes
     ) as SetAttributes;
     if (!iedNameEdit) return;
 
     const newIedName = iedNameEdit.attributes!.name!;
-    const iedReference = Array.from(
-      this.doc.getElementsByTagNameNS(sldNs, 'IEDName')
-    ).find(
-      iedRef =>
-        iedRef.getAttributeNS(sldNs, 'name') === sclIed.getAttribute('name')
-    );
-    if (!iedReference) return;
 
-    const iedReferenceEdit = updateSLDAttributes(iedReference, this.nsp, {
-      name: newIedName,
-    });
+    const iedReferenceEdit: SetAttributes = {
+      element: iedReference,
+      attributesNS: {
+        [sldNs]: {
+          [`${this.nsp}:id`]: newIedName,
+        },
+      },
+    };
 
     this.dispatchEvent(
       newEditEventV2([edits, iedReferenceEdit], {
@@ -1736,10 +1702,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       items.push({ content: renderMenuHeader(transformer) });
       items.push({ content: html`<li divider role="separator"></li>` });
       items.push(...this.transformerMenuItems(transformer));
-    } else if (
-      element.localName === 'IEDName' &&
-      element.namespaceURI === sldNs
-    ) {
+    } else if (isIedReferenceElement(element)) {
       items.push(...this.iedMenuItems(element));
     } else if (element.tagName === 'Text') {
       items.push(...this.textMenuItems(element));
@@ -1807,8 +1770,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         : nothing;
 
     const iedPlacingTarget =
-      this.placing?.localName === 'IEDName' &&
-      this.placing.namespaceURI === sldNs
+      !!this.placing && isIedReferenceElement(this.placing)
         ? svg`<rect width="100%" height="100%" fill="url(#grid)" />`
         : nothing;
 
@@ -1828,10 +1790,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         placingElement = this.renderContainer(this.placing, true);
       else if (this.placing.tagName === 'ConductingEquipment')
         placingElement = this.renderEquipment(this.placing, { preview: true });
-      else if (
-        this.placing.localName === 'IEDName' &&
-        this.placing.namespaceURI === sldNs
-      )
+      else if (isIedReferenceElement(this.placing))
         placingElement = this.renderIed(this.placing, { preview: true });
       else if (this.placing.tagName === 'PowerTransformer')
         placingElement = this.renderPowerTransformer(this.placing, true);
@@ -2096,15 +2055,15 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         ${Array.from(
           this.substation.querySelectorAll(':scope > PowerTransformer')
         ).map(transformer => this.renderPowerTransformer(transformer))}
-        ${Array.from(this.substation.getElementsByTagNameNS(sldNs, 'IEDName'))
+        ${iedReferences(this.substation)
           .filter(
-            linkedIed =>
-              linkedIed.parentElement?.tagName === 'Private' &&
+            referencedIed =>
+              referencedIed.parentElement?.tagName === 'Private' &&
               !['Bay', 'VoltageLevel'].includes(
-                linkedIed.parentElement!.parentElement!.tagName
+                referencedIed.parentElement!.parentElement!.tagName
               ) &&
               (!this.placing ||
-                linkedIed.closest(this.placing.localName) !== this.placing)
+                referencedIed.closest(this.placing.localName) !== this.placing)
           )
           .map(ied => this.renderIed(ied))}
         ${Array.from(
@@ -2117,11 +2076,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               this.substation.querySelectorAll(
                 'Private[type="OpenSCD-SLD-Layout"]'
               ) ?? []
-            ).flatMap(linkedIedsPrivate =>
-              Array.from(
-                linkedIedsPrivate.getElementsByTagNameNS(sldNs, 'IEDName')
-              )
-            )
+            ).flatMap(privateLayout => iedReferences(privateLayout))
           )
           .filter(
             e =>
@@ -2221,12 +2176,14 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
   renderLabel(element: Element, { preview = false } = {}) {
     if (!this.showLabels) return nothing;
-    if (this.showIeds === false && element.localName === 'IEDName')
+    if (this.showIeds === false && isIedReferenceElement(element))
       return nothing;
 
     let deg = 0;
     let text: string | null | TemplateResult<2>[] =
-      element.getAttribute('name') || element.getAttributeNS(sldNs, 'name');
+      element.getAttribute('name') ||
+      resolveIed(element)?.getAttribute('name') ||
+      element.getAttributeNS(sldNs, 'name');
     let weight = 400;
     let color = 'black';
     const [x, y] = this.renderedLabelPosition(element, { preview });
@@ -2250,17 +2207,8 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       }
     }
 
-    if (
-      element.localName === 'IEDName' &&
-      !this.placing &&
-      !this.placingLabel
-    ) {
-      const iedName = element.getAttributeNS(sldNs, 'name');
-      const iedExists = element.ownerDocument.querySelector(
-        `:root > IED[name="${iedName}"]`
-      );
-      color = iedExists ? color : '#BB1326';
-    }
+    if (isIedReferenceElement(element) && !this.placing && !this.placingLabel)
+      color = resolveIed(element) ? color : '#BB1326';
 
     const fontSize = element.tagName === 'ConductingEquipment' ? 0.45 : 0.6;
     let events = 'none';
@@ -2279,14 +2227,11 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       auxclick = (e: MouseEvent) => {
         if (e.button === 1) {
           // middle mouse button
-          if (element.localName !== 'IEDName') {
+          if (!isIedReferenceElement(element)) {
             this.dispatchEvent(newEditWizardEvent(element));
           } else {
-            const iedName = element.getAttributeNS(sldNs, 'name');
-            const ied = this.doc.querySelector(
-              `:root > IED[name="${iedName}"]`
-            );
-            if (ied) this.dispatchEvent(newEditWizardEvent(ied));
+            const ied = resolveIed(element);
+            if (ied) this.openIedEditDialog(ied);
           }
           e.preventDefault();
         }
@@ -2298,10 +2243,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     let id: typeof nothing | string = nothing;
     if (element.closest('Substation') === this.substation) {
-      if (element.localName !== 'Text' && element.localName !== 'IEDName')
+      if (element.localName !== 'Text' && !isIedReferenceElement(element))
         id = `${identity(element)}`;
-      if (element.localName === 'IEDName')
-        id = `${element.getAttributeNS(sldNs, 'name')}`;
+      if (isIedReferenceElement(element))
+        id = `${resolveIed(element)?.getAttribute('name') ?? ''}`;
     }
     const classes = classMap({
       label: true,
@@ -2507,13 +2452,13 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       ${Array.from(bayOrVL.children)
         .filter(child => child.tagName === 'PowerTransformer')
         .map(equipment => this.renderPowerTransformer(equipment))}
-      ${Array.from(bayOrVL.getElementsByTagNameNS(sldNs, 'IEDName'))
+      ${iedReferences(bayOrVL)
         .filter(
-          linkedIed =>
-            linkedIed.parentElement?.tagName === 'Private' &&
-            linkedIed.parentElement!.parentElement === bayOrVL
+          referencedIed =>
+            referencedIed.parentElement?.tagName === 'Private' &&
+            referencedIed.parentElement!.parentElement === bayOrVL
         )
-        .map(linkedIed => this.renderIed(linkedIed, { preview }))}
+        .map(referencedIed => this.renderIed(referencedIed, { preview }))}
       ${
         preview
           ? Array.from(bayOrVL.querySelectorAll('ConnectivityNode'))
@@ -2530,11 +2475,15 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
             )
               .concat(
                 Array.from(
-                  bayOrVL
-                    .querySelector(
-                      ':scope > Private[type="OpenSCD-SLD-Layout"]'
-                    )
-                    ?.getElementsByTagNameNS(sldNs, 'IEDName') ?? []
+                  bayOrVL.querySelector(
+                    ':scope > Private[type="OpenSCD-SLD-Layout"]'
+                  )
+                    ? iedReferences(
+                        bayOrVL.querySelector(
+                          ':scope > Private[type="OpenSCD-SLD-Layout"]'
+                        )!
+                      )
+                    : []
                 )
               )
               .concat(bayOrVL)
@@ -3211,15 +3160,21 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     }</g>`;
   }
 
-  renderIed(linkedIed: Element, { preview = false } = {}): SVGTemplateResult {
-    if (this.showIeds === false || (this.placing === linkedIed && !preview))
+  renderIed(
+    referencedIed: Element,
+    { preview = false } = {}
+  ): SVGTemplateResult {
+    if (this.showIeds === false || (this.placing === referencedIed && !preview))
       return svg``;
 
-    const [x, y] = this.renderedPosition(linkedIed);
-    const name = linkedIed.getAttributeNS(sldNs, 'name');
+    const [x, y] = this.renderedPosition(referencedIed);
+    const name = resolveIed(referencedIed)?.getAttribute('name');
 
     let handleClick: ((e: MouseEvent) => void) | symbol = nothing;
-    if (this.placing === linkedIed && this.canPlaceAt(linkedIed, x, y, 1, 1))
+    if (
+      this.placing === referencedIed &&
+      this.canPlaceAt(referencedIed, x, y, 1, 1)
+    )
       handleClick = () => {
         const parent =
           Array.from(
@@ -3236,29 +3191,30 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           newPlaceEvent({
             x,
             y,
-            element: linkedIed,
+            element: referencedIed,
             parent,
           })
         );
       };
-    else if (this.disabled && isSelectable(linkedIed, this.selectable))
-      handleClick = () => this.dispatchEvent(newSelectEvent(linkedIed));
+    else if (this.disabled && isSelectable(referencedIed, this.selectable))
+      handleClick = () => this.dispatchEvent(newSelectEvent(referencedIed));
     else if (!this.idle || this.disabled) handleClick = () => {};
-    else handleClick = () => this.dispatchEvent(newStartPlaceEvent(linkedIed));
+    else
+      handleClick = () => this.dispatchEvent(newStartPlaceEvent(referencedIed));
 
-    let contextmenu = (e: MouseEvent) => this.openMenu(linkedIed, e);
+    let contextmenu = (e: MouseEvent) => this.openMenu(referencedIed, e);
     if (this.disabled) contextmenu = () => {};
 
-    const clickthrough = !this.idle && this.placing !== linkedIed;
+    const clickthrough = !this.idle && this.placing !== referencedIed;
 
     return svg`<g class="${classMap({
       ied: true,
-      preview: this.placing === linkedIed,
+      preview: this.placing === referencedIed,
       disabled: this.disabled,
-      selectable: isSelectable(linkedIed, this.selectable),
+      selectable: isSelectable(referencedIed, this.selectable),
     })}"
       id="${
-        linkedIed.closest('Substation') === this.substation && name
+        referencedIed.closest('Substation') === this.substation && name
           ? `IEDName-${name}`
           : nothing
       }"
@@ -3274,7 +3230,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       />
     </g>
     <g class="preview">${
-      preview ? this.renderLabel(linkedIed, { preview }) : nothing
+      preview ? this.renderLabel(referencedIed, { preview }) : nothing
     }</g>`;
   }
 

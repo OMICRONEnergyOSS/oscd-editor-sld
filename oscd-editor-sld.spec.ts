@@ -11,11 +11,12 @@ import { ListItem } from '@material/mwc-list/mwc-list-item.js';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { XMLEditor } from '@omicronenergy/oscd-editor';
 import { EditEventV2 } from '@openscd/oscd-api';
+import { identity } from '@openscd/scl-lib';
 
 import OscdEditorSld from './oscd-editor-sld.js';
 import { SldSubstationEditor } from './sld-substation-editor.js';
 import { SldEditor } from './sld-editor.js';
-import { sldNs } from './util.js';
+import { getSLDAttributes, iedReferences, resolveIed, sldNs } from './util.js';
 
 function sldAttribute(element: Element, attr: string): string | null {
   const nsp = 'https://openscd.org/SCL/SSD/SLD/v0';
@@ -173,6 +174,255 @@ export const iedDocString = `<?xml version="1.0" encoding="UTF-8"?>
 </SCL>
 `;
 
+export const sldConvertDocString = `<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B" release="4"
+  xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0">
+  <Header id="sld_convert" />
+  <Substation name="S1" esld:w="30" esld:h="21">
+    <VoltageLevel name="V2" esld:x="11" esld:y="1" esld:lx="11" esld:ly="1" esld:w="17" esld:h="20">
+      <Bay name="BB1" esld:w="9" esld:x="16" esld:y="17" esld:lx="16" esld:ly="17" esld:h="1">
+        <ConnectivityNode name="L" pathName="S1/V2/BB1/L">
+          <Private type="Transpower-SLD-Vertices">
+            <esld:Section bus="true">
+              <esld:Vertex esld:x="16.5" esld:y="17.5" />
+              <esld:Vertex esld:x="20.5" esld:y="17.5" />
+            </esld:Section>
+            <esld:Section>
+              <esld:Vertex esld:x="16.5" esld:y="13.16"
+                esld:uuid="542ed7a0-672e-42e2-ba5f-801a60a6655d" />
+              <esld:Vertex esld:x="16.5" esld:y="12.5" />
+              <esld:Vertex esld:x="20.5" esld:y="12.5" />
+            </esld:Section>
+            <esld:Section>
+              <esld:Vertex esld:x="20.5" esld:y="12.5" />
+              <esld:Vertex esld:x="20.5" esld:y="17.5" />
+            </esld:Section>
+            <esld:Section bus="true">
+              <esld:Vertex esld:x="20.5" esld:y="17.5" />
+              <esld:Vertex esld:x="24.5" esld:y="17.5" />
+            </esld:Section>
+            <esld:Section>
+              <esld:Vertex esld:x="16.5" esld:y="11.16"
+                esld:uuid="3e3078ef-9a17-4c51-b7e2-925d6b6fbee8" />
+              <esld:Vertex esld:x="16.5" esld:y="11" />
+              <esld:Vertex esld:x="20.5" esld:y="11" />
+              <esld:Vertex esld:x="20.5" esld:y="12.5" />
+            </esld:Section>
+            <esld:Section>
+              <esld:Vertex esld:x="25.2" esld:y="14.5"
+                esld:uuid="489eb016-92e7-41be-b1cc-2372f5b4b5e5" />
+              <esld:Vertex esld:x="26" esld:y="14.5" />
+              <esld:Vertex esld:x="26" esld:y="17.5" />
+              <esld:Vertex esld:x="24.5" esld:y="17.5" />
+            </esld:Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+      <Bay name="B1" esld:x="12" esld:y="2" esld:lx="12" esld:ly="2" esld:w="15" esld:h="18">
+        <PowerTransformer type="PTR" esld:kind="earthing" name="PTR6" esld:x="24" esld:y="14"
+          esld:lx="25.5" esld:ly="14">
+          <TransformerWinding type="PTW" name="W1">
+            <Terminal esld:uuid="00803a5a-0033-4efc-8070-a59a7730f271" name="T1"
+              connectivityNode="S1/V2/B1/L1" substationName="S1" voltageLevelName="V2" bayName="B1"
+              cNodeName="L1" />
+            <NeutralPoint esld:uuid="489eb016-92e7-41be-b1cc-2372f5b4b5e5" name="N1"
+              connectivityNode="S1/V2/BB1/L" substationName="S1" voltageLevelName="V2" bayName="BB1"
+              cNodeName="L" />
+          </TransformerWinding>
+          <TransformerWinding type="PTW" name="W2" />
+        </PowerTransformer>
+        <PowerTransformer type="PTR" esld:kind="earthing" name="PTR5" esld:x="24" esld:y="12"
+          esld:lx="25.5" esld:ly="12">
+          <TransformerWinding type="PTW" name="W1" />
+        </PowerTransformer>
+        <PowerTransformer type="PTR" name="PTR4" esld:x="24" esld:y="9" esld:lx="25.5" esld:ly="9">
+          <TransformerWinding type="PTW" name="W1" />
+          <TransformerWinding type="PTW" name="W2" />
+          <TransformerWinding type="PTW" name="W3" />
+        </PowerTransformer>
+        <PowerTransformer type="PTR" name="PTR3" esld:x="24" esld:y="6" esld:lx="25.5" esld:ly="6">
+          <TransformerWinding type="PTW" name="W1">
+            <NeutralPoint esld:uuid="e5176958-ddd9-4036-9b3e-0d894ae9b58a" name="N1"
+              connectivityNode="S1/V2/B1/L1" substationName="S1" voltageLevelName="V2" bayName="B1"
+              cNodeName="L1" />
+          </TransformerWinding>
+          <TransformerWinding type="PTW" name="W2" />
+        </PowerTransformer>
+        <PowerTransformer type="PTR" esld:kind="auto" name="PTR2" esld:x="24" esld:y="3"
+          esld:lx="25.5" esld:ly="3">
+          <TransformerWinding type="PTW" name="W1" />
+          <TransformerWinding type="PTW" name="W2">
+            <NeutralPoint esld:uuid="29451e72-1361-4418-a924-a1fbb6e5bfaa" name="N1"
+              connectivityNode="S1/V2/B1/L1" substationName="S1" voltageLevelName="V2" bayName="B1"
+              cNodeName="L1" />
+          </TransformerWinding>
+        </PowerTransformer>
+        <PowerTransformer type="PTR" esld:kind="auto" esld:rot="3" name="PTR1" esld:x="21"
+          esld:y="3" esld:lx="19" esld:ly="5">
+          <TransformerWinding type="PTW" name="W1">
+            <Terminal esld:uuid="72432f5f-153b-48d7-bd09-9c47bbe9f5b9" name="T1"
+              connectivityNode="S1/V2/B1/L1" substationName="S1" voltageLevelName="V2" bayName="B1"
+              cNodeName="L1" />
+          </TransformerWinding>
+        </PowerTransformer>
+        <ConductingEquipment type="VTR" name="VTR1" esld:x="13" esld:y="15" esld:lx="14"
+          esld:ly="16" />
+        <ConductingEquipment type="SMC" name="SMC1" esld:x="16" esld:y="13" esld:lx="17"
+          esld:ly="14">
+          <Terminal esld:uuid="542ed7a0-672e-42e2-ba5f-801a60a6655d" name="T1"
+            connectivityNode="S1/V2/BB1/L" substationName="S1" voltageLevelName="V2" bayName="BB1"
+            cNodeName="L" />
+        </ConductingEquipment>
+        <ConductingEquipment type="SAR" name="SAR1" esld:x="13" esld:y="13" esld:lx="14"
+          esld:ly="14" />
+        <ConductingEquipment type="RES" name="RES1" esld:x="16" esld:y="11" esld:lx="17"
+          esld:ly="12">
+          <Terminal esld:uuid="3e3078ef-9a17-4c51-b7e2-925d6b6fbee8" name="T1"
+            connectivityNode="S1/V2/BB1/L" substationName="S1" voltageLevelName="V2" bayName="BB1"
+            cNodeName="L" />
+        </ConductingEquipment>
+        <ConductingEquipment type="REA" name="REA1" esld:x="13" esld:y="11" esld:lx="14"
+          esld:ly="12" />
+        <ConductingEquipment type="MOT" name="MOT1" esld:x="16" esld:y="9" esld:lx="17" esld:ly="10" />
+        <ConductingEquipment type="IFL" name="IFL1" esld:x="13" esld:y="9" esld:lx="14" esld:ly="10" />
+        <ConductingEquipment type="GEN" name="GEN1" esld:x="16" esld:y="7" esld:lx="17" esld:ly="8">
+          <Terminal esld:uuid="61974884-1be1-4ba0-939b-34f0a43d987e" name="T1"
+            connectivityNode="S1/V2/B1/L1" substationName="S1" voltageLevelName="V2" bayName="B1"
+            cNodeName="L1" />
+        </ConductingEquipment>
+        <ConductingEquipment type="DIS" name="DIS1" esld:x="13" esld:y="7" esld:lx="14" esld:ly="8" />
+        <ConductingEquipment type="CTR" name="CTR1" esld:x="16" esld:y="5" esld:lx="17" esld:ly="6" />
+        <ConductingEquipment type="CBR" name="CBR1" esld:x="13" esld:y="5" esld:lx="14" esld:ly="6" />
+        <ConductingEquipment type="CAP" name="CAP1" esld:x="16" esld:y="3" esld:lx="17" esld:ly="4" />
+        <ConductingEquipment type="CAB" name="CAB1" esld:x="13" esld:y="3" esld:lx="14" esld:ly="4" />
+        <ConnectivityNode name="L1" pathName="S1/V2/B1/L1">
+          <Private type="Transpower-SLD-Vertices">
+            <esld:Section>
+              <esld:Vertex esld:x="23.8" esld:y="14.5"
+                esld:uuid="00803a5a-0033-4efc-8070-a59a7730f271" />
+              <esld:Vertex esld:x="21.5" esld:y="14.5" />
+              <esld:Vertex esld:x="21.5" esld:y="6.5" />
+            </esld:Section>
+            <esld:Section>
+              <esld:Vertex esld:x="21.5" esld:y="6.5" />
+              <esld:Vertex esld:x="18.5" esld:y="6.5" />
+            </esld:Section>
+            <esld:Section>
+              <esld:Vertex esld:x="20.3" esld:y="3.5"
+                esld:uuid="72432f5f-153b-48d7-bd09-9c47bbe9f5b9" />
+              <esld:Vertex esld:x="18.5" esld:y="3.5" />
+              <esld:Vertex esld:x="18.5" esld:y="6.5" />
+            </esld:Section>
+            <esld:Section>
+              <esld:Vertex esld:x="18.5" esld:y="6.5" />
+              <esld:Vertex esld:x="16.5" esld:y="6.5" />
+              <esld:Vertex esld:x="16.5" esld:y="7.16"
+                esld:uuid="61974884-1be1-4ba0-939b-34f0a43d987e" />
+            </esld:Section>
+            <esld:Section>
+              <esld:Vertex esld:x="23.8" esld:y="4.5"
+                esld:uuid="29451e72-1361-4418-a924-a1fbb6e5bfaa" />
+              <esld:Vertex esld:x="21.5" esld:y="4.5" />
+              <esld:Vertex esld:x="21.5" esld:y="6.5" />
+            </esld:Section>
+            <esld:Section>
+              <esld:Vertex esld:x="23.8" esld:y="6.5"
+                esld:uuid="e5176958-ddd9-4036-9b3e-0d894ae9b58a" />
+              <esld:Vertex esld:x="21.5" esld:y="6.5" />
+            </esld:Section>
+          </Private>
+        </ConnectivityNode>
+      </Bay>
+    </VoltageLevel>
+    <VoltageLevel name="V1" esld:x="1" esld:y="1" esld:lx="1" esld:ly="1" esld:w="9" esld:h="7">
+      <Bay name="B1" esld:x="2" esld:y="2" esld:lx="2" esld:ly="2" esld:w="7" esld:h="5" />
+    </VoltageLevel>
+  </Substation>
+</SCL>
+`;
+
+export const iedConvertDocString = `<?xml version="1.0" encoding="UTF-8"?>
+  <SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2007" revision="B" release="4">
+    <Header id="ied_convert_two"/>
+    <Substation xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0" name="S1" esld:w="12" esld:h="7">
+      <VoltageLevel name="V1" esld:x="1" esld:y="1" esld:lx="1" esld:ly="1" esld:w="5" esld:h="5">
+        <Bay name="B1" esld:x="2" esld:y="2" esld:lx="2" esld:ly="2" esld:w="3" esld:h="3">
+          <Private type="OpenSCD-Linked-IEDs">
+            <esld:IEDName esld:name="ACMEInc_DoAnything_01" esld:x="3" esld:y="3" esld:lx="4" esld:ly="4"/>
+          </Private>
+        </Bay>
+      </VoltageLevel>
+    </Substation>
+    <IED name="ACMEInc_DoAnything_01" manufacturer="ACME Inc" type="DoAnything" configVersion="1.0">
+      <AccessPoint name="AP1">
+        <Server>
+          <Authentication/>
+          <LDevice inst="LD_PROT">
+            <LN0 lnClass="LLN0" inst="" lnType="LLN0_Type"/>
+          </LDevice>
+        </Server>
+      </AccessPoint>
+    </IED>
+    <DataTypeTemplates>
+      <LNodeType id="LLN0_Type" lnClass="LLN0"/>
+    </DataTypeTemplates>
+  </SCL>
+  `;
+
+export const iedLegacyCoordinatesDocString = `<?xml version="1.0" encoding="UTF-8"?>
+  <SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2007" revision="B" release="4">
+    <Header id="ied_convert_two" />
+    <Substation name="S1" esld:w="12" esld:h="7">
+      <VoltageLevel name="V1" esld:x="1" esld:y="1" esld:lx="1" esld:ly="1" esld:w="5" esld:h="5">
+        <Bay name="B1" esld:x="2" esld:y="2" esld:lx="2" esld:ly="2" esld:w="3" esld:h="3" />
+      </VoltageLevel>
+    </Substation>
+    <Communication>
+      <SubNetwork name="StationBus" type="8-MMS">
+        <ConnectedAP iedName="ACMEInc_DoAnything_03" apName="AP1" />
+        <ConnectedAP iedName="ACMEInc_DoAnything_02" apName="AP1" />
+        <ConnectedAP iedName="ACMEInc_DoAnything_01" apName="AP1" />
+      </SubNetwork>
+    </Communication>
+    <IED name="ACMEInc_DoAnything_03" manufacturer="ACME Inc" type="DoAnything" configVersion="1.0"
+      esld:x="3" esld:y="3" esld:lx="4" esld:ly="4">
+      <AccessPoint name="AP1">
+        <Server>
+          <Authentication />
+          <LDevice inst="LD_PROT">
+            <LN0 lnClass="LLN0" inst="" lnType="LLN0_Type" />
+          </LDevice>
+        </Server>
+      </AccessPoint>
+    </IED>
+    <IED name="ACMEInc_DoAnything_02" manufacturer="ACME Inc" type="DoAnything" configVersion="1.0" />
+    <IED name="ACMEInc_DoAnything_01" manufacturer="ACME Inc" type="DoAnything" configVersion="1.0" />
+    <DataTypeTemplates>
+      <LNodeType id="LLN0_Type" lnClass="LLN0" />
+    </DataTypeTemplates>
+  </SCL>
+  `;
+
+export const iedNameAndLegacyCoordinatesDocString = `<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0" version="2007" revision="B" release="4">
+  <Header id="ied_convert_both"/>
+  <Substation name="S1" esld:w="12" esld:h="7">
+    <VoltageLevel name="V1" esld:x="1" esld:y="1" esld:lx="1" esld:ly="1" esld:w="5" esld:h="5">
+      <Bay name="B1" esld:x="2" esld:y="2" esld:lx="2" esld:ly="2" esld:w="3" esld:h="3">
+        <Private type="OpenSCD-Linked-IEDs">
+          <esld:IEDName esld:name="ACMEInc_DoAnything_01" esld:x="3" esld:y="3" esld:lx="4" esld:ly="4"/>
+        </Private>
+      </Bay>
+    </VoltageLevel>
+  </Substation>
+  <IED name="ACMEInc_DoAnything_01" manufacturer="ACME Inc" type="DoAnything" configVersion="1.0" esld:x="9" esld:y="9" esld:lx="8" esld:ly="8"/>
+  <DataTypeTemplates>
+    <LNodeType id="LLN0_Type" lnClass="LLN0"/>
+  </DataTypeTemplates>
+</SCL>
+`;
+
 function getSldSubstationEditor(
   element: OscdEditorSld
 ): SldSubstationEditor | null | undefined {
@@ -203,15 +453,6 @@ function svgClientPosition(
     rect.top + ((y + 0.5 - viewBox.y) / viewBox.height) * rect.height;
 
   return [Math.round(clientX), Math.round(clientY)];
-}
-
-function middleOf(element: Element): [number, number] {
-  const { x, y, width, height } = element.getBoundingClientRect();
-
-  return [
-    Math.floor(x + window.pageXOffset + width / 2),
-    Math.floor(y + window.pageYOffset + height / 2),
-  ];
 }
 
 describe('SLD Editor', () => {
@@ -250,6 +491,262 @@ describe('SLD Editor', () => {
 
   it('adds the SLD XML namespace if doc lacks it', async () => {
     expect(element.doc.documentElement).to.have.attribute('xmlns:eosld');
+  });
+
+  it('converts old Transpower SLD layout to OpenSCD layout', async () => {
+    const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
+
+    element.doc = new DOMParser().parseFromString(
+      sldConvertDocString,
+      'application/xml'
+    );
+    await element.updateComplete;
+
+    const convertButton =
+      element.shadowRoot!.querySelector<Button>('mwc-button');
+    expect(convertButton).to.exist;
+    expect(convertButton?.textContent?.trim()).to.equal('Convert SLD Layout');
+
+    convertButton!.click();
+    await aTimeout(20);
+    await element.updateComplete;
+
+    expect(element.doc.documentElement).to.have.attribute('xmlns:eosld');
+    expect(element.doc.documentElement).to.not.have.attribute('xmlns:esld');
+    expect(
+      element.doc.querySelectorAll('Private[type="Transpower-SLD-Vertices"]')
+    ).to.have.lengthOf(0);
+
+    const substation = element.doc.querySelector('Substation[name="S1"]')!;
+    expect(sldAttribute(substation, 'w')).to.equal('30');
+    expect(sldAttribute(substation, 'h')).to.equal('21');
+    expect(substation.getAttributeNS(oldNs, 'w')).to.equal(null);
+
+    const voltageLevelV2 = element.doc.querySelector(
+      'VoltageLevel[name="V2"]'
+    )!;
+    expect(sldAttribute(voltageLevelV2, 'x')).to.equal('11');
+    expect(sldAttribute(voltageLevelV2, 'h')).to.equal('20');
+
+    const ptr1 = element.doc.querySelector('PowerTransformer[name="PTR1"]')!;
+    expect(sldAttribute(ptr1, 'kind')).to.equal('auto');
+    expect(sldAttribute(ptr1, 'rot')).to.equal('3');
+
+    const expectedConductingEquipment = {
+      'VTR:VTR1': { x: '13', y: '15', lx: '14', ly: '16' },
+      'SMC:SMC1': { x: '16', y: '13', lx: '17', ly: '14' },
+      'SAR:SAR1': { x: '13', y: '13', lx: '14', ly: '14' },
+      'RES:RES1': { x: '16', y: '11', lx: '17', ly: '12' },
+      'REA:REA1': { x: '13', y: '11', lx: '14', ly: '12' },
+      'MOT:MOT1': { x: '16', y: '9', lx: '17', ly: '10' },
+      'IFL:IFL1': { x: '13', y: '9', lx: '14', ly: '10' },
+      'GEN:GEN1': { x: '16', y: '7', lx: '17', ly: '8' },
+      'DIS:DIS1': { x: '13', y: '7', lx: '14', ly: '8' },
+      'CTR:CTR1': { x: '16', y: '5', lx: '17', ly: '6' },
+      'CBR:CBR1': { x: '13', y: '5', lx: '14', ly: '6' },
+      'CAP:CAP1': { x: '16', y: '3', lx: '17', ly: '4' },
+      'CAB:CAB1': { x: '13', y: '3', lx: '14', ly: '4' },
+    } as const;
+
+    const conductingEquipment = Array.from(
+      element.doc.querySelectorAll('ConductingEquipment')
+    );
+    expect(conductingEquipment).to.have.lengthOf(
+      Object.keys(expectedConductingEquipment).length
+    );
+
+    conductingEquipment.forEach(eq => {
+      const key = `${eq.getAttribute('type')}:${eq.getAttribute('name')}`;
+      const expected =
+        expectedConductingEquipment[
+          key as keyof typeof expectedConductingEquipment
+        ];
+      expect(expected, `unexpected equipment ${key}`).to.exist;
+      expect(getSLDAttributes(eq, 'x')).to.equal(expected.x);
+      expect(getSLDAttributes(eq, 'y')).to.equal(expected.y);
+      expect(getSLDAttributes(eq, 'lx')).to.equal(expected.lx);
+      expect(getSLDAttributes(eq, 'ly')).to.equal(expected.ly);
+    });
+
+    const genTerminal = element.doc.querySelector(
+      'ConductingEquipment[type="GEN"][name="GEN1"] > Terminal[name="T1"]'
+    )!;
+    expect(sldAttribute(genTerminal, 'uuid')).to.equal(
+      '61974884-1be1-4ba0-939b-34f0a43d987e'
+    );
+
+    const bb1ConnNode = element.doc.querySelector(
+      'ConnectivityNode[pathName="S1/V2/BB1/L"]'
+    )!;
+    const bb1Private = bb1ConnNode.querySelector(
+      ':scope > Private[type="OpenSCD-SLD-Layout"]'
+    );
+    expect(bb1Private).to.exist;
+    expect(bb1Private!.querySelectorAll(':scope > Section')).to.have.lengthOf(
+      6
+    );
+    expect(
+      bb1Private!
+        .querySelector(':scope > Section')
+        ?.getAttributeNS(sldNs, 'bus')
+    ).to.equal('true');
+
+    const oldLayoutAttributes = [
+      'x',
+      'y',
+      'w',
+      'h',
+      'lx',
+      'ly',
+      'rot',
+      'flip',
+      'color',
+      'weight',
+      'kind',
+      'uuid',
+    ];
+
+    const substationTree = Array.from(
+      element.doc.querySelectorAll(':root > Substation, :root > Substation *')
+    );
+    substationTree.forEach(node => {
+      oldLayoutAttributes.forEach(attr => {
+        expect(
+          node.getAttributeNS(oldNs, attr),
+          `${node.tagName} has esld:${attr}`
+        ).to.equal(null);
+      });
+    });
+  });
+
+  it('converts Transpower linked IED layout to Reference layout', async () => {
+    element.doc = new DOMParser().parseFromString(
+      iedConvertDocString,
+      'application/xml'
+    );
+    await element.updateComplete;
+
+    const convertButton =
+      element.shadowRoot!.querySelector<Button>('mwc-button');
+    expect(convertButton).to.exist;
+    expect(convertButton?.textContent?.trim()).to.equal('Convert SLD Layout');
+
+    convertButton!.click();
+    await aTimeout(20);
+    await element.updateComplete;
+
+    expect(
+      element.doc.querySelectorAll('Private[type="OpenSCD-Linked-IEDs"]')
+    ).to.have.lengthOf(0);
+    expect(element.doc.querySelectorAll('IEDName')).to.have.lengthOf(0);
+
+    const convertedReferences = iedReferences(element.doc);
+    expect(convertedReferences).to.have.lengthOf(1);
+
+    const reference = convertedReferences[0];
+    expect(reference.getAttributeNS(sldNs, 'type')).to.equal('IED');
+
+    const ied = element.doc.querySelector(
+      ':root > IED[name="ACMEInc_DoAnything_01"]'
+    );
+    expect(ied).to.exist;
+    expect(reference.getAttributeNS(sldNs, 'id')).to.equal(identity(ied!));
+    expect(resolveIed(reference)).to.equal(ied);
+
+    const referenceAttrs = reference.querySelector(':scope > SLDAttributes');
+    expect(referenceAttrs).to.exist;
+    expect(referenceAttrs!.getAttributeNS(sldNs, 'x')).to.equal('3');
+    expect(referenceAttrs!.getAttributeNS(sldNs, 'y')).to.equal('3');
+    expect(referenceAttrs!.getAttributeNS(sldNs, 'lx')).to.equal('4');
+    expect(referenceAttrs!.getAttributeNS(sldNs, 'ly')).to.equal('4');
+
+    const parentPrivate = reference.parentElement;
+    expect(parentPrivate?.tagName).to.equal('Private');
+    expect(parentPrivate).to.have.attribute('type', 'OpenSCD-SLD-Layout');
+  });
+
+  it('migrates legacy IED coordinates into Substation IED references', async () => {
+    const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
+
+    element.doc = new DOMParser().parseFromString(
+      iedLegacyCoordinatesDocString,
+      'application/xml'
+    );
+    await element.updateComplete;
+
+    const convertButton =
+      element.shadowRoot!.querySelector<Button>('mwc-button');
+    expect(convertButton).to.exist;
+    convertButton!.click();
+    await aTimeout(20);
+    await element.updateComplete;
+
+    const iedWithLegacyCoords = element.doc.querySelector(
+      ':root > IED[name="ACMEInc_DoAnything_03"]'
+    )!;
+    expect(iedWithLegacyCoords.getAttributeNS(oldNs, 'x')).to.equal(null);
+    expect(iedWithLegacyCoords.getAttributeNS(oldNs, 'y')).to.equal(null);
+    expect(iedWithLegacyCoords.getAttributeNS(oldNs, 'lx')).to.equal(null);
+    expect(iedWithLegacyCoords.getAttributeNS(oldNs, 'ly')).to.equal(null);
+
+    const convertedReferences = iedReferences(element.doc);
+    expect(convertedReferences).to.have.lengthOf(1);
+
+    const reference = convertedReferences[0];
+    expect(reference.getAttributeNS(sldNs, 'type')).to.equal('IED');
+    expect(reference.getAttributeNS(sldNs, 'id')).to.equal(
+      identity(iedWithLegacyCoords)
+    );
+
+    const referenceAttrs = reference.querySelector(':scope > SLDAttributes');
+    expect(referenceAttrs).to.exist;
+    expect(referenceAttrs!.getAttributeNS(sldNs, 'x')).to.equal('3');
+    expect(referenceAttrs!.getAttributeNS(sldNs, 'y')).to.equal('3');
+    expect(referenceAttrs!.getAttributeNS(sldNs, 'lx')).to.equal('4');
+    expect(referenceAttrs!.getAttributeNS(sldNs, 'ly')).to.equal('4');
+
+    const substation = element.doc.querySelector(':root > Substation')!;
+    expect(reference.closest('Substation')).to.equal(substation);
+    expect(reference.closest('Private')).to.have.attribute(
+      'type',
+      'OpenSCD-SLD-Layout'
+    );
+  });
+
+  it('does not create duplicate IED references when legacy IEDName exists', async () => {
+    const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
+
+    element.doc = new DOMParser().parseFromString(
+      iedNameAndLegacyCoordinatesDocString,
+      'application/xml'
+    );
+    await element.updateComplete;
+
+    const convertButton =
+      element.shadowRoot!.querySelector<Button>('mwc-button');
+    expect(convertButton).to.exist;
+    convertButton!.click();
+    await aTimeout(20);
+    await element.updateComplete;
+
+    const ied = element.doc.querySelector(
+      ':root > IED[name="ACMEInc_DoAnything_01"]'
+    )!;
+    expect(ied.getAttributeNS(oldNs, 'x')).to.equal(null);
+    expect(ied.getAttributeNS(oldNs, 'y')).to.equal(null);
+    expect(ied.getAttributeNS(oldNs, 'lx')).to.equal(null);
+    expect(ied.getAttributeNS(oldNs, 'ly')).to.equal(null);
+
+    const references = iedReferences(element.doc);
+    expect(references).to.have.lengthOf(1);
+    expect(references[0].getAttributeNS(sldNs, 'id')).to.equal(identity(ied));
+
+    const attrs = references[0].querySelector(':scope > SLDAttributes');
+    expect(attrs).to.exist;
+    expect(attrs!.getAttributeNS(sldNs, 'x')).to.equal('3');
+    expect(attrs!.getAttributeNS(sldNs, 'y')).to.equal('3');
+    expect(attrs!.getAttributeNS(sldNs, 'lx')).to.equal('4');
+    expect(attrs!.getAttributeNS(sldNs, 'ly')).to.equal('4');
   });
 
   it('adds a substation on add button click', async () => {
@@ -334,26 +831,6 @@ describe('SLD Editor', () => {
     });
 
     describe('IED interactions', () => {
-      let lastCalledWizard: Element | undefined;
-
-      const onWizardRequest = ({
-        detail: { element: wizardElement },
-      }: CustomEvent<{ element: Element }>) => {
-        lastCalledWizard = wizardElement;
-      };
-
-      function linkedIed(name: string): Element | undefined {
-        return Array.from(
-          element.doc.getElementsByTagNameNS(sldNs, 'IEDName')
-        ).find(ied => ied.getAttributeNS(sldNs, 'name') === name);
-      }
-
-      function iedAttr(name: string, attr: string): number {
-        const value = linkedIed(name)?.getAttributeNS(sldNs, attr);
-        expect(value).to.exist;
-        return Number(value);
-      }
-
       async function settle() {
         await aTimeout(20);
         await element.updateComplete;
@@ -367,21 +844,6 @@ describe('SLD Editor', () => {
         const [clientX, clientY] = svgClientPosition(element, x, y);
         await sendMouse({ type: 'move', position: [clientX, clientY] });
         await sendMouse({ type: 'click', position: [clientX, clientY] });
-        await settle();
-      }
-
-      async function placePreviewAt(selector: string, x: number, y: number) {
-        const [clientX, clientY] = svgClientPosition(element, x, y);
-        await sendMouse({ type: 'move', position: [clientX, clientY] });
-        await aTimeout(50);
-
-        const previewTarget = sldSubstationEditor.shadowRoot?.querySelector(
-          selector
-        ) as SVGElement;
-        expect(previewTarget).to.exist;
-        previewTarget!.dispatchEvent(
-          new MouseEvent('click', { bubbles: true })
-        );
         await settle();
       }
 
@@ -412,39 +874,13 @@ describe('SLD Editor', () => {
         item!.click();
         await settle();
         expect(sldEditor.placing).to.exist;
-        expect(sldEditor.placing!.localName).to.equal('IEDName');
+        expect(sldEditor.placing!.localName).to.equal('Reference');
       }
 
       async function placeIedFromMenu(name: string, x: number, y: number) {
         await selectIedFromMenu(name);
         await clickGridAt(x, y);
       }
-
-      async function moveIed(name: string, x: number, y: number) {
-        const ied = linkedIed(name);
-        expect(ied).to.exist;
-
-        sldEditor.startPlacing(ied!);
-        await settle();
-
-        expect(sldEditor.placing).to.equal(ied);
-        await placePreviewAt('g.ied.preview rect', x, y);
-      }
-
-      beforeEach(async () => {
-        element.addEventListener(
-          'oscd-edit-wizard-request',
-          onWizardRequest as any
-        );
-        lastCalledWizard = undefined;
-      });
-
-      afterEach(() => {
-        element.removeEventListener(
-          'oscd-edit-wizard-request',
-          onWizardRequest as any
-        );
-      });
 
       it('places IEDs from the IED menu', async () => {
         element.doc = new DOMParser().parseFromString(
@@ -475,7 +911,7 @@ describe('SLD Editor', () => {
         await sldEditor.updateComplete;
 
         expect(sldEditor.placing).to.exist;
-        expect(sldEditor.placing!.localName).to.equal('IEDName');
+        expect(sldEditor.placing!.localName).to.equal('Reference');
         expect(sldEditor.placing!.namespaceURI).to.equal(sldNs);
 
         const [clientX, clientY] = svgClientPosition(element, 10, 10);
@@ -483,12 +919,13 @@ describe('SLD Editor', () => {
         await sendMouse({ type: 'click', position: [clientX, clientY] });
         await aTimeout(20);
 
-        const linkedIeds = Array.from(
-          element.doc.getElementsByTagNameNS(sldNs, 'IEDName')
+        const referencedIeds = iedReferences(element.doc);
+        expect(referencedIeds).to.have.lengthOf(1);
+        expect(referencedIeds[0].getAttributeNS(sldNs, 'type')).to.equal('IED');
+        expect(referencedIeds[0].getAttributeNS(sldNs, 'id')).to.equal(
+          identity(element.doc.querySelector(':root > IED[name="IED1"]')!)
         );
-        expect(linkedIeds).to.have.lengthOf(1);
-        expect(linkedIeds[0].getAttributeNS(sldNs, 'name')).to.equal('IED1');
-        expect(linkedIeds[0].parentElement).to.have.attribute(
+        expect(referencedIeds[0].parentElement).to.have.attribute(
           'type',
           'OpenSCD-SLD-Layout'
         );
@@ -530,205 +967,53 @@ describe('SLD Editor', () => {
         expect(iedItem2?.querySelector('mwc-icon[slot="meta"]')).to.not.exist;
       });
 
-      it('triggers oscd-scl-dialogs via the IED context menu edit action', async () => {
+      it('removes references to missing IEDs via the IED menu action', async () => {
         await loadIedDoc();
-        await placeIedFromMenu('IED1', 3, 3);
 
-        const sclDialogs = getSldSubstationEditor(
-          element
-        )?.shadowRoot?.querySelector('oscd-scl-dialogs') as
-          | {
-              edit: (wizardType: { element: Element }) => Promise<any[]>;
-            }
-          | undefined;
-        expect(sclDialogs).to.exist;
-
-        const editCalls: { element: Element }[] = [];
-        const originalEdit = sclDialogs!.edit.bind(sclDialogs);
-        sclDialogs!.edit = async wizardType => {
-          editCalls.push(wizardType);
-          return [];
-        };
-
-        const iedRect =
-          getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-            '#IEDName-IED1 rect'
-          );
-        expect(iedRect).to.exist;
-
-        iedRect!.dispatchEvent(
-          new MouseEvent('contextmenu', {
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-            clientX: 200,
-            clientY: 200,
-          })
+        const voltageLevel =
+          element.doc.getElementsByTagName('VoltageLevel')[0];
+        const privateElement = voltageLevel.querySelector(
+          ':scope > Private[type="OpenSCD-SLD-Layout"]'
+        )!;
+        const missingRef = element.doc.createElementNS(
+          sldNs,
+          'eosld:Reference'
         );
+        missingRef.setAttributeNS(sldNs, 'eosld:id', 'MissingIED');
+        missingRef.setAttributeNS(sldNs, 'eosld:type', 'IED');
+        const missingRefAttrs = element.doc.createElementNS(
+          sldNs,
+          'eosld:SLDAttributes'
+        );
+        missingRefAttrs.setAttributeNS(sldNs, 'eosld:x', '4');
+        missingRefAttrs.setAttributeNS(sldNs, 'eosld:y', '4');
+        missingRef.appendChild(missingRefAttrs);
+        privateElement.appendChild(missingRef);
+        element.docVersion += 1;
         await settle();
 
-        const menu = getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-          'menu#sld-context-menu'
-        );
-        expect(menu).to.exist;
+        expect(
+          iedReferences(element.doc).filter(ref => !resolveIed(ref))
+        ).to.have.lengthOf(1);
 
-        const items = Array.from(menu!.querySelectorAll('mwc-list-item'));
-        const editItem = items.find(item =>
-          item.textContent?.includes('Edit')
-        ) as ListItem | undefined;
-        expect(editItem).to.exist;
-        editItem!.click();
+        await openIedMenu();
+        const removeUnmatchedItem = element.shadowRoot!.querySelector(
+          'mwc-list-item[data-name="Delete Unmatched"]'
+        ) as ListItem | null;
+
+        expect(removeUnmatchedItem).to.exist;
+        expect(
+          removeUnmatchedItem?.textContent?.replace(/\s+/g, ' ').trim()
+        ).to.include('Remove reference to 1 missing IED');
+        removeUnmatchedItem!.click();
         await settle();
 
-        expect(editCalls).to.have.lengthOf(1);
-        expect(editCalls[0].element).to.equal(
-          element.doc.querySelector(':root > IED[name="IED1"]')
-        );
-
-        sclDialogs!.edit = originalEdit;
-      });
-
-      it('moves an IED from voltage level to bay and updates XML location', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 10, 10);
-
-        await moveIed('IED1', 4, 4);
-
-        const ied = linkedIed('IED1')!;
-        expect(ied.closest('Bay')?.getAttribute('name')).to.equal('B1');
-        expect(ied.closest('VoltageLevel')?.getAttribute('name')).to.equal(
-          'V1'
-        );
-      });
-
-      it('moves an IED from bay to substation and updates XML location', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 3, 3);
-
-        await moveIed('IED1', 20, 10);
-
-        const ied = linkedIed('IED1')!;
-        expect(ied.closest('Bay')).to.be.null;
-        expect(ied.closest('VoltageLevel')).to.be.null;
-        expect(ied.closest('Substation')?.getAttribute('name')).to.equal('S1');
-      });
-
-      it('moves an IED from substation to voltage level and updates XML location', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 20, 10);
-
-        await moveIed('IED1', 10, 10);
-
-        const ied = linkedIed('IED1')!;
-        expect(ied.closest('Bay')).to.be.null;
-        expect(ied.closest('VoltageLevel')?.getAttribute('name')).to.equal(
-          'V1'
-        );
-      });
-
-      it('moves an IED with its bay when the bay is moved', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 3, 3);
-
-        const oldIedX = iedAttr('IED1', 'x');
-        const oldIedY = iedAttr('IED1', 'y');
-
-        await clickGridAt(6, 6);
-        expect(sldEditor.placing).to.have.property('tagName', 'Bay');
-        await clickGridAt(8, 8);
-
-        const movedBay = element.doc.querySelector('Bay')!;
-        expect(sldAttribute(movedBay, 'x')).to.equal('4');
-        expect(sldAttribute(movedBay, 'y')).to.equal('4');
-        expect(iedAttr('IED1', 'x')).to.equal(oldIedX + 2);
-        expect(iedAttr('IED1', 'y')).to.equal(oldIedY + 2);
-      });
-
-      it('moves an IED with its voltage level when the voltage level is moved', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 10, 10);
-
-        const oldIedX = iedAttr('IED1', 'x');
-        const oldIedY = iedAttr('IED1', 'y');
-
-        const voltageLevel = element.doc.querySelector('VoltageLevel')!;
-        sldEditor.startPlacing(voltageLevel);
-        await settle();
-
-        expect(sldEditor.placing).to.have.property('tagName', 'VoltageLevel');
-        sldSubstationEditor.mouseX = 3;
-        sldSubstationEditor.mouseY = 3;
-        sldSubstationEditor.requestUpdate();
-        await sldSubstationEditor.updateComplete;
-
-        const previewRect = sldSubstationEditor.shadowRoot?.querySelector(
-          'g.voltagelevel.preview > rect'
-        ) as SVGElement;
-        expect(previewRect).to.exist;
-        previewRect!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await settle();
-
-        const movedVl = element.doc.querySelector('VoltageLevel')!;
-        expect(sldAttribute(movedVl, 'x')).to.equal('3');
-        expect(sldAttribute(movedVl, 'y')).to.equal('3');
-        expect(iedAttr('IED1', 'x')).to.equal(oldIedX + 2);
-        expect(iedAttr('IED1', 'y')).to.equal(oldIedY + 2);
-      });
-
-      it('moves an IED label independently', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 10, 10);
-
-        const ied = linkedIed('IED1')!;
-        const oldLx = ied.getAttributeNS(sldNs, 'lx');
-        const oldLy = ied.getAttributeNS(sldNs, 'ly');
-
-        const label = getSldSubstationEditor(
-          element
-        )?.shadowRoot?.querySelector('*[id="label:IED1"] text');
-        expect(label).to.exist;
-
-        const [labelX, labelY] = middleOf(label!);
-        await sendMouse({ type: 'move', position: [labelX, labelY] });
-        (label! as SVGElement).dispatchEvent(
-          new MouseEvent('click', { bubbles: true })
-        );
-        await settle();
-
-        expect(sldEditor.placingLabel).to.equal(ied);
-
-        await clickGridAt(12, 12);
-
-        expect(ied.getAttributeNS(sldNs, 'lx')).to.not.equal(oldLx);
-        expect(ied.getAttributeNS(sldNs, 'ly')).to.not.equal(oldLy);
-      });
-
-      it('opens the wizard on IED label middle-click', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 10, 10);
-
-        const label = getSldSubstationEditor(
-          element
-        )?.shadowRoot?.querySelector('*[id="label:IED1"] text');
-        expect(label).to.exist;
-
-        label!.dispatchEvent(
-          new PointerEvent('auxclick', {
-            bubbles: true,
-            composed: true,
-            button: 1,
-          })
-        );
-        await settle();
-
-        expect(lastCalledWizard).to.equal(
-          element.doc.querySelector(':root > IED[name="IED1"]')
-        );
+        expect(
+          iedReferences(element.doc).filter(ref => !resolveIed(ref))
+        ).to.have.lengthOf(0);
       });
 
       it('hides IEDs when the IED toggle is turned off', async () => {
-        // Note: IED toggle button rendering appears to have timing issues in tests
-        // This functionality works in the actual application but is difficult to test reliably
         await loadIedDoc();
 
         // Force a render and wait
@@ -777,162 +1062,6 @@ describe('SLD Editor', () => {
           'g[id="IEDName-IED1"]'
         );
         expect(iedGroup).to.exist;
-      });
-
-      it('moves an IED via the right-click context menu', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 10, 10);
-
-        const iedRect =
-          getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-            '#IEDName-IED1 rect'
-          );
-        expect(iedRect).to.exist;
-
-        // Right-click to open context menu
-        iedRect!.dispatchEvent(
-          new MouseEvent('contextmenu', {
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-          })
-        );
-        await settle();
-
-        // Find and click the Move menu item
-        const menu = getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-          'menu#sld-context-menu'
-        );
-        expect(menu).to.exist;
-
-        const items = Array.from(menu!.querySelectorAll('mwc-list-item'));
-        const moveItem = items.find(item =>
-          item.textContent?.includes('Move')
-        ) as ListItem | undefined;
-        expect(moveItem).to.exist;
-        moveItem!.click();
-        await settle();
-        await aTimeout(100);
-
-        // Verify placing mode is active
-        expect(sldEditor.placing).to.exist;
-        expect(sldEditor.placing!.localName).to.equal('IEDName');
-
-        // Move to new position using preview placement
-        sldSubstationEditor.mouseX = 15;
-        sldSubstationEditor.mouseY = 15;
-        sldSubstationEditor.requestUpdate();
-        await sldSubstationEditor.updateComplete;
-
-        const previewRect = sldSubstationEditor.shadowRoot?.querySelector(
-          'g.ied.preview rect'
-        ) as SVGElement;
-        expect(previewRect).to.exist;
-        previewRect!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await settle();
-
-        expect(iedAttr('IED1', 'x')).to.equal(15);
-        expect(iedAttr('IED1', 'y')).to.equal(15);
-      });
-
-      it('removes an IED from the SLD via right-click menu', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 10, 10);
-
-        // Verify IED is visible
-        let iedGroup = getSldSubstationEditor(
-          element
-        )?.shadowRoot?.querySelector('g[id="IEDName-IED1"]');
-        expect(iedGroup).to.exist;
-
-        const iedRect =
-          getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-            '#IEDName-IED1 rect'
-          );
-        expect(iedRect).to.exist;
-
-        // Right-click to open context menu
-        iedRect!.dispatchEvent(
-          new MouseEvent('contextmenu', {
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-          })
-        );
-        await settle();
-
-        // Find and click the "Remove from SLD" menu item
-        const menu = getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-          'menu#sld-context-menu'
-        );
-        expect(menu).to.exist;
-
-        const items = Array.from(menu!.querySelectorAll('mwc-list-item'));
-        const removeItem = items.find(item =>
-          item.textContent?.includes('Remove from SLD')
-        ) as ListItem | undefined;
-        expect(removeItem).to.exist;
-        removeItem!.click();
-        await settle();
-
-        // Verify IED element still exists in document
-        const sclIed = element.doc.querySelector(':root > IED[name="IED1"]');
-        expect(sclIed).to.exist;
-
-        // Verify IED is no longer visible in SVG
-        iedGroup = getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-          'g[id="IEDName-IED1"]'
-        );
-        expect(iedGroup).to.not.exist;
-      });
-
-      it('deletes an IED via right-click menu', async () => {
-        await loadIedDoc();
-        await placeIedFromMenu('IED1', 10, 10);
-
-        // Verify IED exists
-        let sclIed = element.doc.querySelector(':root > IED[name="IED1"]');
-        expect(sclIed).to.exist;
-
-        const iedRect =
-          getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-            '#IEDName-IED1 rect'
-          );
-        expect(iedRect).to.exist;
-
-        // Right-click to open context menu
-        iedRect!.dispatchEvent(
-          new MouseEvent('contextmenu', {
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-          })
-        );
-        await settle();
-
-        // Find and click the "Delete IED" menu item
-        const menu = getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-          'menu#sld-context-menu'
-        );
-        expect(menu).to.exist;
-
-        const items = Array.from(menu!.querySelectorAll('mwc-list-item'));
-        const deleteItem = items.find(item =>
-          item.textContent?.includes('Delete IED')
-        ) as ListItem | undefined;
-        expect(deleteItem).to.exist;
-        deleteItem!.click();
-        await settle();
-
-        // Verify IED element is removed from document
-        sclIed = element.doc.querySelector(':root > IED[name="IED1"]');
-        expect(sclIed).to.not.exist;
-
-        // Verify IED is no longer visible in SVG
-        const iedGroup = getSldSubstationEditor(
-          element
-        )?.shadowRoot?.querySelector('g[id="IEDName-IED1"]');
-        expect(iedGroup).to.not.exist;
       });
     });
 

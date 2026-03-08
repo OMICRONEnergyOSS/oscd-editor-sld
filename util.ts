@@ -1,5 +1,5 @@
 import { EditV2 } from '@openscd/oscd-api';
-import { getReference } from '@openscd/scl-lib';
+import { getReference, identity } from '@openscd/scl-lib';
 
 export const privType = 'OpenSCD-SLD-Layout';
 export const sldNs = 'https://openscd.org/SCL/SSD/SLD/v0';
@@ -97,7 +97,62 @@ function sections(element: Element): Element[] {
   );
 }
 
+export function isLegacyIedNameElement(element: Element): boolean {
+  return element.localName === 'IEDName' && element.namespaceURI === sldNs;
+}
+
+export function isIedReferenceElement(element: Element): boolean {
+  return (
+    element.localName === 'Reference' &&
+    element.namespaceURI === sldNs &&
+    element.getAttributeNS(sldNs, 'type') === 'IED'
+  );
+}
+
+export function iedReferences(root: XMLDocument | Element): Element[] {
+  const refs = Array.from(
+    root.getElementsByTagNameNS(sldNs, 'Reference')
+  ).filter(isIedReferenceElement);
+  return refs;
+}
+
+export function iedIdentity(referencedIed: Element): string | null {
+  if (isIedReferenceElement(referencedIed))
+    return referencedIed.getAttributeNS(sldNs, 'id');
+  return null;
+}
+
+export function resolveIed(referencedIed: Element): Element | null {
+  const doc = referencedIed.ownerDocument;
+
+  if (isIedReferenceElement(referencedIed)) {
+    const referenceIdentity = iedIdentity(referencedIed);
+    if (!referenceIdentity) return null;
+
+    return (
+      Array.from(doc.querySelectorAll(':root > IED')).find(
+        ied => identity(ied) === referenceIdentity
+      ) ?? null
+    );
+  }
+
+  return null;
+}
+
 function sldAttributes(element: Element, nsPrefix?: string): Element | null {
+  if (isIedReferenceElement(element)) {
+    const referenceSldAttrs = element.querySelector(':scope > SLDAttributes');
+    if (referenceSldAttrs) return referenceSldAttrs;
+    if (!nsPrefix) return null;
+
+    const sldAttrs = element.ownerDocument.createElementNS(
+      sldNs,
+      `${nsPrefix}:SLDAttributes`
+    );
+    element.appendChild(sldAttrs);
+    return sldAttrs;
+  }
+
   const sldAttrs = element.querySelector(
     `:scope > Private[type="${privType}"] > SLDAttributes`
   );
@@ -475,7 +530,7 @@ export function reparentElement(element: Element, parent: Element): EditV2[] {
   });
   const newName = uniqueName(element, parent);
   if (
-    element.localName !== 'IEDName' &&
+    !isIedReferenceElement(element) &&
     newName !== element.getAttribute('name')
   )
     edits.push({ element, attributes: { name: newName } });
