@@ -25,7 +25,6 @@ import {
   getSLDAttributes,
   iedReferences,
   isBusBar,
-  isIedReferenceElement,
   makeBusBar,
   resolveIed,
   setSLDAttributes,
@@ -172,12 +171,7 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
     ).flatMap(sub => iedReferences(sub));
 
     const refForIed = (ied: Element) =>
-      iedRefs.find(ref => {
-        if (isIedReferenceElement(ref))
-          return ref.getAttributeNS(sldNs, 'id') === identity(ied);
-
-        return ref.getAttributeNS(sldNs, 'name') === ied.getAttribute('name');
-      });
+      iedRefs.find(ref => ref.getAttributeNS(sldNs, 'id') === identity(ied));
 
     const unusedIeds = ieds.filter(ied => !refForIed(ied));
 
@@ -609,11 +603,9 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
   }
 
   insertOrGetIed(ied: Element, doc: XMLDocument): Element {
-    const referencedIed = iedReferences(doc).find(ref => {
-      if (isIedReferenceElement(ref))
-        return ref.getAttributeNS(sldNs, 'id') === identity(ied);
-      return false;
-    });
+    const referencedIed = iedReferences(doc).find(
+      ref => ref.getAttributeNS(sldNs, 'id') === identity(ied)
+    );
 
     if (referencedIed) return referencedIed;
 

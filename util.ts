@@ -97,10 +97,6 @@ function sections(element: Element): Element[] {
   );
 }
 
-export function isLegacyIedNameElement(element: Element): boolean {
-  return element.localName === 'IEDName' && element.namespaceURI === sldNs;
-}
-
 export function isIedReferenceElement(element: Element): boolean {
   return (
     element.localName === 'Reference' &&

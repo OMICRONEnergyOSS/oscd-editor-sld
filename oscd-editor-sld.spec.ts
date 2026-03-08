@@ -1036,7 +1036,7 @@ describe('SLD Editor', () => {
         // Verify IED is visible
         let iedGroup = getSldSubstationEditor(
           element
-        )?.shadowRoot?.querySelector('g[id="IEDName-IED1"]');
+        )?.shadowRoot?.querySelector('g[id="IEDRef-IED1"]');
         expect(iedGroup).to.exist;
 
         // Click the toggle to hide IEDs
@@ -1047,7 +1047,7 @@ describe('SLD Editor', () => {
         expect(iedToggle!.on).to.be.false;
         expect(element.showIeds).to.be.false;
         iedGroup = getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-          'g[id="IEDName-IED1"]'
+          'g[id="IEDRef-IED1"]'
         );
         expect(iedGroup).to.not.exist;
 
@@ -1059,7 +1059,7 @@ describe('SLD Editor', () => {
         expect(iedToggle!.on).to.be.true;
         expect(element.showIeds).to.be.true;
         iedGroup = getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-          'g[id="IEDName-IED1"]'
+          'g[id="IEDRef-IED1"]'
         );
         expect(iedGroup).to.exist;
       });

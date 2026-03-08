@@ -1088,7 +1088,7 @@ describe('SLD Editor', () => {
       };
 
       const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
-        '#IEDName-IED1 rect'
+        '#IEDRef-IED1 rect'
       ) as SVGElement | null;
       expect(iedRect).to.exist;
 
@@ -1148,7 +1148,7 @@ describe('SLD Editor', () => {
       ];
 
       const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
-        '#IEDName-IED1 rect'
+        '#IEDRef-IED1 rect'
       ) as SVGElement | null;
       expect(iedRect).to.exist;
 
@@ -1195,7 +1195,7 @@ describe('SLD Editor', () => {
       await placeIedFromScl('IED1', 10, 10);
 
       const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
-        '#IEDName-IED1 rect'
+        '#IEDRef-IED1 rect'
       ) as SVGElement | null;
       expect(iedRect).to.exist;
 
@@ -1244,12 +1244,12 @@ describe('SLD Editor', () => {
       await placeIedFromScl('IED1', 10, 10);
 
       let iedGroup = sldSubstationEditor.shadowRoot?.querySelector(
-        'g[id="IEDName-IED1"]'
+        'g[id="IEDRef-IED1"]'
       );
       expect(iedGroup).to.exist;
 
       const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
-        '#IEDName-IED1 rect'
+        '#IEDRef-IED1 rect'
       ) as SVGElement | null;
       expect(iedRect).to.exist;
 
@@ -1279,7 +1279,7 @@ describe('SLD Editor', () => {
       expect(sclIed).to.exist;
 
       iedGroup = sldSubstationEditor.shadowRoot?.querySelector(
-        'g[id="IEDName-IED1"]'
+        'g[id="IEDRef-IED1"]'
       );
       expect(iedGroup).to.not.exist;
     });
@@ -1291,7 +1291,7 @@ describe('SLD Editor', () => {
       expect(sclIed).to.exist;
 
       const iedRect = sldSubstationEditor.shadowRoot?.querySelector(
-        '#IEDName-IED1 rect'
+        '#IEDRef-IED1 rect'
       ) as SVGElement | null;
       expect(iedRect).to.exist;
 
@@ -1321,7 +1321,7 @@ describe('SLD Editor', () => {
       expect(sclIed).to.not.exist;
 
       const iedGroup = sldSubstationEditor.shadowRoot?.querySelector(
-        'g[id="IEDName-IED1"]'
+        'g[id="IEDRef-IED1"]'
       );
       expect(iedGroup).to.not.exist;
     });
