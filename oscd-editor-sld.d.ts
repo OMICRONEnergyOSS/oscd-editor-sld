@@ -1,14 +1,28 @@
 import { LitElement } from 'lit';
-import type { Dialog } from '@material/mwc-dialog';
-import type { IconButtonToggle } from '@material/mwc-icon-button-toggle';
-import '@material/mwc-button';
-import '@material/mwc-fab';
-import '@material/mwc-icon-button';
-import '@material/mwc-icon-button-toggle';
-import '@material/mwc-icon';
-import './sld-editor.js';
-import type { SldEditor } from './sld-editor.js';
-export default class OscdEditorSld extends LitElement {
+import { Button } from '@material/mwc-button';
+import { Dialog } from '@material/mwc-dialog';
+import { Fab } from '@material/mwc-fab';
+import { Icon } from '@material/mwc-icon';
+import { IconButton } from '@material/mwc-icon-button';
+import { IconButtonToggle } from '@material/mwc-icon-button-toggle';
+import { List } from '@material/mwc-list';
+import { ListItem } from '@material/mwc-list/mwc-list-item.js';
+import { Menu } from '@material/mwc-menu';
+import { SldEditor } from './sld-editor.js';
+declare const OscdEditorSld_base: typeof LitElement & import("@open-wc/scoped-elements/lit-element.js").ScopedElementsHostConstructor;
+export default class OscdEditorSld extends OscdEditorSld_base {
+    static scopedElements: {
+        'mwc-button': typeof Button;
+        'mwc-dialog': typeof Dialog;
+        'mwc-fab': typeof Fab;
+        'mwc-icon': typeof Icon;
+        'mwc-icon-button': typeof IconButton;
+        'mwc-icon-button-toggle': typeof IconButtonToggle;
+        'mwc-list': typeof List;
+        'mwc-list-item': typeof ListItem;
+        'mwc-menu': typeof Menu;
+        'sld-editor': typeof SldEditor;
+    };
     doc: XMLDocument;
     docVersion: number;
     gridSize: number;
@@ -16,8 +30,11 @@ export default class OscdEditorSld extends LitElement {
     templateElements: Record<string, Element>;
     inAction: boolean;
     get showLabels(): boolean;
+    get showIeds(): boolean;
     labelToggle?: IconButtonToggle;
+    iedToggle?: IconButtonToggle;
     about?: Dialog;
+    iedMenu?: Menu;
     sldEditor?: SldEditor;
     zoomIn(): void;
     zoomOut(): void;
@@ -27,8 +44,10 @@ export default class OscdEditorSld extends LitElement {
     connectedCallback(): void;
     disconnectedCallback(): void;
     updated(changedProperties: Map<string, any>): void;
-    convertLsdAttributes(): void;
+    convertSldAttributes(): void;
     render(): import("lit-html").TemplateResult<1>;
+    insertOrGetIed(ied: Element, doc: XMLDocument): Element;
     insertSubstation(): void;
     static styles: import("lit").CSSResult;
 }
+export {};

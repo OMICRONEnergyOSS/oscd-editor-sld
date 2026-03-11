@@ -34,6 +34,10 @@ export type Attrs = {
 };
 export declare function isTransformerKind(kind: string | null): kind is TransformerKind;
 export declare function xmlBoolean(value?: string | null): boolean;
+export declare function isIedReferenceElement(element: Element): boolean;
+export declare function iedReferences(root: XMLDocument | Element): Element[];
+export declare function iedIdentity(referencedIed: Element): string | null;
+export declare function resolveIed(referencedIed: Element): Element | null;
 export declare function setSLDAttributes(element: Element, nsPrefix: string, values: Record<string, string>): void;
 export declare function updateSLDAttributes(element: Element, nsPrefix: string, values: Partial<Record<string, string | null>>): EditV2;
 export declare function getSLDAttributes(element: Element, key: string): string | null;

@@ -2,10 +2,11 @@ import { __decorate } from "tslib";
 import { html, LitElement } from 'lit';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { customElement, property, state } from 'lit/decorators.js';
+import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
 import { getReference } from '@openscd/scl-lib';
-import './sld-substation-editor.js';
-import { attributes, busSections, elementPath, getSLDAttributes, isBusBar, privType, removeNode, removeTerminal, reparentElement, setSLDAttributes, sldNs, updateSLDAttributes, uuid, xmlnsNs, } from './util.js';
+import { SldSubstationEditor } from './sld-substation-editor.js';
+import { attributes, busSections, elementPath, getSLDAttributes, iedReferences, isBusBar, isIedReferenceElement, privType, removeNode, removeTerminal, reparentElement, setSLDAttributes, sldNs, updateSLDAttributes, uuid, xmlnsNs, } from './util.js';
 function cutSectionAt(section, index, [x, y], nsPrefix) {
     const parent = section.parentElement;
     const edits = [];
@@ -35,7 +36,7 @@ function cutSectionAt(section, index, [x, y], nsPrefix) {
     }
     return edits;
 }
-let SldEditor = class SldEditor extends LitElement {
+let SldEditor = class SldEditor extends ScopedElementsMixin(LitElement) {
     constructor() {
         super(...arguments);
         this._docVersion = -1;
@@ -145,7 +146,7 @@ let SldEditor = class SldEditor extends LitElement {
     }
     placeElement(element, parent, x, y) {
         const edits = [];
-        if (element.parentElement !== parent) {
+        if (element.parentElement !== parent && !isIedReferenceElement(element)) {
             edits.push(...reparentElement(element, parent));
         }
         const { pos: [oldX, oldY], label: [oldLX, oldLY], rot, } = attributes(element);
@@ -169,6 +170,10 @@ let SldEditor = class SldEditor extends LitElement {
                     ly += 2;
                 }
             }
+            if (isIedReferenceElement(element) && !getSLDAttributes(element, 'lx')) {
+                lx += 1;
+                ly += 1;
+            }
             edits.push(updateSLDAttributes(element, this.nsp, {
                 x: x.toString(),
                 y: y.toString(),
@@ -184,7 +189,9 @@ let SldEditor = class SldEditor extends LitElement {
             };
             edits.push(updateSLDAttributes(text, this.nsp, newAttr));
         });
-        Array.from(element.querySelectorAll('Bay, ConductingEquipment, PowerTransformer, Vertex')).forEach(descendant => {
+        Array.from(element.querySelectorAll('Bay, ConductingEquipment, PowerTransformer, Vertex'))
+            .concat(iedReferences(element))
+            .forEach(descendant => {
             const { pos: [descX, descY], label: [descLX, descLY], } = attributes(descendant);
             const newAttributes = {
                 x: (descX + dx).toString(),
@@ -271,6 +278,32 @@ let SldEditor = class SldEditor extends LitElement {
                 }));
             }
         }
+        const oldParent = element.parentElement;
+        const iedWrapEdits = [];
+        if (isIedReferenceElement(element)) {
+            let privateElement = parent.querySelector(':scope > Private[type="OpenSCD-SLD-Layout"]');
+            if (!privateElement) {
+                privateElement = this.doc.createElementNS(this.doc.documentElement.namespaceURI, 'Private');
+                privateElement.setAttribute('type', 'OpenSCD-SLD-Layout');
+                iedWrapEdits.push({
+                    parent,
+                    node: privateElement,
+                    reference: getReference(parent, 'Private'),
+                });
+            }
+            if (element.parentElement !== privateElement)
+                iedWrapEdits.push({
+                    parent: privateElement,
+                    node: element,
+                    reference: getReference(privateElement, element.localName),
+                });
+            if (oldParent?.tagName === 'Private' &&
+                oldParent.getAttribute('type') === 'OpenSCD-SLD-Layout' &&
+                oldParent.childElementCount === 1 &&
+                oldParent !== privateElement)
+                iedWrapEdits.push({ node: oldParent });
+        }
+        edits.push(...iedWrapEdits);
         this.dispatchEvent(newEditEventV2(edits));
         if (['Bay', 'VoltageLevel'].includes(element.tagName) &&
             (!getSLDAttributes(element, 'w') || !getSLDAttributes(element, 'h')))
@@ -395,6 +428,7 @@ let SldEditor = class SldEditor extends LitElement {
           .placingLabel=${this.placingLabel}
           .connecting=${this.connecting}
           .showLabels=${this.showLabels}
+          .showIeds=${this.showIeds}
           .disabled=${this.disabled}
           .selectable=${this.selectable}
           .highlight=${this.highlight}
@@ -447,6 +481,9 @@ let SldEditor = class SldEditor extends LitElement {
         ></sld-substation-editor>`)}`;
     }
 };
+SldEditor.scopedElements = {
+    'sld-substation-editor': SldSubstationEditor,
+};
 __decorate([
     property()
 ], SldEditor.prototype, "doc", void 0);
@@ -489,6 +526,9 @@ __decorate([
 __decorate([
     state()
 ], SldEditor.prototype, "showLabels", void 0);
+__decorate([
+    property()
+], SldEditor.prototype, "showIeds", void 0);
 __decorate([
     state()
 ], SldEditor.prototype, "connecting", void 0);

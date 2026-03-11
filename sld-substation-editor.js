@@ -1,23 +1,29 @@
 import { __decorate } from "tslib";
-import { css, html, nothing, LitElement, svg } from 'lit';
+import { css, html, nothing, LitElement, svg, } from 'lit';
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
-import '@material/mwc-dialog';
-import '@material/mwc-list';
-import '@material/mwc-list/mwc-list-item.js';
-import '@material/mwc-snackbar';
-import '@material/mwc-textfield';
-import { getReference, identity } from '@openscd/scl-lib';
+import { Button } from '@material/mwc-button';
+import { Dialog } from '@material/mwc-dialog';
+import { Icon } from '@material/mwc-icon';
+import { IconButton } from '@material/mwc-icon-button';
+import { List } from '@material/mwc-list';
+import { ListItem } from '@material/mwc-list/mwc-list-item.js';
+import { Snackbar } from '@material/mwc-snackbar';
+import { TextField } from '@material/mwc-textfield';
+import { OscdSclDialogs } from '@omicronenergy/oscd-scl-dialogs/oscd-scl-dialogs.js';
+import { getReference, identity, removeIED } from '@openscd/scl-lib';
 import { bayGraphic, eqRingPath, equipmentGraphic, movePath, ptrIcon, resizeBRPath, resizePath, resizeTLPath, symbols, voltageLevelGraphic, zigZag2WTransform, zigZagPath, } from './icons.js';
-import { attributes, connectionStartPoints, elementPath, getSLDAttributes, isBusBar, isEqType, newConnectEvent, newPlaceEvent, newPlaceLabelEvent, newResizeEvent, newResizeTLEvent, newRotateEvent, newSelectEvent, newStartConnectEvent, newStartPlaceEvent, newStartPlaceLabelEvent, newStartResizeBREvent, newStartResizeTLEvent, prettyPrint, privType, removeNode, removeTerminal, ringedEqTypes, robotoDataURL, setSLDAttributes, singleTerminal, sldNs, svgNs, uniqueName, updateSLDAttributes, uuid, xlinkNs, xmlBoolean, } from './util.js';
+import { attributes, connectionStartPoints, elementPath, getSLDAttributes, iedReferences, isIedReferenceElement, isBusBar, isEqType, newConnectEvent, newPlaceEvent, newPlaceLabelEvent, newResizeEvent, newResizeTLEvent, newRotateEvent, newSelectEvent, newStartConnectEvent, newStartPlaceEvent, newStartPlaceLabelEvent, newStartResizeBREvent, newStartResizeTLEvent, prettyPrint, privType, removeNode, removeTerminal, ringedEqTypes, robotoDataURL, setSLDAttributes, singleTerminal, sldNs, svgNs, uniqueName, updateSLDAttributes, uuid, xlinkNs, xmlBoolean, resolveIed, } from './util.js';
 const parentTags = {
     ConductingEquipment: ['Bay'],
     Bay: ['VoltageLevel'],
     VoltageLevel: ['Substation'],
     PowerTransformer: ['Bay', 'VoltageLevel', 'Substation'],
+    Reference: ['Bay', 'VoltageLevel', 'Substation'],
 };
 function newEditWizardEvent(element) {
     return new CustomEvent('oscd-edit-wizard-request', {
@@ -126,6 +132,9 @@ function preventDefault(e) {
 }
 function copy(element, nsp) {
     const clone = element.cloneNode(true);
+    if (['Bay', 'VoltageLevel'].includes(element.tagName)) {
+        iedReferences(clone).forEach(ied => ied.remove());
+    }
     const terminals = new Set(Array.from(element.querySelectorAll('Terminal, NeutralPoint')));
     const cNodes = new Set(Array.from(element.querySelectorAll('ConnectivityNode')));
     terminals.forEach(terminal => {
@@ -172,7 +181,7 @@ function copy(element, nsp) {
     return clone;
 }
 function renderMenuHeader(element) {
-    const name = element.getAttribute('name') || element.tagName;
+    let name = element.getAttribute('name') || element.tagName;
     let detail = element.getAttribute('desc');
     const type = element.getAttribute('type');
     if (type) {
@@ -205,6 +214,10 @@ function renderMenuHeader(element) {
         footerGraphic = bayGraphic;
     else if (element.tagName === 'VoltageLevel')
         footerGraphic = voltageLevelGraphic;
+    else if (isIedReferenceElement(element)) {
+        name = 'IED';
+        footerGraphic = html `<mwc-icon slot="graphic">developer_board</mwc-icon>`;
+    }
     else if (element.tagName === 'Text') {
         footerGraphic = html `<mwc-icon slot="graphic">title</mwc-icon>`;
         detail = element.textContent;
@@ -261,7 +274,9 @@ function transformerHighlight(transformer, highlight) {
         return svg `<rect x="${x - 0.3}" y="${y - 0.3}" width="1.6" height="2.6" style="${style}" pointer-events="none" />`;
     return svg `<rect x="${x - 0.3}" y="${y - 0.3}" width="1.6" height="1.6" style="${style}" pointer-events="none" />`;
 }
-let SldSubstationEditor = class SldSubstationEditor extends LitElement {
+/** An editor [[`plugin`]] for editing the `Substation` section. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     constructor() {
         super(...arguments);
         this.docVersion = -1;
@@ -273,6 +288,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         this.highlight = [];
         this.mouseX = 0;
         this.mouseY = 0;
+        this.iedResolutionCache = new Map();
         this.mouseX2 = 0;
         this.mouseY2 = 0;
         this.mouseX2f = 0;
@@ -299,6 +315,19 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             this.placingLabel ||
             this.connecting);
     }
+    willUpdate(changedProperties) {
+        if (changedProperties.has('doc') ||
+            changedProperties.has('docVersion') ||
+            changedProperties.has('substation')) {
+            this.iedResolutionCache.clear();
+        }
+    }
+    resolvedIed(referencedIed) {
+        if (!this.iedResolutionCache.has(referencedIed)) {
+            this.iedResolutionCache.set(referencedIed, resolveIed(referencedIed));
+        }
+        return this.iedResolutionCache.get(referencedIed) ?? null;
+    }
     positionCoordinates(e) {
         const coordinatesDiv = this.coordinatesRef?.value;
         if (coordinatesDiv) {
@@ -320,16 +349,19 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
     canPlaceAt(element, x, y, w, h) {
         if (element.tagName === 'Substation')
             return true;
-        const overlappingSibling = Array.from(this.substation.querySelectorAll(`${element.tagName}, PowerTransformer`)).find(sibling => sibling.closest(element.tagName) !== element &&
+        const overlappingSibling = Array.from(this.substation.querySelectorAll(`${element.localName}, PowerTransformer`))
+            .concat(iedReferences(this.substation))
+            .find(sibling => sibling.closest(element.localName) !== element &&
             overlapsRect(sibling, x, y, w, h) &&
             !isBusBar(sibling));
         if (overlappingSibling && !isBusBar(element)) {
             return false;
         }
         const containingParent = element.tagName === 'VoltageLevel' ||
-            element.tagName === 'PowerTransformer'
+            element.tagName === 'PowerTransformer' ||
+            isIedReferenceElement(element)
             ? containsRect(this.substation, x, y, w, h)
-            : Array.from(this.substation.querySelectorAll(parentTags[element.tagName].join(','))).find(parent => !isBusBar(parent) && containsRect(parent, x, y, w, h));
+            : Array.from(this.substation.querySelectorAll(parentTags[element.localName].join(','))).find(parent => !isBusBar(parent) && containsRect(parent, x, y, w, h));
         if (containingParent)
             return true;
         return false;
@@ -339,8 +371,10 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         if (!this.canPlaceAt(element, x, y, w, h) &&
             this.canPlaceAt(element, x, y, oldW, oldH))
             return false;
-        const lostChild = Array.from(element.children).find(child => {
-            if (!parentTags[child.tagName]?.includes(element.tagName))
+        const lostChild = Array.from(element.children)
+            .concat(iedReferences(element))
+            .find(child => {
+            if (!parentTags[child.localName]?.includes(element.localName))
                 return false;
             const { pos: [cx, cy], dim: [cw, ch], } = attributes(child);
             return !contains([x, y, w, h], [cx, cy, cw, ch]);
@@ -352,8 +386,10 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
     canResizeToTL(element, x, y, w, h) {
         if (!this.canPlaceAt(element, x, y, w, h))
             return false;
-        const lostChild = Array.from(element.children).find(child => {
-            if (!parentTags[child.tagName]?.includes(element.tagName))
+        const lostChild = Array.from(element.children)
+            .concat(iedReferences(element))
+            .find(child => {
+            if (!parentTags[child.localName]?.includes(element.localName))
                 return false;
             const { pos: [cx, cy], dim: [cw, ch], } = attributes(child);
             return !contains([x, y, w, h], [cx, cy, cw, ch]);
@@ -362,11 +398,15 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             return false;
         return true;
     }
-    renderedLabelPosition(element) {
+    renderedLabelPosition(element, { preview = false } = {}) {
         let { label: [x, y], } = attributes(element);
-        const [offsetX, offsetY] = this.placingOffset;
+        const [offsetX, offsetY] = isIedReferenceElement(element) &&
+            !getSLDAttributes(element, 'x') &&
+            preview
+            ? [-1, -1]
+            : this.placingOffset;
         if (this.placing &&
-            element.closest(this.placing.tagName) === this.placing) {
+            element.closest(this.placing.localName) === this.placing) {
             const { pos: [parentX, parentY], } = attributes(this.placing);
             x += this.mouseX - parentX - offsetX;
             y += this.mouseY - parentY - offsetY;
@@ -387,7 +427,7 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
     renderedPosition(element) {
         let { pos: [x, y], } = attributes(element);
         if (this.placing &&
-            element.closest(this.placing.tagName) === this.placing) {
+            element.closest(this.placing.localName) === this.placing) {
             const { pos: [parentX, parentY], } = attributes(this.placing);
             const [offsetX, offsetY] = this.placingOffset;
             x += this.mouseX - parentX - offsetX;
@@ -830,6 +870,110 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             });
         return items;
     }
+    iedMenuItems(referencedIed) {
+        const sclIed = this.resolvedIed(referencedIed);
+        const items = [
+            {
+                content: html `<mwc-list-item graphic="icon">
+          <span>Move</span>
+          <svg
+            xmlns="${svgNs}"
+            height="24"
+            width="24"
+            slot="graphic"
+            viewBox="0 96 960 960"
+          >
+            ${movePath}
+          </svg>
+        </mwc-list-item>`,
+                handler: () => this.dispatchEvent(newStartPlaceEvent(referencedIed)),
+            },
+            {
+                content: html `<mwc-list-item graphic="icon">
+          <span>Move Label</span>
+          <mwc-icon slot="graphic">text_rotation_none</mwc-icon>
+        </mwc-list-item>`,
+                handler: () => this.dispatchEvent(newStartPlaceLabelEvent(referencedIed)),
+            },
+        ];
+        if (sclIed)
+            items.push({
+                content: html `<mwc-list-item graphic="icon">
+            <span>Edit</span>
+            <mwc-icon slot="graphic">edit</mwc-icon>
+          </mwc-list-item>`,
+                handler: async () => this.openIedEditDialog(sclIed),
+            }, {
+                content: html `<mwc-list-item
+            graphic="icon"
+            style="--mdc-theme-text-primary-on-background: #BB1326; --mdc-theme-text-icon-on-background: #BB1326;"
+          >
+            <span>Delete IED</span>
+            <mwc-icon slot="graphic">delete</mwc-icon>
+          </mwc-list-item>`,
+                handler: () => {
+                    const edits = [];
+                    const sldLayoutPrivate = referencedIed.parentElement;
+                    if (sldLayoutPrivate?.tagName === 'Private' &&
+                        sldLayoutPrivate.getAttribute('type') === 'OpenSCD-SLD-Layout' &&
+                        sldLayoutPrivate.childElementCount === 1)
+                        edits.push({ node: sldLayoutPrivate });
+                    else
+                        edits.push({ node: referencedIed });
+                    edits.push(...removeIED({ node: sclIed }));
+                    this.dispatchEvent(newEditEventV2(edits, { title: 'Deleted IED', squash: false }));
+                },
+            });
+        items.push({
+            content: html `<mwc-list-item graphic="icon">
+        <span>Remove from SLD</span>
+        <mwc-icon slot="graphic">location_off</mwc-icon>
+      </mwc-list-item>`,
+            handler: () => {
+                const edits = [];
+                const sldLayoutPrivate = referencedIed.parentElement;
+                if (sldLayoutPrivate?.tagName === 'Private' &&
+                    sldLayoutPrivate.getAttribute('type') === 'OpenSCD-SLD-Layout' &&
+                    sldLayoutPrivate.childElementCount === 1)
+                    edits.push({ node: sldLayoutPrivate });
+                else
+                    edits.push({ node: referencedIed });
+                this.dispatchEvent(newEditEventV2(edits, { title: 'Removed from SLD', squash: false }));
+            },
+        });
+        return items;
+    }
+    async openIedEditDialog(sclIed) {
+        const edits = await this.sclDialogs.edit({ element: sclIed });
+        const iedReference = iedReferences(this.doc).find(iedRef => this.resolvedIed(iedRef) === sclIed);
+        if (!iedReference) {
+            this.dispatchEvent(newEditEventV2([edits], {
+                title: 'Update IED',
+                squash: false,
+            }));
+            return;
+        }
+        const iedNameEdit = [...edits.flat()].find(edit => 'element' in edit &&
+            edit.element.tagName === 'IED' &&
+            'attributes' in edit &&
+            !!edit.attributes &&
+            'name' in edit.attributes);
+        if (!iedNameEdit)
+            return;
+        const newIedName = iedNameEdit.attributes.name;
+        const iedReferenceEdit = {
+            element: iedReference,
+            attributesNS: {
+                [sldNs]: {
+                    [`${this.nsp}:id`]: newIedName,
+                },
+            },
+        };
+        this.dispatchEvent(newEditEventV2([edits, iedReferenceEdit], {
+            title: 'Update IED from dialog',
+            squash: false,
+        }));
+    }
     busBarMenuItems(busBar) {
         const text = busBar.querySelector(':scope > Text');
         const { pos: [x, y], } = attributes(busBar);
@@ -1142,6 +1286,9 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             items.push({ content: html `<li divider role="separator"></li>` });
             items.push(...this.transformerMenuItems(transformer));
         }
+        else if (isIedReferenceElement(element)) {
+            items.push(...this.iedMenuItems(element));
+        }
         else if (element.tagName === 'Text') {
             items.push(...this.textMenuItems(element));
             items.push({ content: html `<li divider role="separator"></li>` });
@@ -1197,11 +1344,14 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         const transformerPlacingTarget = this.placing?.tagName === 'PowerTransformer'
             ? svg `<rect width="100%" height="100%" fill="url(#grid)" />`
             : nothing;
+        const iedPlacingTarget = !!this.placing && isIedReferenceElement(this.placing)
+            ? svg `<rect width="100%" height="100%" fill="url(#grid)" />`
+            : nothing;
         const placingLabelTarget = this.placingLabel
             ? svg `<rect width="100%" height="100%" fill="url(#halfgrid)"
       @click=${() => {
                 const element = this.placingLabel;
-                const [x, y] = this.renderedLabelPosition(element);
+                const [x, y] = this.renderedLabelPosition(element, { preview: true });
                 this.dispatchEvent(newPlaceLabelEvent({ element, x, y }));
             }}
       />`
@@ -1212,6 +1362,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                 placingElement = this.renderContainer(this.placing, true);
             else if (this.placing.tagName === 'ConductingEquipment')
                 placingElement = this.renderEquipment(this.placing, { preview: true });
+            else if (isIedReferenceElement(this.placing))
+                placingElement = this.renderIed(this.placing, { preview: true });
             else if (this.placing.tagName === 'PowerTransformer')
                 placingElement = this.renderPowerTransformer(this.placing, true);
             else if (isBusBar(this.placing))
@@ -1412,20 +1564,29 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         ${Array.from(this.substation.querySelectorAll('ConnectivityNode'))
             .filter(node => node.getAttribute('name') !== 'grounded' &&
             !(this.placing &&
-                node.closest(this.placing.tagName) === this.placing) &&
+                node.closest(this.placing.localName) === this.placing) &&
             !isBusBar(node.parentElement))
             .map(cNode => this.renderConnectivityNode(cNode))}
         ${Array.from(this.substation.querySelectorAll('ConnectivityNode'))
             .filter(node => node.getAttribute('name') !== 'grounded' &&
             !(this.placing &&
-                node.closest(this.placing.tagName) === this.placing) &&
+                node.closest(this.placing.localName) === this.placing) &&
             isBusBar(node.parentElement))
             .map(cNode => this.renderConnectivityNode(cNode))}
         ${Array.from(this.substation.querySelectorAll(':scope > PowerTransformer')).map(transformer => this.renderPowerTransformer(transformer))}
+        ${iedReferences(this.substation)
+            .filter(referencedIed => referencedIed.parentElement?.tagName === 'Private' &&
+            !['Bay', 'VoltageLevel'].includes(referencedIed.parentElement.parentElement.tagName) &&
+            (!this.placing ||
+                referencedIed.closest(this.placing.localName) !== this.placing))
+            .map(ied => this.renderIed(ied))}
         ${Array.from(this.substation.querySelectorAll('VoltageLevel, Bay, ConductingEquipment, PowerTransformer, Text'))
-            .filter(e => !this.placing || e.closest(this.placing.tagName) !== this.placing)
+            .concat(Array.from(this.substation.querySelectorAll('Private[type="OpenSCD-SLD-Layout"]') ?? []).flatMap(privateLayout => iedReferences(privateLayout)))
+            .filter(e => !this.placing ||
+            e.closest(this.placing.localName) !== this.placing)
             .map(element => this.renderLabel(element))}
-        ${transformerPlacingTarget} ${placingLabelTarget} ${placingElement}
+        ${transformerPlacingTarget} ${iedPlacingTarget} ${placingLabelTarget}
+        ${placingElement}
       </svg>
       ${menu} ${coordinateTooltip}
       <mwc-dialog
@@ -1500,16 +1661,21 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
       >
         <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
       </mwc-snackbar>
+      <oscd-scl-dialogs></oscd-scl-dialogs>
     </section>`;
     }
-    renderLabel(element) {
+    renderLabel(element, { preview = false } = {}) {
         if (!this.showLabels)
             return nothing;
+        if (this.showIeds === false && isIedReferenceElement(element))
+            return nothing;
         let deg = 0;
-        let text = element.getAttribute('name');
+        let text = element.getAttribute('name') ||
+            this.resolvedIed(element)?.getAttribute('name') ||
+            element.getAttributeNS(sldNs, 'name');
         let weight = 400;
         let color = 'black';
-        const [x, y] = this.renderedLabelPosition(element);
+        const [x, y] = this.renderedLabelPosition(element, { preview });
         if (element.tagName === 'Text') {
             ({ weight, color } = attributes(element));
             deg = attributes(element).rot * 90;
@@ -1525,6 +1691,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
                 weight = 500;
             }
         }
+        if (isIedReferenceElement(element) && !this.placing && !this.placingLabel)
+            color = this.resolvedIed(element) ? color : '#BB1326';
         const fontSize = element.tagName === 'ConductingEquipment' ? 0.45 : 0.6;
         let events = 'none';
         let handleClick = nothing;
@@ -1540,17 +1708,27 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             auxclick = (e) => {
                 if (e.button === 1) {
                     // middle mouse button
-                    this.dispatchEvent(newEditWizardEvent(element));
+                    if (!isIedReferenceElement(element)) {
+                        this.dispatchEvent(newEditWizardEvent(element));
+                    }
+                    else {
+                        const ied = this.resolvedIed(element);
+                        if (ied)
+                            this.openIedEditDialog(ied);
+                    }
                     e.preventDefault();
                 }
             };
         let contextmenu = nothing;
         if (!this.disabled)
             contextmenu = (e) => this.openMenu(element, e);
-        const id = element.closest('Substation') === this.substation &&
-            element.tagName !== 'Text'
-            ? identity(element)
-            : nothing;
+        let id = nothing;
+        if (element.closest('Substation') === this.substation) {
+            if (element.localName !== 'Text' && !isIedReferenceElement(element))
+                id = `${identity(element)}`;
+            if (isIedReferenceElement(element))
+                id = `${this.resolvedIed(element)?.getAttribute('name') ?? ''}`;
+        }
         const classes = classMap({
             label: true,
             container: (element.tagName === 'Bay' && !isBusBar(element)) ||
@@ -1708,13 +1886,17 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         stroke="${strokeColor}" />
       ${Array.from(bayOrVL.children)
             .filter(isBay)
-            .map(bay => this.renderContainer(bay))}
+            .map(bay => this.renderContainer(bay, preview))}
       ${Array.from(bayOrVL.children)
             .filter(child => child.tagName === 'ConductingEquipment')
             .map(equipment => this.renderEquipment(equipment))}
       ${Array.from(bayOrVL.children)
             .filter(child => child.tagName === 'PowerTransformer')
             .map(equipment => this.renderPowerTransformer(equipment))}
+      ${iedReferences(bayOrVL)
+            .filter(referencedIed => referencedIed.parentElement?.tagName === 'Private' &&
+            referencedIed.parentElement.parentElement === bayOrVL)
+            .map(referencedIed => this.renderIed(referencedIed, { preview }))}
       ${preview
             ? Array.from(bayOrVL.querySelectorAll('ConnectivityNode'))
                 .filter(child => child.getAttribute('name') !== 'grounded')
@@ -1722,8 +1904,11 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
             : nothing}
       ${preview
             ? Array.from(bayOrVL.querySelectorAll('Bay, ConductingEquipment, PowerTransformer, Text'))
+                .concat(Array.from(bayOrVL.querySelector(':scope > Private[type="OpenSCD-SLD-Layout"]')
+                ? iedReferences(bayOrVL.querySelector(':scope > Private[type="OpenSCD-SLD-Layout"]'))
+                : []))
                 .concat(bayOrVL)
-                .map(element => this.renderLabel(element))
+                .map(element => this.renderLabel(element, { preview }))
             : nothing}
       ${resizeTLhandle}
       ${resizeBRHandle}
@@ -2112,8 +2297,8 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
       </g>
       <g class="preview">${preview
             ? [
-                this.renderLabel(transformer),
-                ...Array.from(transformer.querySelectorAll('Text')).map(text => this.renderLabel(text)),
+                this.renderLabel(transformer, { preview }),
+                ...Array.from(transformer.querySelectorAll('Text')).map(text => this.renderLabel(text, { preview })),
             ]
             : nothing}</g>`;
     }
@@ -2287,10 +2472,60 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
     </g>
     <g class="preview">${preview
             ? [
-                this.renderLabel(equipment),
-                ...Array.from(equipment.querySelectorAll('Text')).map(text => this.renderLabel(text)),
+                this.renderLabel(equipment, { preview }),
+                ...Array.from(equipment.querySelectorAll('Text')).map(text => this.renderLabel(text, { preview })),
             ]
             : nothing}</g>`;
+    }
+    renderIed(referencedIed, { preview = false } = {}) {
+        if (this.showIeds === false || (this.placing === referencedIed && !preview))
+            return svg ``;
+        const [x, y] = this.renderedPosition(referencedIed);
+        const name = this.resolvedIed(referencedIed)?.getAttribute('name');
+        let handleClick = nothing;
+        if (this.placing === referencedIed &&
+            this.canPlaceAt(referencedIed, x, y, 1, 1))
+            handleClick = () => {
+                const parent = Array.from(this.substation.querySelectorAll(':scope > VoltageLevel > Bay'))
+                    .concat(Array.from(this.substation.querySelectorAll(':scope > VoltageLevel')))
+                    .find(vlOrBay => containsRect(vlOrBay, x, y, 1, 1)) ||
+                    this.substation;
+                this.dispatchEvent(newPlaceEvent({
+                    x,
+                    y,
+                    element: referencedIed,
+                    parent,
+                }));
+            };
+        else if (this.disabled && isSelectable(referencedIed, this.selectable))
+            handleClick = () => this.dispatchEvent(newSelectEvent(referencedIed));
+        else if (!this.idle || this.disabled)
+            handleClick = () => { };
+        else
+            handleClick = () => this.dispatchEvent(newStartPlaceEvent(referencedIed));
+        let contextmenu = (e) => this.openMenu(referencedIed, e);
+        if (this.disabled)
+            contextmenu = () => { };
+        const clickthrough = !this.idle && this.placing !== referencedIed;
+        return svg `<g class="${classMap({
+            ied: true,
+            preview: this.placing === referencedIed,
+            disabled: this.disabled,
+            selectable: isSelectable(referencedIed, this.selectable),
+        })}"
+      id="${referencedIed.closest('Substation') === this.substation && name
+            ? `IEDRef-${name}`
+            : nothing}"
+      transform="translate(${x} ${y})">
+      <title>${name}</title>
+      <use href="#IED" xlink:href="#IED" pointer-events="none" />
+      <rect width="1" height="1" fill="none" pointer-events="${clickthrough ? 'none' : 'all'}"
+        @mousedown=${preventDefault}
+        @click=${handleClick}
+        @contextmenu=${contextmenu}
+      />
+    </g>
+    <g class="preview">${preview ? this.renderLabel(referencedIed, { preview }) : nothing}</g>`;
     }
     renderBusBar(busBar) {
         const [x, y] = this.renderedPosition(busBar);
@@ -2472,6 +2707,17 @@ let SldSubstationEditor = class SldSubstationEditor extends LitElement {
         ${lines}
       </g>`;
     }
+}
+SldSubstationEditor.scopedElements = {
+    'mwc-button': Button,
+    'mwc-dialog': Dialog,
+    'mwc-icon': Icon,
+    'mwc-icon-button': IconButton,
+    'mwc-list': List,
+    'mwc-list-item': ListItem,
+    'mwc-snackbar': Snackbar,
+    'mwc-textfield': TextField,
+    'oscd-scl-dialogs': OscdSclDialogs,
 };
 SldSubstationEditor.styles = css `
     h2 {
@@ -2564,6 +2810,9 @@ __decorate([
     property()
 ], SldSubstationEditor.prototype, "showLabels", void 0);
 __decorate([
+    property()
+], SldSubstationEditor.prototype, "showIeds", void 0);
+__decorate([
     property({ type: Boolean })
 ], SldSubstationEditor.prototype, "disabled", void 0);
 __decorate([
@@ -2591,6 +2840,9 @@ __decorate([
     query('mwc-snackbar')
 ], SldSubstationEditor.prototype, "groundHint", void 0);
 __decorate([
+    query('oscd-scl-dialogs')
+], SldSubstationEditor.prototype, "sclDialogs", void 0);
+__decorate([
     state()
 ], SldSubstationEditor.prototype, "mouseX", void 0);
 __decorate([
@@ -2611,9 +2863,4 @@ __decorate([
 __decorate([
     state()
 ], SldSubstationEditor.prototype, "menu", void 0);
-SldSubstationEditor = __decorate([
-    customElement('sld-substation-editor')
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-], SldSubstationEditor);
-export { SldSubstationEditor };
 //# sourceMappingURL=sld-substation-editor.js.map

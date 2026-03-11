@@ -1,4 +1,4 @@
-import { getReference } from '@openscd/scl-lib';
+import { getReference, identity } from '@openscd/scl-lib';
 export const privType = 'OpenSCD-SLD-Layout';
 export const sldNs = 'https://openscd.org/SCL/SSD/SLD/v0';
 export const xmlnsNs = 'http://www.w3.org/2000/xmlns/';
@@ -62,7 +62,41 @@ export function xmlBoolean(value) {
 function sections(element) {
     return Array.from(element.querySelectorAll(`:scope Private[type="${privType}"] > Section`));
 }
+export function isIedReferenceElement(element) {
+    return (element.localName === 'Reference' &&
+        element.namespaceURI === sldNs &&
+        element.getAttributeNS(sldNs, 'type') === 'IED');
+}
+export function iedReferences(root) {
+    const refs = Array.from(root.getElementsByTagNameNS(sldNs, 'Reference')).filter(isIedReferenceElement);
+    return refs;
+}
+export function iedIdentity(referencedIed) {
+    if (isIedReferenceElement(referencedIed))
+        return referencedIed.getAttributeNS(sldNs, 'id');
+    return null;
+}
+export function resolveIed(referencedIed) {
+    const doc = referencedIed.ownerDocument;
+    if (isIedReferenceElement(referencedIed)) {
+        const referenceIdentity = iedIdentity(referencedIed);
+        if (!referenceIdentity)
+            return null;
+        return (Array.from(doc.querySelectorAll(':root > IED')).find(ied => identity(ied) === referenceIdentity) ?? null);
+    }
+    return null;
+}
 function sldAttributes(element, nsPrefix) {
+    if (isIedReferenceElement(element)) {
+        const referenceSldAttrs = element.querySelector(':scope > SLDAttributes');
+        if (referenceSldAttrs)
+            return referenceSldAttrs;
+        if (!nsPrefix)
+            return null;
+        const sldAttrs = element.ownerDocument.createElementNS(sldNs, `${nsPrefix}:SLDAttributes`);
+        element.appendChild(sldAttrs);
+        return sldAttrs;
+    }
     const sldAttrs = element.querySelector(`:scope > Private[type="${privType}"] > SLDAttributes`);
     if (sldAttrs)
         return sldAttrs;
@@ -88,8 +122,10 @@ export function setSLDAttributes(element, nsPrefix, values) {
     }
 }
 export function updateSLDAttributes(element, nsPrefix, values) {
-    const isSecOrVert = ['Section', 'Vertex'].includes(element.localName);
-    const toBeUpdated = isSecOrVert ? element : sldAttributes(element, nsPrefix);
+    const isSectionOrVertex = ['Section', 'Vertex'].includes(element.localName);
+    const toBeUpdated = isSectionOrVertex
+        ? element
+        : sldAttributes(element, nsPrefix);
     return {
         element: toBeUpdated,
         attributesNS: {
@@ -101,8 +137,8 @@ export function updateSLDAttributes(element, nsPrefix, values) {
     };
 }
 export function getSLDAttributes(element, key) {
-    const isSecOrVert = ['Section', 'Vertex'].includes(element.localName);
-    if (isSecOrVert)
+    const isSectionOrVertex = ['Section', 'Vertex'].includes(element.localName);
+    if (isSectionOrVertex)
         return element.getAttributeNS(sldNs, key);
     return sldAttributes(element)?.getAttributeNS(sldNs, key) ?? null;
 }
@@ -319,7 +355,8 @@ export function reparentElement(element, parent) {
         reference: getReference(parent, element.tagName),
     });
     const newName = uniqueName(element, parent);
-    if (newName !== element.getAttribute('name'))
+    if (!isIedReferenceElement(element) &&
+        newName !== element.getAttribute('name'))
         edits.push({ element, attributes: { name: newName } });
     edits.push(...updateConnectivityNodes(element, parent, newName));
     return edits;

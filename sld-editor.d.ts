@@ -1,7 +1,11 @@
 import { LitElement } from 'lit';
-import './sld-substation-editor.js';
+import { SldSubstationEditor } from './sld-substation-editor.js';
 import { ConnectDetail, Point, StartConnectDetail, Style } from './util.js';
-export declare class SldEditor extends LitElement {
+declare const SldEditor_base: typeof LitElement & import("@open-wc/scoped-elements/lit-element.js").ScopedElementsHostConstructor;
+export declare class SldEditor extends SldEditor_base {
+    static scopedElements: {
+        'sld-substation-editor': typeof SldSubstationEditor;
+    };
     doc: XMLDocument;
     get docVersion(): number;
     set docVersion(value: number);
@@ -20,6 +24,7 @@ export declare class SldEditor extends LitElement {
     placingOffset: Point;
     placingLabel?: Element;
     showLabels: boolean;
+    showIeds?: boolean;
     connecting?: {
         from: Element;
         path: Point[];
@@ -42,3 +47,4 @@ export declare class SldEditor extends LitElement {
     connectEquipment({ from, fromTerminal, to, toTerminal, path, }: ConnectDetail): void;
     render(): unknown;
 }
+export {};
