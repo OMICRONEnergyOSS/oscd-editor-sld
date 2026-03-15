@@ -648,7 +648,6 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
     nav {
       user-select: none;
       position: sticky;
-      top: 68px;
       left: 16px;
       width: fit-content;
       max-width: calc(100vw - 32px);
