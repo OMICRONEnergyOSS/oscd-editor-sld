@@ -3520,7 +3520,6 @@ const _f=e=>e??X,vf="[:_A-Za-z]|[À-Ö]|[Ø-ö]|[ø-˿]|[Ͱ-ͽ]|[Ϳ-῿]|[‌-�
     nav {
       user-select: none;
       position: sticky;
-      top: 68px;
       left: 16px;
       width: fit-content;
       max-width: calc(100vw - 32px);
