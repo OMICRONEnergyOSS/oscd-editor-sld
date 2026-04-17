@@ -51,10 +51,10 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
     'sld-editor': SldEditor,
   };
 
-  @property()
+  @property({ type: Object })
   doc!: XMLDocument;
 
-  @property()
+  @property({ type: Number })
   docVersion: number = -1;
 
   @state()
@@ -90,6 +90,8 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
   @query('#iedMenu') iedMenu?: Menu;
 
   @query('sld-editor') sldEditor?: SldEditor;
+
+  @query('#bayTypicalFileInput') bayTypicalFileInput?: HTMLInputElement;
 
   zoomIn() {
     this.gridSize += 3;
@@ -156,6 +158,28 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
   convertSldAttributes() {
     const convertEdits = convertSldLayout(this.doc, this.nsp);
     this.dispatchEvent(newEditEventV2(convertEdits));
+  }
+
+  /** Loads the file `event.target.files[0]` into [[`src`]] as a `blob:...`. */
+  async importBayTypical(event: Event): Promise<void> {
+    const file = (<HTMLInputElement | null>event.target)?.files?.item(0);
+    if (!file) return;
+
+    const fileBlob = await file.text();
+
+    const bayTypicalDoc = new DOMParser().parseFromString(
+      fileBlob,
+      'application/xml'
+    );
+
+    const convertEdits = convertSldLayout(bayTypicalDoc, this.nsp);
+    this.dispatchEvent(newEditEventV2(convertEdits));
+
+    const bayTypical = bayTypicalDoc.querySelector('Bay');
+
+    if (bayTypical && this.sldEditor) {
+      this.sldEditor.startPlacingBayTypical(bayTypical);
+    }
   }
 
   render() {
@@ -264,6 +288,22 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
               style="--mdc-theme-secondary: #F5E214;"
             >
               ${voltageLevelIcon}
+            </mwc-fab>
+            <mwc-fab
+              icon="upload_file"
+              mini
+              label="Import Bay Typical"
+              title="Import Bay Typical"
+              @click=${(evt: Event) => {
+                evt.stopImmediatePropagation();
+                this.bayTypicalFileInput?.click();
+              }}
+            >
+              <input
+                id="bayTypicalFileInput"
+                type="file"
+                @change="${this.importBayTypical}"
+              />
             </mwc-fab>
             ${ieds.length > 0 || unusedIeds.length > 0
               ? html`<mwc-fab

@@ -162,10 +162,7 @@ function sldAttributes(element: Element, nsPrefix?: string): Element | null {
   priv.setAttribute('type', privType);
   element.insertBefore(priv, getReference(element, 'Private'));
 
-  const sldAttrsNew = doc.createElementNS(
-    sldNs,
-    `${nsPrefix}:SLDAttributes`
-  );
+  const sldAttrsNew = doc.createElementNS(sldNs, `${nsPrefix}:SLDAttributes`);
   priv.insertBefore(sldAttrsNew, null);
 
   return sldAttrsNew;
