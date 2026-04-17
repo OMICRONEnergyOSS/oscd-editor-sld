@@ -2,9 +2,9 @@ import { html, LitElement } from 'lit';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { customElement, property, state } from 'lit/decorators.js';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
-import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
+import { newEditEvent, newEditEventV2 } from '@openscd/oscd-api/utils.js';
 import { EditV2, SetAttributes } from '@openscd/oscd-api';
-import { getReference } from '@openscd/scl-lib';
+import { getReference, insertIed } from '@openscd/scl-lib';
 
 import { SldSubstationEditor } from './sld-substation-editor.js';
 
@@ -91,9 +91,9 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
     'sld-substation-editor': SldSubstationEditor,
   };
 
-  @property() doc!: XMLDocument;
+  @property({ type: Object }) doc!: XMLDocument;
 
-  @property()
+  @property({ type: Number })
   get docVersion(): number {
     return this._docVersion;
   }
@@ -110,9 +110,17 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
 
   @property({ type: Boolean }) disabled = false;
 
-  @property() selectable: string[] = [];
+  @property({ type: Array }) selectable: string[] = [];
 
-  @property() highlight: { id: string; style: Style }[] = [];
+  @property({ type: Array }) highlight: { id: string; style: Style }[] = [];
+
+  @property({ type: Boolean })
+  showIeds?: boolean;
+
+  public startPlacingBayTypical = (element: Element) => {
+    this.startPlacing(element);
+    this.placingBayTypical = element;
+  };
 
   @state() gridSize = 32;
 
@@ -124,14 +132,14 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
 
   @state() placing?: Element;
 
+  @state()
+  placingBayTypical?: Element;
+
   @state() placingOffset: Point = [0, 0];
 
   @state() placingLabel?: Element;
 
   @state() showLabels: boolean = true;
-
-  @property()
-  showIeds?: boolean;
 
   @state()
   connecting?: {
@@ -456,6 +464,15 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
           })
         );
       }
+    } else if (this.placingBayTypical && this.placing) {
+      const scl = this.doc.querySelector('SCL')!;
+      const ieds = this.placing.ownerDocument.querySelectorAll(':root > IED');
+
+      ieds.forEach(ied => {
+        this.dispatchEvent(newEditEvent(insertIed(scl, ied)));
+      });
+
+      this.placingBayTypical = undefined;
     }
 
     const oldParent = element.parentElement;
@@ -644,7 +661,7 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
     this.dispatchEvent(newEditEventV2(edits));
   }
 
-  render(): unknown {
+  render() {
     return html`${Array.from(
       this.doc.querySelectorAll(':root > Substation')
     ).map(

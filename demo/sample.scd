@@ -22,4 +22,43 @@
       </Bay>
     </VoltageLevel>
   </Substation>
+  <IED name="test" manufacturer="OpenSCD">
+    <Services>
+      <ConfLdName />
+    </Services>
+    <AccessPoint name="AP1">
+      <Server>
+        <Authentication/>
+        <LDevice inst="LD1">
+          <LN0 lnClass="LLN0" inst="" lnType="PlaceholderLLN0"/>
+        </LDevice>
+      </Server>
+    </AccessPoint>
+  </IED>
+  <IED name="test2" manufacturer="OpenSCD">
+    <Services>
+      <ConfLdName />
+    </Services>
+    <AccessPoint name="AP1">
+      <Server>
+        <Authentication/>
+        <LDevice inst="LD1">
+          <LN0 lnClass="LLN0" inst="" lnType="PlaceholderLLN0"/>
+        </LDevice>
+      </Server>
+    </AccessPoint>
+  </IED>
+  <IED name="test3" manufacturer="OpenSCD">
+    <Services>
+      <ConfLdName />
+    </Services>
+    <AccessPoint name="AP1">
+      <Server>
+        <Authentication/>
+        <LDevice inst="LD1">
+          <LN0 lnClass="LLN0" inst="" lnType="PlaceholderLLN0"/>
+        </LDevice>
+      </Server>
+    </AccessPoint>
+  </IED>
 </SCL>
