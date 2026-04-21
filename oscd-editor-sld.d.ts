@@ -36,6 +36,7 @@ export default class OscdEditorSld extends OscdEditorSld_base {
     about?: Dialog;
     iedMenu?: Menu;
     sldEditor?: SldEditor;
+    bayTypicalFileInput?: HTMLInputElement;
     zoomIn(): void;
     zoomOut(): void;
     startPlacing(element: Element | undefined): void;
@@ -45,6 +46,8 @@ export default class OscdEditorSld extends OscdEditorSld_base {
     disconnectedCallback(): void;
     updated(changedProperties: Map<string, any>): void;
     convertSldAttributes(): void;
+    /** Loads the file `event.target.files[0]` into [[`src`]] as a `blob:...`. */
+    importBayTypical(event: Event): Promise<void>;
     render(): import("lit-html").TemplateResult<1>;
     insertOrGetIed(ied: Element, doc: XMLDocument): Element;
     insertSubstation(): void;

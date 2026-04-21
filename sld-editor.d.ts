@@ -16,15 +16,17 @@ export declare class SldEditor extends SldEditor_base {
         id: string;
         style: Style;
     }[];
+    showIeds?: boolean;
+    startPlacingBayTypical: (element: Element) => void;
     gridSize: number;
     nsp: string;
     resizingBR?: Element;
     resizingTL?: Element;
     placing?: Element;
+    placingBayTypical?: Element;
     placingOffset: Point;
     placingLabel?: Element;
     showLabels: boolean;
-    showIeds?: boolean;
     connecting?: {
         from: Element;
         path: Point[];
@@ -45,6 +47,6 @@ export declare class SldEditor extends SldEditor_base {
     placeLabel(element: Element, x: number, y: number): void;
     placeElement(element: Element, parent: Element, x: number, y: number): void;
     connectEquipment({ from, fromTerminal, to, toTerminal, path, }: ConnectDetail): void;
-    render(): unknown;
+    render(): import("lit-html").TemplateResult<1>;
 }
 export {};

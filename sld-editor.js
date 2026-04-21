@@ -3,8 +3,8 @@ import { html, LitElement } from 'lit';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { customElement, property, state } from 'lit/decorators.js';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
-import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
-import { getReference } from '@openscd/scl-lib';
+import { newEditEvent, newEditEventV2 } from '@openscd/oscd-api/utils.js';
+import { getReference, insertIed } from '@openscd/scl-lib';
 import { SldSubstationEditor } from './sld-substation-editor.js';
 import { attributes, busSections, elementPath, getSLDAttributes, iedReferences, isBusBar, isIedReferenceElement, privType, removeNode, removeTerminal, reparentElement, setSLDAttributes, sldNs, updateSLDAttributes, uuid, xmlnsNs, } from './util.js';
 function cutSectionAt(section, index, [x, y], nsPrefix) {
@@ -43,6 +43,10 @@ let SldEditor = class SldEditor extends ScopedElementsMixin(LitElement) {
         this.disabled = false;
         this.selectable = [];
         this.highlight = [];
+        this.startPlacingBayTypical = (element) => {
+            this.startPlacing(element);
+            this.placingBayTypical = element;
+        };
         this.gridSize = 32;
         this.nsp = 'eoscd';
         this.placingOffset = [0, 0];
@@ -278,6 +282,14 @@ let SldEditor = class SldEditor extends ScopedElementsMixin(LitElement) {
                 }));
             }
         }
+        else if (this.placingBayTypical && this.placing) {
+            const scl = this.doc.querySelector('SCL');
+            const ieds = this.placing.ownerDocument.querySelectorAll(':root > IED');
+            ieds.forEach(ied => {
+                this.dispatchEvent(newEditEvent(insertIed(scl, ied)));
+            });
+            this.placingBayTypical = undefined;
+        }
         const oldParent = element.parentElement;
         const iedWrapEdits = [];
         if (isIedReferenceElement(element)) {
@@ -485,10 +497,10 @@ SldEditor.scopedElements = {
     'sld-substation-editor': SldSubstationEditor,
 };
 __decorate([
-    property()
+    property({ type: Object })
 ], SldEditor.prototype, "doc", void 0);
 __decorate([
-    property()
+    property({ type: Number })
 ], SldEditor.prototype, "docVersion", null);
 __decorate([
     state()
@@ -497,11 +509,14 @@ __decorate([
     property({ type: Boolean })
 ], SldEditor.prototype, "disabled", void 0);
 __decorate([
-    property()
+    property({ type: Array })
 ], SldEditor.prototype, "selectable", void 0);
 __decorate([
-    property()
+    property({ type: Array })
 ], SldEditor.prototype, "highlight", void 0);
+__decorate([
+    property({ type: Boolean })
+], SldEditor.prototype, "showIeds", void 0);
 __decorate([
     state()
 ], SldEditor.prototype, "gridSize", void 0);
@@ -519,6 +534,9 @@ __decorate([
 ], SldEditor.prototype, "placing", void 0);
 __decorate([
     state()
+], SldEditor.prototype, "placingBayTypical", void 0);
+__decorate([
+    state()
 ], SldEditor.prototype, "placingOffset", void 0);
 __decorate([
     state()
@@ -526,9 +544,6 @@ __decorate([
 __decorate([
     state()
 ], SldEditor.prototype, "showLabels", void 0);
-__decorate([
-    property()
-], SldEditor.prototype, "showIeds", void 0);
 __decorate([
     state()
 ], SldEditor.prototype, "connecting", void 0);
