@@ -42,11 +42,11 @@ function attributes(element: Element): (string | null)[] {
 function addVertexes(
   parentSection: Element,
   vertex: Element,
-  nsd: string
+  nsd: string,
 ): void {
   const newVertex = vertex.ownerDocument!.createElementNS(
     newNs,
-    `${nsd}:Vertex`
+    `${nsd}:Vertex`,
   );
   parentSection.appendChild(newVertex);
 
@@ -61,7 +61,7 @@ function addVertexes(
 function copySection(newPrivate: Element, section: Element, nsd: string): void {
   const newSection = section.ownerDocument!.createElementNS(
     newNs,
-    `${nsd}:Section`
+    `${nsd}:Section`,
   );
   newPrivate.appendChild(newSection);
 
@@ -74,7 +74,7 @@ function copySection(newPrivate: Element, section: Element, nsd: string): void {
 
 function copyConnNodePrivate(connNode: Element, nsd: string): EditV2[] {
   const oldPrivate = connNode.querySelector(
-    ':scope > Private[type="Transpower-SLD-Vertices"]'
+    ':scope > Private[type="Transpower-SLD-Vertices"]',
   );
 
   if (!oldPrivate) return [];
@@ -108,7 +108,7 @@ function copyConnNodePrivate(connNode: Element, nsd: string): EditV2[] {
  */
 function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
   const oldIedPrivates = Array.from(
-    substation.querySelectorAll(':scope Private[type="OpenSCD-Linked-IEDs"]')
+    substation.querySelectorAll(':scope Private[type="OpenSCD-Linked-IEDs"]'),
   );
 
   if (!oldIedPrivates) return [];
@@ -121,18 +121,18 @@ function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
       'Private',
       {
         type: 'OpenSCD-SLD-Layout',
-      }
+      },
     );
 
     const oldIedNames = Array.from(
-      oldIedPrivate.querySelectorAll(':scope > *')
+      oldIedPrivate.querySelectorAll(':scope > *'),
     ).filter(
       el =>
         el.localName === 'IEDName' &&
         (el.getAttributeNS(oldNs, 'x') !== null ||
           el.getAttributeNS(oldNs, 'y') !== null ||
           el.getAttributeNS(oldNs, 'lx') !== null ||
-          el.getAttributeNS(oldNs, 'ly') !== null)
+          el.getAttributeNS(oldNs, 'ly') !== null),
     );
 
     if (oldIedNames.length === 0) return;
@@ -146,11 +146,11 @@ function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
 
       const iedReference = oldIed.ownerDocument!.createElementNS(
         newNs,
-        `${nsd}:Reference`
+        `${nsd}:Reference`,
       );
       const sldAttributes = oldIed.ownerDocument!.createElementNS(
         newNs,
-        `${nsd}:SLDAttributes`
+        `${nsd}:SLDAttributes`,
       );
 
       const sclIed = name
@@ -160,7 +160,7 @@ function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
         iedReference.setAttributeNS(
           newNs,
           `${nsd}:id`,
-          String(identity(sclIed))
+          String(identity(sclIed)),
         );
       else if (name)
         iedReference.setAttributeNS(newNs, `${nsd}:id`, `IED[${name}]`);
@@ -205,11 +205,11 @@ function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
   const oldLinkedIedNames = new Set(
     Array.from(
       substation.querySelectorAll(
-        ':scope Private[type="OpenSCD-Linked-IEDs"] > IEDName'
-      )
+        ':scope Private[type="OpenSCD-Linked-IEDs"] > IEDName',
+      ),
     )
       .map(iedName => iedName.getAttributeNS(oldNs, 'name'))
-      .filter((name): name is string => !!name)
+      .filter((name): name is string => !!name),
   );
 
   const legacyIeds = Array.from(doc.querySelectorAll(':root > IED')).filter(
@@ -217,14 +217,14 @@ function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
       ied.getAttributeNS(oldNs, 'x') !== null ||
       ied.getAttributeNS(oldNs, 'y') !== null ||
       ied.getAttributeNS(oldNs, 'lx') !== null ||
-      ied.getAttributeNS(oldNs, 'ly') !== null
+      ied.getAttributeNS(oldNs, 'ly') !== null,
   );
 
   if (legacyIeds.length === 0) return [];
 
   const edits: EditV2[] = [];
   let targetPrivate = substation.querySelector(
-    ':scope > Private[type="OpenSCD-SLD-Layout"]'
+    ':scope > Private[type="OpenSCD-SLD-Layout"]',
   );
 
   if (!targetPrivate) {
@@ -254,14 +254,14 @@ function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
     if (!referencedByOldIedName) {
       const iedReference = ied.ownerDocument!.createElementNS(
         newNs,
-        `${nsd}:Reference`
+        `${nsd}:Reference`,
       );
       iedReference.setAttributeNS(newNs, `${nsd}:id`, String(identity(ied)));
       iedReference.setAttributeNS(newNs, `${nsd}:type`, 'IED');
 
       const sldAttributes = ied.ownerDocument!.createElementNS(
         newNs,
-        `${nsd}:SLDAttributes`
+        `${nsd}:SLDAttributes`,
       );
       if (x) sldAttributes.setAttributeNS(newNs, `${nsd}:x`, x);
       if (y) sldAttributes.setAttributeNS(newNs, `${nsd}:y`, y);
@@ -316,7 +316,7 @@ function pushToPrivate(element: Element, nsd: string): EditV2 {
   });
   const sldAttributes = element.ownerDocument!.createElementNS(
     newNs,
-    `${nsd}:SLDAttributes`
+    `${nsd}:SLDAttributes`,
   );
   sldPrivate.insertBefore(sldAttributes, null);
 
@@ -368,21 +368,21 @@ function replaceNamespace(doc: XMLDocument, nsd: string): EditV2[] {
 
 export function convertSldLayout(doc: XMLDocument, nsd: string): EditV2 {
   const processElements = doc.querySelectorAll(
-    ':root > Substation, :root > Substation :not(Section, Vertex)'
+    ':root > Substation, :root > Substation :not(Section, Vertex)',
   );
   const privateEdits: EditV2[] = Array.from(processElements).flatMap(el =>
-    pushToPrivate(el, nsd)
+    pushToPrivate(el, nsd),
   );
 
   const connNodes = doc.querySelectorAll(':root > Substation ConnectivityNode');
   const sectionCopy = Array.from(connNodes).flatMap(connNode =>
-    copyConnNodePrivate(connNode, nsd)
+    copyConnNodePrivate(connNode, nsd),
   );
 
   const substations = doc.querySelectorAll(':root > Substation');
 
   const iedMigration = Array.from(substations).flatMap(substation =>
-    migrateOldIEDNames(substation, nsd)
+    migrateOldIEDNames(substation, nsd),
   );
   const legacyIedCoordinateMigration = migrateLegacyIedCoordinates(doc, nsd);
 

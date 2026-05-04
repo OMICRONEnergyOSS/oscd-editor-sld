@@ -151,7 +151,7 @@ export function ptrIcon(
   {
     slot = 'icon',
     kind = 'default',
-  }: { slot?: string; kind?: 'default' | 'auto' | 'earthing' } = {}
+  }: { slot?: string; kind?: 'default' | 'auto' | 'earthing' } = {},
 ) {
   let path = svg``;
   if (windings === 3) path = ptr3WPath;
@@ -565,7 +565,7 @@ export function equipmentPath(equipmentType: string | null): TemplateResult<2> {
 }
 
 export function equipmentGraphic(
-  equipmentType: string | null
+  equipmentType: string | null,
 ): TemplateResult<1> {
   return html`<svg viewBox="0 0 25 25" width="24" height="24" slot="graphic">
     <line
