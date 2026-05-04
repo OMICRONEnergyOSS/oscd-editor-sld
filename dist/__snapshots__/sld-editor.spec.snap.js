@@ -1,110 +1,99 @@
 /* @web/test-runner snapshot v1 */
 export const snapshots = {};
 
-snapshots["SLD Editor given a voltage level opens a menu on voltage level right click"] =
-  `<menu
+snapshots["SLD Editor given a voltage level opens a menu on voltage level right click"] = 
+`<menu
   id="sld-context-menu"
   style="top: -73px; left: 0px;"
 >
-  <mwc-list>
-    <mwc-list-item
-      graphic="avatar"
-      noninteractive=""
-      twoline=""
-    >
-      <span>
+  <oscd-list>
+    <oscd-list-item type="text">
+      <div slot="headline">
         V1
-      </span>
-      <span
-        slot="secondary"
+      </div>
+      <div
+        slot="supporting-text"
         style="display: inline-block; max-width: 15em; overflow: hidden; text-overflow: ellipsis;"
       >
         some description
-      </span>
-    </mwc-list-item>
+      </div>
+    </oscd-list-item>
     <li
       divider=""
       role="separator"
     >
     </li>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Resize
-      </span>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Copy
-      </span>
-      <mwc-icon slot="graphic">
-        copy_all
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Move
-      </span>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Move Label
-      </span>
-      <mwc-icon slot="graphic">
-        text_rotation_none
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Add Text
-      </span>
-      <mwc-icon slot="graphic">
-        title
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Edit
-      </span>
-      <mwc-icon slot="graphic">
-        edit
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Delete
-      </span>
-      <mwc-icon slot="graphic">
-        delete
-      </mwc-icon>
-    </mwc-list-item>
-  </mwc-list>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Resize
+        </div>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Copy
+        </div>
+        <oscd-icon slot="start">
+          copy_all
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Move
+        </div>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Move Label
+        </div>
+        <oscd-icon slot="start">
+          text_rotation_none
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Add Text
+        </div>
+        <oscd-icon slot="start">
+          title
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Edit
+        </div>
+        <oscd-icon slot="start">
+          edit
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Delete
+        </div>
+        <oscd-icon slot="start">
+          delete
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+  </oscd-list>
 </menu>
 `;
 /* end snapshot SLD Editor given a voltage level opens a menu on voltage level right click */
 
-snapshots["SLD Editor given a voltage level allows placing a new bus bar"] =
-  `<Bay name="BB1">
+snapshots["SLD Editor given a voltage level allows placing a new bus bar"] = 
+`<Bay name="BB1">
   <Private type="OpenSCD-SLD-Layout">
     <SLDAttributes
       smth:h="8"
@@ -139,8 +128,8 @@ snapshots["SLD Editor given a voltage level allows placing a new bus bar"] =
 `;
 /* end snapshot SLD Editor given a voltage level allows placing a new bus bar */
 
-snapshots["SLD Editor given a bay updates reparented bays' connectivity node paths"] =
-  `<SCL
+snapshots["SLD Editor given a bay updates reparented bays' connectivity node paths"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -216,8 +205,8 @@ snapshots["SLD Editor given a bay updates reparented bays' connectivity node pat
 `;
 /* end snapshot SLD Editor given a bay updates reparented bays' connectivity node paths */
 
-snapshots["SLD Editor given conducting equipment copies equipment on shift click"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment copies equipment on shift click"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -427,168 +416,152 @@ snapshots["SLD Editor given conducting equipment copies equipment on shift click
 `;
 /* end snapshot SLD Editor given conducting equipment copies equipment on shift click */
 
-snapshots["SLD Editor given conducting equipment opens a menu on equipment right click"] =
-  `<menu
+snapshots["SLD Editor given conducting equipment opens a menu on equipment right click"] = 
+`<menu
   id="sld-context-menu"
   style="top: 477px; left: 750px;"
 >
-  <mwc-list>
-    <mwc-list-item
-      graphic="avatar"
-      noninteractive=""
-      twoline=""
-    >
-      <span>
+  <oscd-list>
+    <oscd-list-item type="text">
+      <div slot="headline">
         CBR1
-      </span>
-      <span
-        slot="secondary"
+      </div>
+      <div
+        slot="supporting-text"
         style="display: inline-block; max-width: 15em; overflow: hidden; text-overflow: ellipsis;"
       >
         CBR — CBR description
-      </span>
-    </mwc-list-item>
+      </div>
+    </oscd-list-item>
     <li
       divider=""
       role="separator"
     >
     </li>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Connect right
-      </span>
-      <mwc-icon slot="graphic">
-        east
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Ground right
-      </span>
-      <mwc-icon slot="graphic">
-        chevron_right
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Connect left
-      </span>
-      <mwc-icon slot="graphic">
-        west
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Ground left
-      </span>
-      <mwc-icon slot="graphic">
-        chevron_left
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Mirror
-      </span>
-      <mwc-icon slot="graphic">
-        flip
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Rotate
-      </span>
-      <mwc-icon slot="graphic">
-        rotate_90_degrees_cw
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Copy
-      </span>
-      <mwc-icon slot="graphic">
-        copy_all
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Move
-      </span>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Move Label
-      </span>
-      <mwc-icon slot="graphic">
-        text_rotation_none
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Add Text
-      </span>
-      <mwc-icon slot="graphic">
-        title
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Edit
-      </span>
-      <mwc-icon slot="graphic">
-        edit
-      </mwc-icon>
-    </mwc-list-item>
-    <mwc-list-item
-      graphic="icon"
-      mwc-list-item=""
-    >
-      <span>
-        Delete
-      </span>
-      <mwc-icon slot="graphic">
-        delete
-      </mwc-icon>
-    </mwc-list-item>
-  </mwc-list>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Connect right
+        </div>
+        <oscd-icon slot="start">
+          east
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Ground right
+        </div>
+        <oscd-icon slot="start">
+          chevron_right
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Connect left
+        </div>
+        <oscd-icon slot="start">
+          west
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Ground left
+        </div>
+        <oscd-icon slot="start">
+          chevron_left
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Mirror
+        </div>
+        <oscd-icon slot="start">
+          flip
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Rotate
+        </div>
+        <oscd-icon slot="start">
+          rotate_90_degrees_cw
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Copy
+        </div>
+        <oscd-icon slot="start">
+          copy_all
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Move
+        </div>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Move Label
+        </div>
+        <oscd-icon slot="start">
+          text_rotation_none
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Add Text
+        </div>
+        <oscd-icon slot="start">
+          title
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Edit
+        </div>
+        <oscd-icon slot="start">
+          edit
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+    <span>
+      <oscd-menu-item>
+        <div slot="headline">
+          Delete
+        </div>
+        <oscd-icon slot="start">
+          delete
+        </oscd-icon>
+      </oscd-menu-item>
+    </span>
+  </oscd-list>
 </menu>
 `;
 /* end snapshot SLD Editor given conducting equipment opens a menu on equipment right click */
 
-snapshots["SLD Editor given conducting equipment grounds equipment on connection point right click"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment grounds equipment on connection point right click"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -805,8 +778,8 @@ snapshots["SLD Editor given conducting equipment grounds equipment on connection
 `;
 /* end snapshot SLD Editor given conducting equipment grounds equipment on connection point right click */
 
-snapshots["SLD Editor given conducting equipment connects equipment on connection point and equipment click"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment connects equipment on connection point and equipment click"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -1055,8 +1028,8 @@ snapshots["SLD Editor given conducting equipment connects equipment on connectio
 `;
 /* end snapshot SLD Editor given conducting equipment connects equipment on connection point and equipment click */
 
-snapshots["SLD Editor given conducting equipment connects equipment on connect menu item select"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment connects equipment on connect menu item select"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -1460,8 +1433,8 @@ snapshots["SLD Editor given conducting equipment connects equipment on connect m
 `;
 /* end snapshot SLD Editor given conducting equipment connects equipment on connect menu item select */
 
-snapshots["SLD Editor given conducting equipment retargets grounded terminals when reparenting equipment"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment retargets grounded terminals when reparenting equipment"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -1674,8 +1647,8 @@ snapshots["SLD Editor given conducting equipment retargets grounded terminals wh
 `;
 /* end snapshot SLD Editor given conducting equipment retargets grounded terminals when reparenting equipment */
 
-snapshots["SLD Editor given conducting equipment with established connectivity uniquely names new connectivity nodes"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity uniquely names new connectivity nodes"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -1969,8 +1942,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity u
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity uniquely names new connectivity nodes */
 
-snapshots["SLD Editor given conducting equipment with established connectivity connects equipment on connection point and connectivity node click"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity connects equipment on connection point and connectivity node click"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -2251,8 +2224,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity c
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity connects equipment on connection point and connectivity node click */
 
-snapshots["SLD Editor given conducting equipment with established connectivity avoids short circuit connections"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity avoids short circuit connections"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -2491,8 +2464,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity a
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity avoids short circuit connections */
 
-snapshots["SLD Editor given conducting equipment with established connectivity keeps connection paths simple"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity keeps connection paths simple"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -2845,8 +2818,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity k
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity keeps connection paths simple */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment on rotation"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment on rotation"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -3083,8 +3056,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment on rotation */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies horizontal connection paths when disconnecting"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies horizontal connection paths when disconnecting"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -3430,8 +3403,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies horizontal connection paths when disconnecting */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies vertical connection paths when disconnecting"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies vertical connection paths when disconnecting"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -3767,8 +3740,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies vertical connection paths when disconnecting */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies when disconnecting only where possible"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies when disconnecting only where possible"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -4146,8 +4119,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment simplifies when disconnecting only where possible */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment upon being moved"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment upon being moved"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -4451,8 +4424,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment disconnects equipment upon being moved */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment removes superfluous connectivity nodes when disconnecting"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment removes superfluous connectivity nodes when disconnecting"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -4646,8 +4619,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment removes superfluous connectivity nodes when disconnecting */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment keeps internal connectivity nodes when moving containers"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment keeps internal connectivity nodes when moving containers"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -4905,8 +4878,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment keeps internal connectivity nodes when moving containers */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes conducting equipment on delete menu item select"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes conducting equipment on delete menu item select"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -5130,8 +5103,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes conducting equipment on delete menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes bays on delete menu item select"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes bays on delete menu item select"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -5351,8 +5324,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes bays on delete menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes voltage levels on delete menu item select"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes voltage levels on delete menu item select"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -5413,8 +5386,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment deletes voltage levels on delete menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar keeps the bus bar when moving containers"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar keeps the bus bar when moving containers"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -5695,8 +5668,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar keeps the bus bar when moving containers */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar does not merge bus bar sections with feeder sections"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar does not merge bus bar sections with feeder sections"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -6032,8 +6005,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar does not merge bus bar sections with feeder sections */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar resizes the bus bar on resize menu item select"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar resizes the bus bar on resize menu item select"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -6401,8 +6374,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar resizes the bus bar on resize menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies equipment on copy menu item select"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies equipment on copy menu item select"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -6811,8 +6784,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies equipment on copy menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar moves the bus bar on move menu item select"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar moves the bus bar on move menu item select"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -7180,8 +7153,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar moves the bus bar on move menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar deletes the bus bar on delete menu item select"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar deletes the bus bar on delete menu item select"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -7517,8 +7490,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar deletes the bus bar on delete menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies bays on copy menu item select"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies bays on copy menu item select"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -8119,8 +8092,8 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies bays on copy menu item select */
 
-snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies voltage levels on move handle shift click"] =
-  `<SCL
+snapshots["SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies voltage levels on move handle shift click"] = 
+`<SCL
   revision="B"
   version="2007"
   xmlns="http://www.iec.ch/61850/2003/SCL"
@@ -8575,34 +8548,39 @@ snapshots["SLD Editor given conducting equipment with established connectivity b
 `;
 /* end snapshot SLD Editor given conducting equipment with established connectivity between more than two pieces of equipment and a bus bar copies voltage levels on move handle shift click */
 
-snapshots["SLD Editor when disabled given a substation disables substation buttons"] =
-  `<h2 class="disabled">
+snapshots["SLD Editor when disabled given a substation disables substation buttons"] = 
+`<h2 class="disabled">
   S1
-  <mwc-icon-button
-    icon="edit"
+  <oscd-icon-button
     label="Edit Substation"
     title="Edit Substation"
   >
-  </mwc-icon-button>
-  <mwc-icon-button
+    <oscd-icon>
+      edit
+    </oscd-icon>
+  </oscd-icon-button>
+  <oscd-icon-button
     label="Resize Substation"
     title="Resize Substation"
   >
-  </mwc-icon-button>
-  <mwc-icon-button
-    icon="delete"
+  </oscd-icon-button>
+  <oscd-icon-button
     label="Delete Substation"
     title="Delete Substation"
   >
-  </mwc-icon-button>
-  <mwc-icon-button
-    icon="file_download"
+    <oscd-icon>
+      delete
+    </oscd-icon>
+  </oscd-icon-button>
+  <oscd-icon-button
     label="Export Single Line Diagram SVG"
     title="Export Single Line Diagram SVG"
   >
-  </mwc-icon-button>
+    <oscd-icon>
+      file_download
+    </oscd-icon>
+  </oscd-icon-button>
 </h2>
 `;
 /* end snapshot SLD Editor when disabled given a substation disables substation buttons */
-
 

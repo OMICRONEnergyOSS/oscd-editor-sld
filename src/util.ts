@@ -52,7 +52,6 @@ export type Style = {
   rx?: string | number;
 };
 
-/* eslint-disable no-bitwise */
 export function uuid() {
   const digits = new Array(36);
   for (let i = 0; i < 36; i += 1) {
@@ -64,7 +63,6 @@ export function uuid() {
   digits[19] |= 1 << 3;
   return digits.map(x => x.toString(16)).join('');
 }
-/* eslint-enable no-bitwise */
 
 const transformerKinds = ['default', 'auto', 'earthing'] as const;
 export type Point = [number, number];
@@ -82,7 +80,7 @@ export type Attrs = {
 };
 
 export function isTransformerKind(
-  kind: string | null
+  kind: string | null,
 ): kind is TransformerKind {
   return transformerKinds.includes(kind as TransformerKind);
 }
@@ -93,7 +91,7 @@ export function xmlBoolean(value?: string | null) {
 
 function sections(element: Element): Element[] {
   return Array.from(
-    element.querySelectorAll(`:scope Private[type="${privType}"] > Section`)
+    element.querySelectorAll(`:scope Private[type="${privType}"] > Section`),
   );
 }
 
@@ -107,7 +105,7 @@ export function isIedReferenceElement(element: Element): boolean {
 
 export function iedReferences(root: XMLDocument | Element): Element[] {
   const refs = Array.from(
-    root.getElementsByTagNameNS(sldNs, 'Reference')
+    root.getElementsByTagNameNS(sldNs, 'Reference'),
   ).filter(isIedReferenceElement);
   return refs;
 }
@@ -127,7 +125,7 @@ export function resolveIed(referencedIed: Element): Element | null {
 
     return (
       Array.from(doc.querySelectorAll(':root > IED')).find(
-        ied => identity(ied) === referenceIdentity
+        ied => identity(ied) === referenceIdentity,
       ) ?? null
     );
   }
@@ -143,14 +141,14 @@ function sldAttributes(element: Element, nsPrefix?: string): Element | null {
 
     const sldAttrs = element.ownerDocument.createElementNS(
       sldNs,
-      `${nsPrefix}:SLDAttributes`
+      `${nsPrefix}:SLDAttributes`,
     );
     element.appendChild(sldAttrs);
     return sldAttrs;
   }
 
   const sldAttrs = element.querySelector(
-    `:scope > Private[type="${privType}"] > SLDAttributes`
+    `:scope > Private[type="${privType}"] > SLDAttributes`,
   );
 
   if (sldAttrs) return sldAttrs;
@@ -171,7 +169,7 @@ function sldAttributes(element: Element, nsPrefix?: string): Element | null {
 export function setSLDAttributes(
   element: Element,
   nsPrefix: string,
-  values: Record<string, string>
+  values: Record<string, string>,
 ): void {
   const isSectionOrVertex = ['Section', 'Vertex'].includes(element.localName);
 
@@ -184,8 +182,8 @@ export function setSLDAttributes(
       sldAttributes(element, nsPrefix)?.setAttributeNS(
         sldNs,
         `${nsPrefix}:${key}`,
-        value
-      )
+        value,
+      ),
     );
   }
 }
@@ -193,7 +191,7 @@ export function setSLDAttributes(
 export function updateSLDAttributes(
   element: Element,
   nsPrefix: string,
-  values: Partial<Record<string, string | null>>
+  values: Partial<Record<string, string | null>>,
 ): EditV2 {
   const isSectionOrVertex = ['Section', 'Vertex'].includes(element.localName);
   const toBeUpdated = isSectionOrVertex
@@ -207,7 +205,7 @@ export function updateSLDAttributes(
         Object.entries(values).map(([key, value]) => [
           `${nsPrefix}:${key}`,
           value,
-        ])
+        ]),
       ),
     },
   };
@@ -222,7 +220,7 @@ export function getSLDAttributes(element: Element, key: string): string | null {
 
 export function busSections(element: Element): Element[] {
   return sections(element).filter(
-    section => getSLDAttributes(section, 'bus') === 'true'
+    section => getSLDAttributes(section, 'bus') === 'true',
   );
 }
 
@@ -244,7 +242,7 @@ export function makeBusBar(doc: XMLDocument, nsp: string) {
   setSLDAttributes(busBar, nsp, { w: '2' });
   const cNode = doc.createElementNS(
     doc.documentElement.namespaceURI,
-    'ConnectivityNode'
+    'ConnectivityNode',
   );
   cNode.setAttribute('name', 'L');
   const priv = doc.createElementNS(doc.documentElement.namespaceURI, 'Private');
@@ -305,7 +303,7 @@ export function elementPath(element: Element, ...rest: string[]): string {
 
 function collinear(v0: Element, v1: Element, v2: Element) {
   const [[x0, y0], [x1, y1], [x2, y2]] = [v0, v1, v2].map(vertex =>
-    ['x', 'y'].map(name => getSLDAttributes(vertex, name))
+    ['x', 'y'].map(name => getSLDAttributes(vertex, name)),
   );
   return (x0 === x1 && x1 === x2) || (y0 === y1 && y1 === y2);
 }
@@ -315,7 +313,7 @@ export function removeNode(node: Element): EditV2[] {
 
   if (containsBusSection(node)) {
     nonBusSections(node).forEach(section => edits.push({ node: section }));
-    // eslint-disable-next-line no-shadow
+
     const sections = busSections(node);
     const busSection = sections[0];
     Array.from(busSection.children)
@@ -330,9 +328,9 @@ export function removeNode(node: Element): EditV2[] {
   Array.from(
     node.ownerDocument.querySelectorAll(
       `Terminal[connectivityNode="${node.getAttribute(
-        'pathName'
-      )}"], NeutralPoint[connectivityNode="${node.getAttribute('pathName')}"]`
-    )
+        'pathName',
+      )}"], NeutralPoint[connectivityNode="${node.getAttribute('pathName')}"]`,
+    ),
   ).forEach(terminal => edits.push({ node: terminal }));
 
   return edits;
@@ -344,7 +342,7 @@ function reverseSection(section: Element): EditV2[] {
   Array.from(section.children)
     .reverse()
     .forEach(vertex =>
-      edits.push({ parent: section, node: vertex, reference: null })
+      edits.push({ parent: section, node: vertex, reference: null }),
     );
 
   return edits;
@@ -359,7 +357,7 @@ function healSectionCut(cut: Element): EditV2[] {
     getSLDAttributes(vertex, 'y') === y;
 
   const cutVertices = Array.from(
-    cut.closest('Private')!.getElementsByTagNameNS(sldNs, 'Section')
+    cut.closest('Private')!.getElementsByTagNameNS(sldNs, 'Section'),
   ).flatMap(section => Array.from(section.children).filter(isCut));
   const cutSections = cutVertices.map(v => v.parentElement) as Element[];
 
@@ -367,7 +365,7 @@ function healSectionCut(cut: Element): EditV2[] {
   if (cutSections.length < 2)
     return removeNode(cut.closest('ConnectivityNode')!);
   const [busA, busB] = cutSections.map(section =>
-    xmlBoolean(section.getAttribute('bus'))
+    xmlBoolean(section.getAttribute('bus')),
   );
   if (busA !== busB) return [];
 
@@ -399,13 +397,13 @@ function healSectionCut(cut: Element): EditV2[] {
 }
 
 function updateTerminals(
-  parent: Element,
+  _parent: Element,
   cNode: Element,
   substationName: string,
   voltageLevelName: string,
   bayName: string,
   cNodeName: string,
-  connectivityNode: string
+  connectivityNode: string,
 ) {
   const updates = [] as EditV2[];
 
@@ -416,8 +414,8 @@ function updateTerminals(
 
   const terminals = Array.from(
     (cNode.getRootNode() as Document | Element).querySelectorAll(
-      `Terminal[substationName="${oldSubstationName}"][voltageLevelName="${oldVoltageLevelName}"][bayName="${oldBayName}"][cNodeName="${oldCNodeName}"], Terminal[connectivityNode="${oldPathName}"], NeutralPoint[substationName="${oldSubstationName}"][voltageLevelName="${oldVoltageLevelName}"][bayName="${oldBayName}"][cNodeName="${oldCNodeName}"], NeutralPoint[connectivityNode="${oldPathName}"]`
-    )
+      `Terminal[substationName="${oldSubstationName}"][voltageLevelName="${oldVoltageLevelName}"][bayName="${oldBayName}"][cNodeName="${oldCNodeName}"], Terminal[connectivityNode="${oldPathName}"], NeutralPoint[substationName="${oldSubstationName}"][voltageLevelName="${oldVoltageLevelName}"][bayName="${oldBayName}"][cNodeName="${oldCNodeName}"], NeutralPoint[connectivityNode="${oldPathName}"]`,
+    ),
   );
   terminals.forEach(terminal => {
     updates.push({
@@ -437,7 +435,7 @@ function updateTerminals(
 function updateConnectivityNodes(
   element: Element,
   parent: Element,
-  name: string
+  name: string,
 ) {
   const updates = [] as EditV2[];
 
@@ -472,8 +470,8 @@ function updateConnectivityNodes(
             voltageLevelName,
             bayName,
             cNodeName,
-            pathName
-          )
+            pathName,
+          ),
         );
     }
   });
@@ -525,13 +523,13 @@ export function removeTerminal(terminal: Element): EditV2[] {
   edits.push({ node: terminal });
   const pathName = terminal.getAttribute('connectivityNode');
   const cNode = terminal.ownerDocument.querySelector(
-    `ConnectivityNode[pathName="${pathName}"]`
+    `ConnectivityNode[pathName="${pathName}"]`,
   );
 
   const otherTerminals = Array.from(
     terminal.ownerDocument.querySelectorAll(
-      `Terminal[connectivityNode="${pathName}"], NeutralPoint[connectivityNode="${pathName}"]`
-    )
+      `Terminal[connectivityNode="${pathName}"], NeutralPoint[connectivityNode="${pathName}"]`,
+    ),
   ).filter(t => t !== terminal);
 
   if (
@@ -557,7 +555,7 @@ export function removeTerminal(terminal: Element): EditV2[] {
 
   const priv = cNode?.querySelector(`Private[type="${privType}"]`);
   const vertex = priv?.querySelector(
-    `Vertex[*|uuid="${getSLDAttributes(terminal, 'uuid')}"]`
+    `Vertex[*|uuid="${getSLDAttributes(terminal, 'uuid')}"]`,
   );
   const section = vertex?.parentElement;
   if (!section) return edits;
@@ -717,7 +715,7 @@ export type StartPlaceDetail = {
 export type StartPlaceEvent = CustomEvent<StartPlaceDetail>;
 export function newStartPlaceEvent(
   element: Element,
-  offset: Point = [0, 0]
+  offset: Point = [0, 0],
 ): StartPlaceEvent {
   return new CustomEvent('oscd-sld-start-place', {
     bubbles: true,
@@ -727,7 +725,7 @@ export function newStartPlaceEvent(
 }
 export function newStartPlaceLabelEvent(
   element: Element,
-  offset: Point = [0, 0]
+  offset: Point = [0, 0],
 ): StartPlaceEvent {
   return new CustomEvent('oscd-sld-start-place-label', {
     bubbles: true,
@@ -742,7 +740,7 @@ export type StartConnectDetail = {
 };
 export type StartConnectEvent = CustomEvent<StartConnectDetail>;
 export function newStartConnectEvent(
-  detail: StartConnectDetail
+  detail: StartConnectDetail,
 ): StartConnectEvent {
   return new CustomEvent('oscd-sld-start-connect', {
     bubbles: true,
@@ -792,7 +790,7 @@ const prettifyXSLT = new DOMParser().parseFromString(
     '  <xsl:output indent="yes"/>',
     '</xsl:stylesheet>',
   ].join('\n'),
-  'application/xml'
+  'application/xml',
 );
 let xsltProcessor: XSLTProcessor;
 if (!navigator.userAgent.toLowerCase().includes('firefox')) {

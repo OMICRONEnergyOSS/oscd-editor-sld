@@ -1,8 +1,8 @@
 /* @web/test-runner snapshot v1 */
 export const snapshots = {};
 
-snapshots["SLD Editor given a voltage level allows placing a new bus bar"] =
-  `<Bay name="BB1">
+snapshots["SLD Editor given a voltage level allows placing a new bus bar"] = 
+`<Bay name="BB1">
   <Private type="OpenSCD-SLD-Layout">
     <SLDAttributes
       smth:h="8"

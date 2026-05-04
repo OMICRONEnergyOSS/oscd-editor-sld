@@ -5,6 +5,7 @@
     "moduleResolution": "NodeNext",
     "noEmitOnError": true,
     "lib": ["es2021", "dom", "DOM.Iterable"],
+    "types": ["mocha"],
     "strict": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
@@ -13,9 +14,9 @@
     "outDir": "dist",
     "sourceMap": true,
     "inlineSources": true,
-    "rootDir": "./",
+    "rootDir": "src",
     "declaration": true,
     "skipLibCheck": true
   },
-  "include": ["**/*.ts"]
+  "include": ["./src/**/*.ts"]
 }

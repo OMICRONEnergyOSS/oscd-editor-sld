@@ -1,61 +1,54 @@
-<title>oscd-editor-sld demo</title>
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Roboto:wght@300;400;500&display=swap"
-/>
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css?family=Material+Symbols+Outlined&display=block"
-/>
-<oscd-shell></oscd-shell>
+<html>
+  <head>
+    <title>oscd-editor-sld demo</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Roboto:wght@300;400;500&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Material+Symbols+Outlined&display=block"
+    />
 
-<script type="module">
-  import '@webcomponents/scoped-custom-element-registry';
-  import '@omicronenergy/oscd-shell/oscd-shell.js';
-  import { plugins } from './plugins.js';
+    <style>
+      * {
+        --oscd-theme-text-font: 'Roboto';
+        --oscd-theme-icon-font: 'Material Symbols Outlined';
 
-  const editor = document.querySelector('oscd-shell');
-  editor.plugins = plugins;
+        margin: 0px;
+        padding: 0px;
+      }
 
-  const params = new URL(document.location).searchParams;
-  for (const [name, value] of params) {
-    editor.setAttribute(name, value);
-  }
+      abbr {
+        text-decoration: none;
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <oscd-shell></oscd-shell>
 
-  const sample = await fetch('sample.scd').then(r => r.text());
-  editor.docs = {
-    'sample.scd': new DOMParser().parseFromString(sample, 'application/xml'),
-  };
-  editor.docName = 'sample.scd';
-</script>
+    <script type="module">
+      import '@webcomponents/scoped-custom-element-registry';
+      import '@omicronenergy/oscd-shell/oscd-shell.js';
+      import { plugins } from './plugins.js';
 
-<style>
-  * {
-    --oscd-theme-primary: #2aa198;
-    --oscd-theme-secondary: #6c71c4;
-    --oscd-theme-error: #dc322f;
+      const editor = document.querySelector('oscd-shell');
+      editor.plugins = plugins;
 
-    --oscd-theme-base03: #002b36;
-    --oscd-theme-base02: #073642;
-    --oscd-theme-base01: #586e75;
-    --oscd-theme-base00: hsl(196, 13%, 45%);
-    --oscd-theme-base0: #839496;
-    --oscd-theme-base1: #93a1a1;
-    --oscd-theme-base2: #eee8d5;
-    --oscd-theme-base3: #fdf6e3;
+      const params = new URL(document.location).searchParams;
+      for (const [name, value] of params) {
+        editor.setAttribute(name, value);
+      }
 
-    --oscd-theme-text-font: 'Roboto';
-    --oscd-theme-icon-font: 'Material Symbols Outlined';
-
-    --primary: var(--oscd-theme-primary);
-    --secondary: var(--oscd-theme-secondary);
-
-    margin: 0px;
-    padding: 0px;
-  }
-
-  abbr {
-    text-decoration: none;
-    border-bottom: none;
-  }
-</style>
+      const sample = await fetch('sample.scd').then(r => r.text());
+      editor.docs = {
+        ['sample.scd']: new DOMParser().parseFromString(
+          sample,
+          'application/xml',
+        ),
+      };
+      editor.docName = 'sample.scd';
+    </script>
+  </body>
+</html>

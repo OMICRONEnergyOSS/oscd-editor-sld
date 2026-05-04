@@ -8,7 +8,7 @@ import {
   TemplateResult,
   SVGTemplateResult,
 } from 'lit';
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { createRef, Ref, ref } from 'lit/directives/ref.js';
@@ -17,14 +17,17 @@ import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 import { EditV2, SetAttributes } from '@openscd/oscd-api';
 import { newEditEventV2 } from '@openscd/oscd-api/utils.js';
 
-import { Button } from '@material/mwc-button';
-import { Dialog } from '@material/mwc-dialog';
-import { Icon } from '@material/mwc-icon';
-import { IconButton } from '@material/mwc-icon-button';
-import { List, SingleSelectedEvent } from '@material/mwc-list';
-import { ListItem } from '@material/mwc-list/mwc-list-item.js';
-import { Snackbar } from '@material/mwc-snackbar';
-import { TextField } from '@material/mwc-textfield';
+import { OscdTextButton } from '@omicronenergy/oscd-ui/button/OscdTextButton.js';
+import { OscdDialog } from '@omicronenergy/oscd-ui/dialog/OscdDialog.js';
+import { OscdIcon } from '@omicronenergy/oscd-ui/icon/OscdIcon.js';
+import { OscdIconButton } from '@omicronenergy/oscd-ui/iconbutton/OscdIconButton.js';
+import { OscdList } from '@omicronenergy/oscd-ui/list/OscdList.js';
+import { OscdListItem } from '@omicronenergy/oscd-ui/list/OscdListItem.js';
+import { OscdMenu } from '@omicronenergy/oscd-ui/menu/OscdMenu.js';
+import { OscdMenuItem } from '@omicronenergy/oscd-ui/menu/OscdMenuItem.js';
+// TODO: Replace with oscd-ui notification when available
+import { SldSnackbar } from './sld-snackbar.js';
+import { OscdOutlinedTextField } from '@omicronenergy/oscd-ui/textfield/OscdOutlinedTextField.js';
 import { OscdSclDialogs } from '@omicronenergy/oscd-scl-dialogs/oscd-scl-dialogs.js';
 
 import { getReference, identity, removeIED } from '@openscd/scl-lib';
@@ -120,7 +123,7 @@ function containsRect(
   x0: number,
   y0: number,
   w0: number,
-  h0: number
+  h0: number,
 ): boolean {
   const {
     pos: [x, y],
@@ -134,7 +137,7 @@ function overlapsRect(
   x0: number,
   y0: number,
   w0: number,
-  h0: number
+  h0: number,
 ): boolean {
   const {
     pos: [x, y],
@@ -241,16 +244,16 @@ function copy(element: Element, nsp: string): Element {
     iedReferences(clone).forEach(ied => ied.remove());
   }
   const terminals = new Set<Element>(
-    Array.from(element.querySelectorAll('Terminal, NeutralPoint'))
+    Array.from(element.querySelectorAll('Terminal, NeutralPoint')),
   );
   const cNodes = new Set<Element>(
-    Array.from(element.querySelectorAll('ConnectivityNode'))
+    Array.from(element.querySelectorAll('ConnectivityNode')),
   );
   terminals.forEach(terminal => {
     const cNode = element.ownerDocument.querySelector(
       `ConnectivityNode[pathName="${terminal.getAttribute(
-        'connectivityNode'
-      )}"]`
+        'connectivityNode',
+      )}"]`,
     );
     if (cNode) cNodes.add(cNode);
   });
@@ -258,8 +261,8 @@ function copy(element: Element, nsp: string): Element {
   cNodes.forEach(cNode => {
     const foreignTerminal = Array.from(
       element.ownerDocument.querySelectorAll(
-        `[connectivityNode="${cNode.getAttribute('pathName')}"]`
-      )
+        `[connectivityNode="${cNode.getAttribute('pathName')}"]`,
+      ),
     ).find(terminal => !terminals.has(terminal));
     if (
       foreignTerminal ||
@@ -273,14 +276,14 @@ function copy(element: Element, nsp: string): Element {
       if (isBusBar(cNode.closest('Bay')!))
         clone
           .querySelector(
-            `ConnectivityNode[pathName="${cNode.getAttribute('pathName')}"]`
+            `ConnectivityNode[pathName="${cNode.getAttribute('pathName')}"]`,
           )
           ?.closest('Bay')
           ?.remove();
       else
         clone
           .querySelector(
-            `ConnectivityNode[pathName="${cNode.getAttribute('pathName')}"]`
+            `ConnectivityNode[pathName="${cNode.getAttribute('pathName')}"]`,
           )
           ?.remove();
     }
@@ -300,10 +303,10 @@ function copy(element: Element, nsp: string): Element {
       if (!oldUUID) return;
       const newUUID = uuid();
       Array.from(clone.querySelectorAll(`Vertex[*|uuid="${oldUUID}"`)).forEach(
-        vertex => setSLDAttributes(vertex, nsp, { uuid: newUUID })
+        vertex => setSLDAttributes(vertex, nsp, { uuid: newUUID }),
       );
       setSLDAttributes(terminal, nsp, { uuid: newUUID });
-    }
+    },
   );
   return clone;
 }
@@ -321,44 +324,40 @@ function renderMenuHeader(element: Element) {
     const windings = element.querySelectorAll('TransformerWinding').length;
     const { kind } = attributes(element);
     if (windings === 3) {
-      footerGraphic = ptrIcon(3, { slot: 'graphic' });
+      footerGraphic = ptrIcon(3, { slot: 'start' });
     } else if (windings === 2) {
-      footerGraphic = ptrIcon(2, { slot: 'graphic', kind });
+      footerGraphic = ptrIcon(2, { slot: 'start', kind });
     } else {
-      footerGraphic = ptrIcon(1, { slot: 'graphic', kind });
+      footerGraphic = ptrIcon(1, { slot: 'start', kind });
     }
   } else if (element.tagName === 'TransformerWinding')
-    footerGraphic = ptrIcon(1, { slot: 'graphic' });
+    footerGraphic = ptrIcon(1, { slot: 'start' });
   else if (element.tagName === 'ConductingEquipment')
     footerGraphic = equipmentGraphic(type);
   else if (element.tagName === 'Bay' && isBusBar(element))
-    footerGraphic = html`<mwc-icon slot="graphic">horizontal_rule</mwc-icon>`;
+    footerGraphic = html`<oscd-icon slot="start">horizontal_rule</oscd-icon>`;
   else if (element.tagName === 'Bay') footerGraphic = bayGraphic;
   else if (element.tagName === 'VoltageLevel')
     footerGraphic = voltageLevelGraphic;
   else if (isIedReferenceElement(element)) {
     name = 'IED';
-    footerGraphic = html`<mwc-icon slot="graphic">developer_board</mwc-icon>`;
+    footerGraphic = html`<oscd-icon slot="start">developer_board</oscd-icon>`;
   } else if (element.tagName === 'Text') {
-    footerGraphic = html`<mwc-icon slot="graphic">title</mwc-icon>`;
+    footerGraphic = html`<oscd-icon slot="start">title</oscd-icon>`;
     detail = element.textContent;
   }
-  return html`<mwc-list-item
-    ?twoline=${!!detail}
-    graphic="avatar"
-    noninteractive
-  >
-    <span>${name}</span>
+  return html`<oscd-list-item type="text">
+    <div slot="headline">${name}</div>
     ${detail
-      ? html`<span
-          slot="secondary"
+      ? html`<div
+          slot="supporting-text"
           style="display: inline-block; max-width: 15em; overflow: hidden; text-overflow: ellipsis;"
         >
           ${detail}
-        </span>`
+        </div>`
       : nothing}
     ${footerGraphic}
-  </mwc-list-item>`;
+  </oscd-list-item>`;
 }
 
 function isSelectable(element: Element, selectable: string[]) {
@@ -367,14 +366,14 @@ function isSelectable(element: Element, selectable: string[]) {
 
 function isToBeHighlighted(
   element: Element,
-  highlight: { id: string; style: Style }[]
+  highlight: { id: string; style: Style }[],
 ): boolean {
   return highlight.some(h => identity(element) === h.id);
 }
 
 function getHighlightStyle(
   element: Element,
-  highlight: { id: string; style: Style }[]
+  highlight: { id: string; style: Style }[],
 ): string {
   const style = highlight.find(h => identity(element) === h.id)?.style;
   if (!style) return '';
@@ -396,7 +395,7 @@ function transformerHighlight(
   highlight: {
     id: string;
     style: Style;
-  }[]
+  }[],
 ): TemplateResult {
   const style = getHighlightStyle(transformer, highlight);
 
@@ -418,17 +417,20 @@ function transformerHighlight(
 }
 
 /** An editor [[`plugin`]] for editing the `Substation` section. */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
   static scopedElements = {
-    'mwc-button': Button,
-    'mwc-dialog': Dialog,
-    'mwc-icon': Icon,
-    'mwc-icon-button': IconButton,
-    'mwc-list': List,
-    'mwc-list-item': ListItem,
-    'mwc-snackbar': Snackbar,
-    'mwc-textfield': TextField,
+    'oscd-text-button': OscdTextButton,
+    'oscd-dialog': OscdDialog,
+    'oscd-icon': OscdIcon,
+    'oscd-icon-button': OscdIconButton,
+    'oscd-list': OscdList,
+    'oscd-list-item': OscdListItem,
+    'oscd-menu': OscdMenu,
+    'oscd-menu-item': OscdMenuItem,
+    // TODO: Replace with oscd-ui notification when available
+    'sld-snackbar': SldSnackbar,
+    'oscd-outlined-text-field': OscdOutlinedTextField,
     'oscd-scl-dialogs': OscdSclDialogs,
   };
 
@@ -493,19 +495,19 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
   }
 
   @query('#resizeSubstationUI')
-  resizeSubstationUI!: Dialog;
+  resizeSubstationUI!: OscdDialog;
 
   @query('#substationWidthUI')
-  substationWidthUI!: TextField;
+  substationWidthUI!: OscdOutlinedTextField;
 
   @query('#substationHeightUI')
-  substationHeightUI!: TextField;
+  substationHeightUI!: OscdOutlinedTextField;
 
   @query('svg#sld')
   sld!: SVGGraphicsElement;
 
-  @query('mwc-snackbar')
-  groundHint!: Snackbar;
+  @query('sld-snackbar')
+  groundHint!: SldSnackbar;
 
   @query('oscd-scl-dialogs')
   sclDialogs!: OscdSclDialogs;
@@ -577,14 +579,16 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     if (element.tagName === 'Substation') return true;
 
     const overlappingSibling = Array.from(
-      this.substation.querySelectorAll(`${element.localName}, PowerTransformer`)
+      this.substation.querySelectorAll(
+        `${element.localName}, PowerTransformer`,
+      ),
     )
       .concat(iedReferences(this.substation))
       .find(
         sibling =>
           sibling.closest(element.localName) !== element &&
           overlapsRect(sibling, x, y, w, h) &&
-          !isBusBar(sibling)
+          !isBusBar(sibling),
       );
     if (overlappingSibling && !isBusBar(element)) {
       return false;
@@ -597,10 +601,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         ? containsRect(this.substation, x, y, w, h)
         : Array.from(
             this.substation.querySelectorAll(
-              parentTags[element.localName]!.join(',')
-            )
+              parentTags[element.localName]!.join(','),
+            ),
           ).find(
-            parent => !isBusBar(parent) && containsRect(parent, x, y, w, h)
+            parent => !isBusBar(parent) && containsRect(parent, x, y, w, h),
           );
     if (containingParent) return true;
     return false;
@@ -731,6 +735,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     window.addEventListener('keydown', this.handleKeydown);
     window.addEventListener('click', this.handleClick, true);
     window.addEventListener('click', this.positionCoordinates);
+    this.addEventListener(
+      'oscd-edit-wizard-request',
+      this.handleEditWizardRequest,
+    );
   }
 
   disconnectedCallback() {
@@ -738,7 +746,16 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     window.removeEventListener('keydown', this.handleKeydown);
     window.removeEventListener('click', this.handleClick);
     window.removeEventListener('click', this.positionCoordinates);
+    this.removeEventListener(
+      'oscd-edit-wizard-request',
+      this.handleEditWizardRequest,
+    );
   }
+
+  private handleEditWizardRequest = (event: Event) => {
+    const detail = (event as CustomEvent<EditWizardDetial>).detail;
+    this.sclDialogs.edit(detail);
+  };
 
   saveSVG() {
     const sld = this.sld.cloneNode(true) as Element;
@@ -792,14 +809,14 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     }
     const edits: EditV2[] = [];
     let grounded = bay.querySelector(
-      ':scope > ConnectivityNode[name="grounded"]'
+      ':scope > ConnectivityNode[name="grounded"]',
     );
     let pathName = grounded?.getAttribute('pathName');
     if (!pathName) {
       pathName = elementPath(bay, 'grounded');
       grounded = this.doc.createElementNS(
         this.doc.documentElement.namespaceURI,
-        'ConnectivityNode'
+        'ConnectivityNode',
       );
       grounded.setAttribute('name', 'grounded');
       grounded.setAttribute('pathName', pathName);
@@ -812,7 +829,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const tagName = neutralPoint ? 'NeutralPoint' : 'Terminal';
     const terminal = this.doc.createElementNS(
       this.doc.documentElement.namespaceURI,
-      tagName
+      tagName,
     );
     terminal.setAttribute('name', name);
     terminal.setAttribute('cNodeName', 'grounded');
@@ -840,11 +857,11 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     if (element.tagName === 'PowerTransformer') {
       const winding = element.querySelector('TransformerWinding')!;
       Array.from(winding.querySelectorAll('Terminal')).forEach(terminal =>
-        edits.push(...removeTerminal(terminal))
+        edits.push(...removeTerminal(terminal)),
       );
       if (kind === 'earthing') {
         Array.from(winding.querySelectorAll('NeutralPoint')).forEach(np =>
-          edits.push(...removeTerminal(np))
+          edits.push(...removeTerminal(np)),
         );
       }
     }
@@ -857,7 +874,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     } = attributes(element);
     const text = this.doc.createElementNS(
       this.doc.documentElement.namespaceURI,
-      'Text'
+      'Text',
     );
     setSLDAttributes(text, this.nsp, {
       lx: x.toString(),
@@ -868,7 +885,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         node: text,
         parent: element,
         reference: getReference(element, 'Text'),
-      })
+      }),
     );
   }
 
@@ -877,10 +894,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     const items: MenuItem[] = [
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Edit${tapChanger ? ' Winding' : nothing}</span>
-          <mwc-icon slot="graphic">edit</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Edit${tapChanger ? ' Winding' : nothing}</div>
+          <oscd-icon slot="start">edit</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newEditWizardEvent(winding)),
       },
     ];
@@ -890,25 +907,25 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         {
           handler: () =>
             this.dispatchEvent(newEditEventV2({ node: tapChanger })),
-          content: html`<mwc-list-item graphic="icon">
-            <span>Remove Tap Changer</span>
-            <mwc-icon slot="graphic">remove</mwc-icon>
-          </mwc-list-item>`,
+          content: html`<oscd-menu-item>
+            <div slot="headline">Remove Tap Changer</div>
+            <oscd-icon slot="start">remove</oscd-icon>
+          </oscd-menu-item>`,
         },
         {
-          content: html`<mwc-list-item graphic="icon">
-            <span>Edit Tap Changer</span>
-            <mwc-icon slot="graphic">edit</mwc-icon>
-          </mwc-list-item>`,
+          content: html`<oscd-menu-item>
+            <div slot="headline">Edit Tap Changer</div>
+            <oscd-icon slot="start">edit</oscd-icon>
+          </oscd-menu-item>`,
           handler: () => this.dispatchEvent(newEditWizardEvent(tapChanger)),
-        }
+        },
       );
     else
       items.unshift({
         handler: () => {
           const node = this.doc.createElementNS(
             this.doc.documentElement.namespaceURI,
-            'TapChanger'
+            'TapChanger',
           );
           node.setAttribute('name', 'LTC');
           node.setAttribute('type', 'LTC');
@@ -918,13 +935,13 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               parent: winding,
               node,
               reference: getReference(winding, 'TapChanger'),
-            })
+            }),
           );
         },
-        content: html`<mwc-list-item graphic="icon">
-          <span>Add Tap Changer</span>
-          <mwc-icon slot="graphic">north_east</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Add Tap Changer</div>
+          <oscd-icon slot="start">north_east</oscd-icon>
+        </oscd-menu-item>`,
       });
 
     const neutralPoints = Array.from(winding.querySelectorAll('NeutralPoint'));
@@ -934,13 +951,13 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         handler: () =>
           this.dispatchEvent(
             newEditEventV2(
-              neutralPoints.map(neutralPoint => removeTerminal(neutralPoint))
-            )
+              neutralPoints.map(neutralPoint => removeTerminal(neutralPoint)),
+            ),
           ),
-        content: html`<mwc-list-item graphic="icon">
-          <span>Detach Neutral Point</span>
-          <mwc-icon slot="graphic">remove_circle_outline</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Detach Neutral Point</div>
+          <oscd-icon slot="start">remove_circle_outline</oscd-icon>
+        </oscd-menu-item>`,
       });
 
     const terminals = Array.from(winding.querySelectorAll('Terminal'));
@@ -948,12 +965,14 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       items.unshift({
         handler: () =>
           this.dispatchEvent(
-            newEditEventV2(terminals.map(terminal => removeTerminal(terminal)))
+            newEditEventV2(terminals.map(terminal => removeTerminal(terminal))),
           ),
-        content: html`<mwc-list-item graphic="icon">
-          <span>Detach Terminal${terminals.length > 1 ? 's' : nothing}</span>
-          <mwc-icon slot="graphic">cancel</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">
+            Detach Terminal${terminals.length > 1 ? 's' : nothing}
+          </div>
+          <oscd-icon slot="start">cancel</oscd-icon>
+        </oscd-menu-item>`,
       });
 
     return items;
@@ -967,78 +986,78 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const offset: Point = [this.mouseX - x, this.mouseY - y];
     const items: MenuItem[] = [
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Rotate</span>
-          <mwc-icon slot="graphic">rotate_90_degrees_cw</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Rotate</div>
+          <oscd-icon slot="start">rotate_90_degrees_cw</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           this.dispatchEvent(newRotateEvent(transformer));
         },
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Copy</span>
-          <mwc-icon slot="graphic">copy_all</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Copy</div>
+          <oscd-icon slot="start">copy_all</oscd-icon>
+        </oscd-menu-item>`,
         handler: () =>
           this.dispatchEvent(
-            newStartPlaceEvent(copy(transformer, this.nsp), offset)
+            newStartPlaceEvent(copy(transformer, this.nsp), offset),
           ),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move</span>
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move</div>
           <svg
             xmlns="${svgNs}"
             height="24"
             width="24"
-            slot="graphic"
+            slot="start"
             viewBox="0 96 960 960"
           >
             ${movePath}
           </svg>
-        </mwc-list-item>`,
+        </oscd-menu-item>`,
         handler: () =>
           this.dispatchEvent(newStartPlaceEvent(transformer, offset)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move Label</span>
-          <mwc-icon slot="graphic">text_rotation_none</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move Label</div>
+          <oscd-icon slot="start">text_rotation_none</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartPlaceLabelEvent(transformer)),
       },
       text
         ? {
-            content: html`<mwc-list-item graphic="icon">
-              <span>Delete Text</span>
-              <mwc-icon slot="graphic">format_strikethrough</mwc-icon>
-            </mwc-list-item>`,
+            content: html`<oscd-menu-item>
+              <div slot="headline">Delete Text</div>
+              <oscd-icon slot="start">format_strikethrough</oscd-icon>
+            </oscd-menu-item>`,
             handler: () => this.dispatchEvent(newEditEventV2({ node: text })),
           }
         : {
-            content: html`<mwc-list-item graphic="icon">
-              <span>Add Text</span>
-              <mwc-icon slot="graphic">title</mwc-icon>
-            </mwc-list-item>`,
+            content: html`<oscd-menu-item>
+              <div slot="headline">Add Text</div>
+              <oscd-icon slot="start">title</oscd-icon>
+            </oscd-menu-item>`,
             handler: () => this.addTextTo(transformer),
           },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Edit</span>
-          <mwc-icon slot="graphic">edit</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Edit</div>
+          <oscd-icon slot="start">edit</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newEditWizardEvent(transformer)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Delete</span>
-          <mwc-icon slot="graphic">delete</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Delete</div>
+          <oscd-icon slot="start">delete</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           const edits: EditV2[] = [];
           Array.from(
-            transformer.querySelectorAll('Terminal, NeutralPoint')
+            transformer.querySelectorAll('Terminal, NeutralPoint'),
           ).forEach(terminal => edits.push(...removeTerminal(terminal)));
           edits.push({ node: transformer });
           this.dispatchEvent(newEditEventV2(edits));
@@ -1052,10 +1071,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     if (kind === 'auto' || (kind === 'earthing' && windingCount === 2))
       items.unshift({
-        content: html`<mwc-list-item graphic="icon">
-          <span>Mirror</span>
-          <mwc-icon slot="graphic">flip</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Mirror</div>
+          <oscd-icon slot="start">flip</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.flipElement(transformer),
       });
 
@@ -1066,84 +1085,84 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const textElement = equipment.querySelector(':scope > Text');
     const items: MenuItem[] = [
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Mirror</span>
-          <mwc-icon slot="graphic">flip</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Mirror</div>
+          <oscd-icon slot="start">flip</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.flipElement(equipment),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Rotate</span>
-          <mwc-icon slot="graphic">rotate_90_degrees_cw</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Rotate</div>
+          <oscd-icon slot="start">rotate_90_degrees_cw</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           this.dispatchEvent(newRotateEvent(equipment));
         },
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Copy</span>
-          <mwc-icon slot="graphic">copy_all</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Copy</div>
+          <oscd-icon slot="start">copy_all</oscd-icon>
+        </oscd-menu-item>`,
         handler: () =>
           this.dispatchEvent(newStartPlaceEvent(copy(equipment, this.nsp))),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move</span>
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move</div>
           <svg
             xmlns="${svgNs}"
             height="24"
             width="24"
-            slot="graphic"
+            slot="start"
             viewBox="0 96 960 960"
           >
             ${movePath}
           </svg>
-        </mwc-list-item>`,
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartPlaceEvent(equipment)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move Label</span>
-          <mwc-icon slot="graphic">text_rotation_none</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move Label</div>
+          <oscd-icon slot="start">text_rotation_none</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartPlaceLabelEvent(equipment)),
       },
       textElement
         ? {
-            content: html`<mwc-list-item graphic="icon">
-              <span>Remove Text</span>
-              <mwc-icon slot="graphic">format_strikethrough</mwc-icon>
-            </mwc-list-item>`,
+            content: html`<oscd-menu-item>
+              <div slot="headline">Remove Text</div>
+              <oscd-icon slot="start">format_strikethrough</oscd-icon>
+            </oscd-menu-item>`,
             handler: () =>
               this.dispatchEvent(newEditEventV2({ node: textElement })),
           }
         : {
-            content: html`<mwc-list-item graphic="icon">
-              <span>Add Text</span>
-              <mwc-icon slot="graphic">title</mwc-icon>
-            </mwc-list-item>`,
+            content: html`<oscd-menu-item>
+              <div slot="headline">Add Text</div>
+              <oscd-icon slot="start">title</oscd-icon>
+            </oscd-menu-item>`,
             handler: () => this.addTextTo(equipment),
           },
 
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Edit</span>
-          <mwc-icon slot="graphic">edit</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Edit</div>
+          <oscd-icon slot="start">edit</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newEditWizardEvent(equipment)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Delete</span>
-          <mwc-icon slot="graphic">delete</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Delete</div>
+          <oscd-icon slot="start">delete</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           const edits: EditV2[] = [];
           Array.from(equipment.querySelectorAll('Terminal')).forEach(terminal =>
-            edits.push(...removeTerminal(terminal))
+            edits.push(...removeTerminal(terminal)),
           );
           edits.push({ node: equipment });
           this.dispatchEvent(newEditEventV2(edits));
@@ -1182,10 +1201,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const text = (kind: 'connect' | 'ground' | 'disconnect', top: boolean) =>
       texts[kind][top ? rot % 4 : (rot + 2) % 4];
     const item = (kind: 'connect' | 'ground' | 'disconnect', top: boolean) =>
-      html`<mwc-list-item graphic="icon">
-        <span>${text(kind, top)}</span>
-        <mwc-icon slot="graphic">${icon(kind, top)}</mwc-icon>
-      </mwc-list-item>`;
+      html`<oscd-menu-item>
+        <div slot="headline">${text(kind, top)}</div>
+        <oscd-icon slot="start">${icon(kind, top)}</oscd-icon>
+      </oscd-menu-item>`;
 
     const topTerminal = equipment.querySelector('Terminal[name="T1"]');
     const bottomTerminal = equipment.querySelector('Terminal:not([name="T1"])');
@@ -1205,14 +1224,14 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                 from: equipment,
                 fromTerminal: 'T2',
                 path: connectionStartPoints(equipment).T2,
-              })
+              }),
             ),
           content: item('connect', false),
         },
         {
           handler: () => this.groundTerminal(equipment, 'T2'),
           content: item('ground', false),
-        }
+        },
       );
     }
     if (topTerminal)
@@ -1230,14 +1249,14 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                 from: equipment,
                 fromTerminal: 'T1',
                 path: connectionStartPoints(equipment).T1,
-              })
+              }),
             ),
           content: item('connect', true),
         },
         {
           handler: () => this.groundTerminal(equipment, 'T1'),
           content: item('ground', true),
-        }
+        },
       );
     return items;
   }
@@ -1246,25 +1265,25 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const sclIed = this.resolvedIed(referencedIed);
     const items: MenuItem[] = [
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move</span>
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move</div>
           <svg
             xmlns="${svgNs}"
             height="24"
             width="24"
-            slot="graphic"
+            slot="start"
             viewBox="0 96 960 960"
           >
             ${movePath}
           </svg>
-        </mwc-list-item>`,
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartPlaceEvent(referencedIed)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move Label</span>
-          <mwc-icon slot="graphic">text_rotation_none</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move Label</div>
+          <oscd-icon slot="start">text_rotation_none</oscd-icon>
+        </oscd-menu-item>`,
         handler: () =>
           this.dispatchEvent(newStartPlaceLabelEvent(referencedIed)),
       },
@@ -1273,20 +1292,19 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     if (sclIed)
       items.push(
         {
-          content: html`<mwc-list-item graphic="icon">
-            <span>Edit</span>
-            <mwc-icon slot="graphic">edit</mwc-icon>
-          </mwc-list-item>`,
+          content: html`<oscd-menu-item>
+            <div slot="headline">Edit</div>
+            <oscd-icon slot="start">edit</oscd-icon>
+          </oscd-menu-item>`,
           handler: async () => this.openIedEditDialog(sclIed),
         },
         {
-          content: html`<mwc-list-item
-            graphic="icon"
+          content: html`<oscd-menu-item
             style="--mdc-theme-text-primary-on-background: #BB1326; --mdc-theme-text-icon-on-background: #BB1326;"
           >
-            <span>Delete IED</span>
-            <mwc-icon slot="graphic">delete</mwc-icon>
-          </mwc-list-item>`,
+            <div slot="headline">Delete IED</div>
+            <oscd-icon slot="start">delete</oscd-icon>
+          </oscd-menu-item>`,
           handler: () => {
             const edits: EditV2[] = [];
             const sldLayoutPrivate = referencedIed.parentElement;
@@ -1299,17 +1317,17 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
             else edits.push({ node: referencedIed });
             edits.push(...removeIED({ node: sclIed }));
             this.dispatchEvent(
-              newEditEventV2(edits, { title: 'Deleted IED', squash: false })
+              newEditEventV2(edits, { title: 'Deleted IED', squash: false }),
             );
           },
-        }
+        },
       );
 
     items.push({
-      content: html`<mwc-list-item graphic="icon">
-        <span>Remove from SLD</span>
-        <mwc-icon slot="graphic">location_off</mwc-icon>
-      </mwc-list-item>`,
+      content: html`<oscd-menu-item>
+        <div slot="headline">Remove from SLD</div>
+        <oscd-icon slot="start">location_off</oscd-icon>
+      </oscd-menu-item>`,
       handler: () => {
         const edits: EditV2[] = [];
         const sldLayoutPrivate = referencedIed.parentElement;
@@ -1321,7 +1339,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           edits.push({ node: sldLayoutPrivate });
         else edits.push({ node: referencedIed });
         this.dispatchEvent(
-          newEditEventV2(edits, { title: 'Removed from SLD', squash: false })
+          newEditEventV2(edits, { title: 'Removed from SLD', squash: false }),
         );
       },
     });
@@ -1333,14 +1351,14 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const edits = await this.sclDialogs.edit({ element: sclIed });
 
     const iedReference = iedReferences(this.doc).find(
-      iedRef => this.resolvedIed(iedRef) === sclIed
+      iedRef => this.resolvedIed(iedRef) === sclIed,
     );
     if (!iedReference) {
       this.dispatchEvent(
         newEditEventV2([edits], {
           title: 'Update IED',
           squash: false,
-        })
+        }),
       );
       return;
     }
@@ -1351,7 +1369,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         edit.element.tagName === 'IED' &&
         'attributes' in edit &&
         !!edit.attributes &&
-        'name' in edit.attributes
+        'name' in edit.attributes,
     ) as SetAttributes;
     if (!iedNameEdit) return;
 
@@ -1370,7 +1388,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       newEditEventV2([edits, iedReferenceEdit], {
         title: 'Update IED from dialog',
         squash: false,
-      })
+      }),
     );
   }
 
@@ -1382,74 +1400,74 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const offset: Point = [this.mouseX - x, this.mouseY - y];
     const items: MenuItem[] = [
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Resize</span>
+        content: html`<oscd-menu-item>
+          <div slot="headline">Resize</div>
           <svg
             xmlns="${svgNs}"
-            slot="graphic"
+            slot="start"
             width="24"
             height="24"
             viewBox="0 96 960 960"
           >
             ${resizeBRPath}
           </svg>
-        </mwc-list-item>`,
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartResizeBREvent(busBar)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move</span>
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move</div>
           <svg
             xmlns="${svgNs}"
             height="24"
             width="24"
-            slot="graphic"
+            slot="start"
             viewBox="0 96 960 960"
           >
             ${movePath}
           </svg>
-        </mwc-list-item>`,
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartPlaceEvent(busBar, offset)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move Label</span>
-          <mwc-icon slot="graphic">text_rotation_none</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move Label</div>
+          <oscd-icon slot="start">text_rotation_none</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartPlaceLabelEvent(busBar)),
       },
       text
         ? {
-            content: html`<mwc-list-item graphic="icon">
-              <span>Remove Text</span>
-              <mwc-icon slot="graphic">format_strikethrough</mwc-icon>
-            </mwc-list-item>`,
+            content: html`<oscd-menu-item>
+              <div slot="headline">Remove Text</div>
+              <oscd-icon slot="start">format_strikethrough</oscd-icon>
+            </oscd-menu-item>`,
             handler: () => this.dispatchEvent(newEditEventV2({ node: text })),
           }
         : {
-            content: html`<mwc-list-item graphic="icon">
-              <span>Add Text</span>
-              <mwc-icon slot="graphic">title</mwc-icon>
-            </mwc-list-item>`,
+            content: html`<oscd-menu-item>
+              <div slot="headline">Add Text</div>
+              <oscd-icon slot="start">title</oscd-icon>
+            </oscd-menu-item>`,
             handler: () => this.addTextTo(busBar),
           },
 
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Edit</span>
-          <mwc-icon slot="graphic">edit</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Edit</div>
+          <oscd-icon slot="start">edit</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newEditWizardEvent(busBar)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Delete</span>
-          <mwc-icon slot="graphic">delete</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Delete</div>
+          <oscd-icon slot="start">delete</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           const node = busBar.querySelector('ConnectivityNode')!;
           this.dispatchEvent(
-            newEditEventV2([...removeNode(node), { node: busBar }])
+            newEditEventV2([...removeNode(node), { node: busBar }]),
           );
         },
       },
@@ -1465,80 +1483,80 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const offset: Point = [this.mouseX - x, this.mouseY - y];
     const items: MenuItem[] = [
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Resize</span>
+        content: html`<oscd-menu-item>
+          <div slot="headline">Resize</div>
           <svg
             xmlns="${svgNs}"
-            slot="graphic"
+            slot="start"
             width="24"
             height="24"
             viewBox="0 96 960 960"
           >
             ${resizeBRPath}
           </svg>
-        </mwc-list-item>`,
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartResizeBREvent(bayOrVL)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Copy</span>
-          <mwc-icon slot="graphic">copy_all</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Copy</div>
+          <oscd-icon slot="start">copy_all</oscd-icon>
+        </oscd-menu-item>`,
         handler: () =>
           this.dispatchEvent(
-            newStartPlaceEvent(copy(bayOrVL, this.nsp), offset)
+            newStartPlaceEvent(copy(bayOrVL, this.nsp), offset),
           ),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move</span>
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move</div>
           <svg
             xmlns="${svgNs}"
             height="24"
             width="24"
-            slot="graphic"
+            slot="start"
             viewBox="0 96 960 960"
           >
             ${movePath}
           </svg>
-        </mwc-list-item>`,
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartPlaceEvent(bayOrVL, offset)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move Label</span>
-          <mwc-icon slot="graphic">text_rotation_none</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move Label</div>
+          <oscd-icon slot="start">text_rotation_none</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartPlaceLabelEvent(bayOrVL)),
       },
       text
         ? {
-            content: html`<mwc-list-item graphic="icon">
-              <span>Remove Text</span>
-              <mwc-icon slot="graphic">format_strikethrough</mwc-icon>
-            </mwc-list-item>`,
+            content: html`<oscd-menu-item>
+              <div slot="headline">Remove Text</div>
+              <oscd-icon slot="start">format_strikethrough</oscd-icon>
+            </oscd-menu-item>`,
             handler: () => this.dispatchEvent(newEditEventV2({ node: text })),
           }
         : {
-            content: html`<mwc-list-item graphic="icon">
-              <span>Add Text</span>
-              <mwc-icon slot="graphic">title</mwc-icon>
-            </mwc-list-item>`,
+            content: html`<oscd-menu-item>
+              <div slot="headline">Add Text</div>
+              <oscd-icon slot="start">title</oscd-icon>
+            </oscd-menu-item>`,
             handler: () => this.addTextTo(bayOrVL),
           },
 
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Edit</span>
-          <mwc-icon slot="graphic">edit</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Edit</div>
+          <oscd-icon slot="start">edit</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newEditWizardEvent(bayOrVL)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Delete</span>
-          <mwc-icon slot="graphic">delete</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Delete</div>
+          <oscd-icon slot="start">delete</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           const edits: EditV2[] = [];
           Array.from(bayOrVL.getElementsByTagName('ConnectivityNode')).forEach(
@@ -1546,22 +1564,22 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               if (
                 Array.from(
                   this.doc.querySelectorAll(
-                    `[connectivityNode="${cNode.getAttribute('pathName')}"]`
-                  )
+                    `[connectivityNode="${cNode.getAttribute('pathName')}"]`,
+                  ),
                 ).find(
-                  terminal => terminal.closest(bayOrVL.tagName) !== bayOrVL
+                  terminal => terminal.closest(bayOrVL.tagName) !== bayOrVL,
                 )
               )
                 edits.push(...removeNode(cNode));
-            }
+            },
           );
           Array.from(
-            bayOrVL.querySelectorAll('Terminal, NeutralPoint')
+            bayOrVL.querySelectorAll('Terminal, NeutralPoint'),
           ).forEach(terminal => {
             const cNode = this.doc.querySelector(
               `ConnectivityNode[pathName="${terminal.getAttribute(
-                'connectivityNode'
-              )}"]`
+                'connectivityNode',
+              )}"]`,
             );
             if (cNode && cNode.closest(bayOrVL.tagName) !== bayOrVL)
               edits.push(...removeNode(cNode));
@@ -1578,41 +1596,41 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const { weight, color } = attributes(text);
     const items: MenuItem[] = [
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Rotate</span>
-          <mwc-icon slot="graphic">rotate_90_degrees_cw</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Rotate</div>
+          <oscd-icon slot="start">rotate_90_degrees_cw</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           this.dispatchEvent(newRotateEvent(text));
         },
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Move</span>
+        content: html`<oscd-menu-item>
+          <div slot="headline">Move</div>
           <svg
             xmlns="${svgNs}"
             height="24"
             width="24"
-            slot="graphic"
+            slot="start"
             viewBox="0 96 960 960"
           >
             ${movePath}
           </svg>
-        </mwc-list-item>`,
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newStartPlaceLabelEvent(text)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Edit</span>
-          <mwc-icon slot="graphic">edit</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Edit</div>
+          <oscd-icon slot="start">edit</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => this.dispatchEvent(newEditWizardEvent(text)),
       },
       {
-        content: html`<mwc-list-item graphic="icon">
-          <span>Delete</span>
-          <mwc-icon slot="graphic">delete</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Delete</div>
+          <oscd-icon slot="start">delete</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           this.dispatchEvent(newEditEventV2({ node: text }));
         },
@@ -1621,10 +1639,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     if (weight !== 500)
       items.unshift({
-        content: html`<mwc-list-item graphic="icon">
-          <span>Bold</span>
-          <mwc-icon slot="graphic">format_bold</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Bold</div>
+          <oscd-icon slot="start">format_bold</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           const makeBold = updateSLDAttributes(text, this.nsp, {
             weight: '500',
@@ -1635,10 +1653,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     if (weight !== 300)
       items.unshift({
-        content: html`<mwc-list-item graphic="icon">
-          <span>Remove Formatting</span>
-          <mwc-icon slot="graphic">format_clear</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Remove Formatting</div>
+          <oscd-icon slot="start">format_clear</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           const removeFormat = updateSLDAttributes(text, this.nsp, {
             weight: null,
@@ -1649,13 +1667,12 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     if (color.toUpperCase() !== '#BB1326')
       items.unshift({
-        content: html`<mwc-list-item
-          graphic="icon"
+        content: html`<oscd-menu-item
           style="--mdc-theme-text-primary-on-background: #BB1326; --mdc-theme-text-icon-on-background: #BB1326;"
         >
-          <span>Red</span>
-          <mwc-icon slot="graphic">format_color_text</mwc-icon>
-        </mwc-list-item>`,
+          <div slot="headline">Red</div>
+          <oscd-icon slot="start">format_color_text</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           const colorRed = updateSLDAttributes(text, this.nsp, {
             color: '#BB1326',
@@ -1666,13 +1683,12 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     if (color.toUpperCase() !== '#12579B')
       items.unshift({
-        content: html`<mwc-list-item
-          graphic="icon"
+        content: html`<oscd-menu-item
           style="--mdc-theme-text-primary-on-background: #12579B; --mdc-theme-text-icon-on-background: #12579B;"
         >
-          <span>Blue</span>
-          <mwc-icon slot="graphic">format_color_text</mwc-icon>
-        </mwc-list-item>`,
+          <div slot="headline">Blue</div>
+          <oscd-icon slot="start">format_color_text</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           const colorBlue = updateSLDAttributes(text, this.nsp, {
             color: '#12579B',
@@ -1683,10 +1699,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     if (color !== '#000')
       items.unshift({
-        content: html`<mwc-list-item graphic="icon">
-          <span>Reset Color</span>
-          <mwc-icon slot="graphic">format_color_reset</mwc-icon>
-        </mwc-list-item>`,
+        content: html`<oscd-menu-item>
+          <div slot="headline">Reset Color</div>
+          <oscd-icon slot="start">format_color_reset</oscd-icon>
+        </oscd-menu-item>`,
         handler: () => {
           const colorReset = updateSLDAttributes(text, this.nsp, {
             color: null,
@@ -1749,26 +1765,37 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           const { bottom, right } = menu.getBoundingClientRect();
           if (bottom > window.innerHeight) {
             menu.style.removeProperty('top');
-            // eslint-disable-next-line no-param-reassign
+
             menu.style.bottom = `0px`;
-            // eslint-disable-next-line no-param-reassign
+
             menu.style.maxHeight = `calc(100vh - 68px)`;
           }
           if (right > window.innerWidth) {
             menu.style.removeProperty('left');
-            // eslint-disable-next-line no-param-reassign
+
             menu.style.right = '0px';
           }
         })}
       >
-        <mwc-list
-          @selected=${({ detail: { index } }: SingleSelectedEvent) => {
-            items.filter(item => item.handler)[index]?.handler?.();
-            this.menu = undefined;
-          }}
-        >
-          ${items.map(i => i.content)}
-        </mwc-list>
+        <oscd-list>
+          ${items.map(i =>
+            i.handler
+              ? html`<span
+                  @click=${() => {
+                    i.handler!();
+                    this.menu = undefined;
+                  }}
+                  @keydown=${(e: KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      i.handler!();
+                      this.menu = undefined;
+                    }
+                  }}
+                  >${i.content}</span
+                >`
+              : i.content,
+          )}
+        </oscd-list>
       </menu>
     `;
   }
@@ -1874,7 +1901,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         const [x2, y2] = path[i + 1];
         connectionPreview.push(
           svg`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
-                stroke-linecap="square" stroke="black" />`
+                stroke-linecap="square" stroke="black" />`,
         );
         i += 1;
       }
@@ -1888,7 +1915,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       let [x4, y4] = [x3, y3];
 
       const targetEq = Array.from(
-        this.substation.querySelectorAll('ConductingEquipment')
+        this.substation.querySelectorAll('ConductingEquipment'),
       )
         .filter(eq => eq !== from)
         .find(eq => {
@@ -1915,7 +1942,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         svg`<line x1="${x2}" y1="${y2}" x2="${x3}" y2="${y3}"
                 stroke-linecap="square" stroke="black" />`,
         svg`<line x1="${x3}" y1="${y3}" x2="${x4}" y2="${y4}"
-                stroke-linecap="square" stroke="black" />`
+                stroke-linecap="square" stroke="black" />`,
       );
       connectionPreview.push(
         svg`<rect width="100%" height="100%" fill="url(#grid)"
@@ -1933,9 +1960,9 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               path,
               to: targetEq,
               toTerminal,
-            })
+            }),
           );
-      }} />`
+      }} />`,
       );
     }
 
@@ -1944,18 +1971,20 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     return html`<section>
       <h2 class="${classMap({ disabled: this.disabled })}">
         ${this.substation.getAttribute('name')}
-        <mwc-icon-button
+        <oscd-icon-button
           label="Edit Substation"
           title="Edit Substation"
           @click=${() =>
             this.dispatchEvent(newEditWizardEvent(this.substation))}
-          icon="edit"
         >
-        </mwc-icon-button>
-        <mwc-icon-button
+          <oscd-icon>edit</oscd-icon>
+        </oscd-icon-button>
+        <oscd-icon-button
           label="Resize Substation"
           title="Resize Substation"
-          @click=${() => this.resizeSubstationUI.show()}
+          @click=${() => {
+            this.resizeSubstationUI.open = true;
+          }}
         >
           <svg
             xmlns="${svgNs}"
@@ -1966,22 +1995,22 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           >
             ${resizePath}
           </svg>
-        </mwc-icon-button>
-        <mwc-icon-button
+        </oscd-icon-button>
+        <oscd-icon-button
           label="Delete Substation"
           title="Delete Substation"
           @click=${() =>
             this.dispatchEvent(newEditEventV2({ node: this.substation }))}
-          icon="delete"
         >
-        </mwc-icon-button>
-        <mwc-icon-button
+          <oscd-icon>delete</oscd-icon>
+        </oscd-icon-button>
+        <oscd-icon-button
           label="Export Single Line Diagram SVG"
           title="Export Single Line Diagram SVG"
           @click=${() => this.saveSVG()}
-          icon="file_download"
         >
-        </mwc-icon-button>
+          <oscd-icon>file_download</oscd-icon>
+        </oscd-icon-button>
       </h2>
       <svg
         xmlns="${svgNs}"
@@ -2046,7 +2075,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         ${connectionPreview}
         ${this.connecting?.from.closest('Substation') === this.substation
           ? Array.from(
-              this.substation.querySelectorAll('ConductingEquipment')
+              this.substation.querySelectorAll('ConductingEquipment'),
             ).map(eq => this.renderEquipment(eq, { connect: true }))
           : nothing}
         ${Array.from(this.substation.querySelectorAll('ConnectivityNode'))
@@ -2057,7 +2086,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                 this.placing &&
                 node.closest(this.placing.localName) === this.placing
               ) &&
-              !isBusBar(node.parentElement!)
+              !isBusBar(node.parentElement!),
           )
           .map(cNode => this.renderConnectivityNode(cNode))}
         ${Array.from(this.substation.querySelectorAll('ConnectivityNode'))
@@ -2068,51 +2097,54 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                 this.placing &&
                 node.closest(this.placing.localName) === this.placing
               ) &&
-              isBusBar(node.parentElement!)
+              isBusBar(node.parentElement!),
           )
           .map(cNode => this.renderConnectivityNode(cNode))}
         ${Array.from(
-          this.substation.querySelectorAll(':scope > PowerTransformer')
+          this.substation.querySelectorAll(':scope > PowerTransformer'),
         ).map(transformer => this.renderPowerTransformer(transformer))}
         ${iedReferences(this.substation)
           .filter(
             referencedIed =>
               referencedIed.parentElement?.tagName === 'Private' &&
               !['Bay', 'VoltageLevel'].includes(
-                referencedIed.parentElement!.parentElement!.tagName
+                referencedIed.parentElement!.parentElement!.tagName,
               ) &&
               (!this.placing ||
-                referencedIed.closest(this.placing.localName) !== this.placing)
+                referencedIed.closest(this.placing.localName) !== this.placing),
           )
           .map(ied => this.renderIed(ied))}
         ${Array.from(
           this.substation.querySelectorAll(
-            'VoltageLevel, Bay, ConductingEquipment, PowerTransformer, Text'
-          )
+            'VoltageLevel, Bay, ConductingEquipment, PowerTransformer, Text',
+          ),
         )
           .concat(
             Array.from(
               this.substation.querySelectorAll(
-                'Private[type="OpenSCD-SLD-Layout"]'
-              ) ?? []
-            ).flatMap(privateLayout => iedReferences(privateLayout))
+                'Private[type="OpenSCD-SLD-Layout"]',
+              ) ?? [],
+            ).flatMap(privateLayout => iedReferences(privateLayout)),
           )
           .filter(
             e =>
               !this.placing ||
-              e.closest(this.placing.localName) !== this.placing
+              e.closest(this.placing.localName) !== this.placing,
           )
           .map(element => this.renderLabel(element))}
         ${transformerPlacingTarget} ${iedPlacingTarget} ${placingLabelTarget}
         ${placingElement}
       </svg>
       ${menu} ${coordinateTooltip}
-      <mwc-dialog
-        id="resizeSubstationUI"
-        heading="Resize ${this.substation.getAttribute('name')}"
-      >
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          <mwc-textfield
+      <oscd-dialog id="resizeSubstationUI">
+        <div slot="headline">
+          Resize ${this.substation.getAttribute('name')}
+        </div>
+        <form
+          slot="content"
+          style="display: flex; flex-direction: column; gap: 12px;"
+        >
+          <oscd-outlined-text-field
             id="substationWidthUI"
             type="number"
             min="1"
@@ -2133,8 +2165,8 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               }
               return {};
             }}
-          ></mwc-textfield>
-          <mwc-textfield
+          ></oscd-outlined-text-field>
+          <oscd-outlined-text-field
             id="substationHeightUI"
             type="number"
             min="1"
@@ -2154,41 +2186,50 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               }
               return {};
             }}
-          ></mwc-textfield>
+          ></oscd-outlined-text-field>
+        </form>
+        <div slot="actions">
+          <oscd-text-button
+            @click=${() => {
+              this.resizeSubstationUI.open = false;
+            }}
+            >cancel</oscd-text-button
+          >
+          <oscd-text-button
+            @click=${() => {
+              const valid = Array.from(
+                this.resizeSubstationUI.querySelectorAll(
+                  'oscd-outlined-text-field',
+                ),
+              ).every(textField => textField.checkValidity());
+              if (!valid) return;
+              const {
+                dim: [oldW, oldH],
+              } = attributes(this.substation);
+              const [newW, newH] = [
+                this.substationWidthUI,
+                this.substationHeightUI,
+              ].map(ui => parseInt(ui.value ?? '1', 10).toString());
+              this.resizeSubstationUI.open = false;
+              if (newW === oldW.toString() && newH === oldH.toString()) return;
+              const resizeEdit = updateSLDAttributes(
+                this.substation,
+                this.nsp,
+                {
+                  w: newW,
+                  h: newH,
+                },
+              );
+              this.dispatchEvent(newEditEventV2(resizeEdit));
+            }}
+            >resize</oscd-text-button
+          >
         </div>
-        <mwc-button
-          slot="primaryAction"
-          @click=${() => {
-            const valid = Array.from(
-              this.resizeSubstationUI.querySelectorAll('mwc-textfield')
-            ).every(textField => textField.checkValidity());
-            if (!valid) return;
-            const {
-              dim: [oldW, oldH],
-            } = attributes(this.substation);
-            const [newW, newH] = [
-              this.substationWidthUI,
-              this.substationHeightUI,
-            ].map(ui => parseInt(ui.value ?? '1', 10).toString());
-            this.resizeSubstationUI.close();
-            if (newW === oldW.toString() && newH === oldH.toString()) return;
-            const resizeEdit = updateSLDAttributes(this.substation, this.nsp, {
-              w: newW,
-              h: newH,
-            });
-            this.dispatchEvent(newEditEventV2(resizeEdit));
-          }}
-          >resize</mwc-button
-        >
-        <mwc-button dialogAction="close" slot="secondaryAction"
-          >cancel</mwc-button
-        >
-      </mwc-dialog>
-      <mwc-snackbar
+      </oscd-dialog>
+      <sld-snackbar
         labelText="Only transformers within a bay may be grounded directly."
       >
-        <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
-      </mwc-snackbar>
+      </sld-snackbar>
       <oscd-scl-dialogs></oscd-scl-dialogs>
     </section>`;
   }
@@ -2217,7 +2258,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                   x="${x + 0.1}" dy="${i === 0 ? nothing : '1.19em'}"
                   visibility="${line ? nothing : 'hidden'}">
                   ${line || '.'}
-                </tspan>`
+                </tspan>`,
         );
       else {
         text = '<Middle click to edit>';
@@ -2309,8 +2350,8 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         this.dispatchEvent(
           newStartPlaceEvent(
             e.shiftKey ? copy(bayOrVL, this.nsp) : bayOrVL,
-            offset
-          )
+            offset,
+          ),
         );
     };
     let invalid = false;
@@ -2337,7 +2378,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               w,
               h,
               element: bayOrVL,
-            })
+            }),
           );
       else invalid = true;
     }
@@ -2356,7 +2397,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               w,
               h,
               element: bayOrVL,
-            })
+            }),
           );
       else invalid = true;
     }
@@ -2366,7 +2407,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       if (isVL) parent = this.substation;
       else
         parent = Array.from(
-          this.substation.querySelectorAll(':root > Substation > VoltageLevel')
+          this.substation.querySelectorAll(':root > Substation > VoltageLevel'),
         ).find(vl => containsRect(vl, x, y, w, h));
       if (parent && this.canPlaceAt(bayOrVL, x, y, w, h))
         handleClick = () =>
@@ -2376,7 +2417,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               y,
               element: bayOrVL,
               parent: parent!,
-            })
+            }),
           );
       else invalid = true;
     }
@@ -2439,7 +2480,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const highlight = highlighted
       ? svg`<rect x="${x}" y="${y}" width="${w}" height="${h}" style="${getHighlightStyle(
           bayOrVL,
-          this.highlight
+          this.highlight,
         )}" pointer-events="none" />`
       : '';
 
@@ -2459,8 +2500,8 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         @click=${handleClick || nothing} @mousedown=${preventDefault}
         @auxclick=${auxclick}
         fill="${highlighted ? 'none' : 'white'}" stroke-dasharray="${
-      isVL ? nothing : '0.18'
-    }"
+          isVL ? nothing : '0.18'
+        }"
         stroke="${strokeColor}" />
       ${Array.from(bayOrVL.children)
         .filter(isBay)
@@ -2475,7 +2516,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         .filter(
           referencedIed =>
             referencedIed.parentElement?.tagName === 'Private' &&
-            referencedIed.parentElement!.parentElement === bayOrVL
+            referencedIed.parentElement!.parentElement === bayOrVL,
         )
         .map(referencedIed => this.renderIed(referencedIed, { preview }))}
       ${
@@ -2489,21 +2530,21 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         preview
           ? Array.from(
               bayOrVL.querySelectorAll(
-                'Bay, ConductingEquipment, PowerTransformer, Text'
-              )
+                'Bay, ConductingEquipment, PowerTransformer, Text',
+              ),
             )
               .concat(
                 Array.from(
                   bayOrVL.querySelector(
-                    ':scope > Private[type="OpenSCD-SLD-Layout"]'
+                    ':scope > Private[type="OpenSCD-SLD-Layout"]',
                   )
                     ? iedReferences(
                         bayOrVL.querySelector(
-                          ':scope > Private[type="OpenSCD-SLD-Layout"]'
-                        )!
+                          ':scope > Private[type="OpenSCD-SLD-Layout"]',
+                        )!,
                       )
-                    : []
-                )
+                    : [],
+                ),
               )
               .concat(bayOrVL)
               .map(element => this.renderLabel(element, { preview }))
@@ -2531,7 +2572,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
   } {
     const transformer = winding.parentElement!;
     const windings = Array.from(transformer.children).filter(
-      c => c.tagName === 'TransformerWinding'
+      c => c.tagName === 'TransformerWinding',
     );
     const [x, y] = this.renderedPosition(transformer).map(c => c + 0.5);
     let center = [x, y] as Point;
@@ -2548,16 +2589,16 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       | undefined;
     let zigZagTransform: string | undefined;
     const terminalElements = Array.from(winding.children).filter(
-      c => c.tagName === 'Terminal'
+      c => c.tagName === 'Terminal',
     );
     const terminal1 = terminalElements.find(
-      t => t.getAttribute('name') === 'T1'
+      t => t.getAttribute('name') === 'T1',
     );
     const terminal2 = terminalElements.find(
-      t => t.getAttribute('name') !== 'T1'
+      t => t.getAttribute('name') !== 'T1',
     );
     const neutral = Array.from(winding.children).find(
-      c => c.tagName === 'NeutralPoint'
+      c => c.tagName === 'NeutralPoint',
     );
     const windingIndex = windings.indexOf(winding);
     const { rot, kind, flip } = attributes(transformer);
@@ -2771,7 +2812,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const ports: TemplateResult<2>[] = [];
     Object.entries(grounded).forEach(([_, [[x1, y1], [x2, y2]]]) => {
       ports.push(
-        svg`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="0.06" marker-start="url(#grounded)" />`
+        svg`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="0.06" marker-start="url(#grounded)" />`,
       );
     });
     const groundable = winding.closest('Bay');
@@ -2812,7 +2853,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                       [x, y],
                       [x1, y1],
                     ],
-                  })
+                  }),
                 );
               }}
               fill="#${fill}"
@@ -2854,11 +2895,11 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
   renderPowerTransformer(
     transformer: Element,
-    preview = false
+    preview = false,
   ): TemplateResult<2> {
     if (this.placing === transformer && !preview) return svg``;
     const windings = Array.from(transformer.children).filter(
-      c => c.tagName === 'TransformerWinding'
+      c => c.tagName === 'TransformerWinding',
     );
     const [x, y] = this.renderedPosition(transformer);
     const offset: Point = [this.mouseX - x, this.mouseY - y];
@@ -2875,12 +2916,12 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         if (this.placing === transformer) {
           const parent =
             Array.from(
-              this.substation.querySelectorAll(':scope > VoltageLevel > Bay')
+              this.substation.querySelectorAll(':scope > VoltageLevel > Bay'),
             )
               .concat(
                 Array.from(
-                  this.substation.querySelectorAll(':scope > VoltageLevel')
-                )
+                  this.substation.querySelectorAll(':scope > VoltageLevel'),
+                ),
               )
               .find(vl => containsRect(vl, x, y, 1, 1)) || this.substation;
           this.dispatchEvent(
@@ -2889,7 +2930,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               parent,
               x,
               y,
-            })
+            }),
           );
         }
 
@@ -2938,7 +2979,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           ? [
               this.renderLabel(transformer, { preview }),
               ...Array.from(transformer.querySelectorAll('Text')).map(text =>
-                this.renderLabel(text, { preview })
+                this.renderLabel(text, { preview }),
               ),
             ]
           : nothing
@@ -2947,7 +2988,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
   renderEquipment(
     equipment: Element,
-    { preview = false, connect = false } = {}
+    { preview = false, connect = false } = {},
   ) {
     if (this.placing === equipment && !preview) return svg``;
     if (
@@ -2983,8 +3024,8 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     if (this.placing === equipment) {
       const parent = Array.from(
         this.substation.querySelectorAll(
-          ':root > Substation > VoltageLevel > Bay'
-        )
+          ':root > Substation > VoltageLevel > Bay',
+        ),
       ).find(bay => !isBusBar(bay) && containsRect(bay, x, y, 1, 1));
       if (parent && this.canPlaceAt(equipment, x, y, 1, 1))
         handleClick = () => {
@@ -2994,7 +3035,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               y,
               element: equipment,
               parent,
-            })
+            }),
           );
         };
     }
@@ -3019,7 +3060,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     if (this.disabled) contextmenu = () => {};
 
     const terminals = Array.from(equipment.children).filter(
-      c => c.tagName === 'Terminal'
+      c => c.tagName === 'Terminal',
     );
     const topTerminal = terminals.find(t => t.getAttribute('name') === 'T1');
     const bottomTerminal = terminals.find(t => t.getAttribute('name') !== 'T1');
@@ -3043,7 +3084,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           from: equipment,
           fromTerminal: 'T1',
           path: connectionStartPoints(equipment).T1,
-        })
+        }),
       )}
     @contextmenu=${(e: MouseEvent) => {
       e.preventDefault();
@@ -3090,7 +3131,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           from: equipment,
           fromTerminal: 'T2',
           path: connectionStartPoints(equipment).T2,
-        })
+        }),
       )}
     @contextmenu=${(e: MouseEvent) => {
       e.preventDefault();
@@ -3126,7 +3167,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     const highlight = isToBeHighlighted(equipment, this.highlight)
       ? svg`<rect x="${x}" y="${y}" width="1" height="1" style="${getHighlightStyle(
           equipment,
-          this.highlight
+          this.highlight,
         )}" pointer-events="none" />`
       : '';
 
@@ -3172,7 +3213,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
         ? [
             this.renderLabel(equipment, { preview }),
             ...Array.from(equipment.querySelectorAll('Text')).map(text =>
-              this.renderLabel(text, { preview })
+              this.renderLabel(text, { preview }),
             ),
           ]
         : nothing
@@ -3181,7 +3222,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
   renderIed(
     referencedIed: Element,
-    { preview = false } = {}
+    { preview = false } = {},
   ): SVGTemplateResult {
     if (this.showIeds === false || (this.placing === referencedIed && !preview))
       return svg``;
@@ -3197,12 +3238,12 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       handleClick = () => {
         const parent =
           Array.from(
-            this.substation.querySelectorAll(':scope > VoltageLevel > Bay')
+            this.substation.querySelectorAll(':scope > VoltageLevel > Bay'),
           )
             .concat(
               Array.from(
-                this.substation.querySelectorAll(':scope > VoltageLevel')
-              )
+                this.substation.querySelectorAll(':scope > VoltageLevel'),
+              ),
             )
             .find(vlOrBay => containsRect(vlOrBay, x, y, 1, 1)) ||
           this.substation;
@@ -3212,7 +3253,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
             y,
             element: referencedIed,
             parent,
-          })
+          }),
         );
       };
     else if (this.disabled && isSelectable(referencedIed, this.selectable))
@@ -3261,7 +3302,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
 
     let handleClick = () => {
       const parent = Array.from(
-        this.substation.querySelectorAll(':root > Substation > VoltageLevel')
+        this.substation.querySelectorAll(':root > Substation > VoltageLevel'),
       ).find(vl => containsRect(vl, x, y, w, h));
       if (parent)
         this.dispatchEvent(
@@ -3270,7 +3311,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
             y,
             element: busBar,
             parent: parent!,
-          })
+          }),
         );
     };
     if (this.disabled) handleClick = () => {};
@@ -3289,7 +3330,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       <title>${busBar.getAttribute('name')}</title>
       ${this.renderLabel(busBar)}
       ${Array.from(busBar.querySelectorAll('Text')).map(text =>
-        this.renderLabel(text)
+        this.renderLabel(text),
       )}
       ${this.renderConnectivityNode(busBar.querySelector('ConnectivityNode')!)}
       ${placingTarget}
@@ -3301,23 +3342,26 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     if (!priv) return nothing;
     const circles = [] as TemplateResult<2>[];
     const intersections = Object.entries(
-      Array.from(priv.querySelectorAll('Vertex')).reduce((record, vertex) => {
-        const ret = record;
-        const key = JSON.stringify(this.renderedPosition(vertex));
-        if (ret[key]) ret[key].push(vertex);
-        else ret[key] = [vertex];
-        return ret;
-      }, {} as Record<string, Element[]>)
+      Array.from(priv.querySelectorAll('Vertex')).reduce(
+        (record, vertex) => {
+          const ret = record;
+          const key = JSON.stringify(this.renderedPosition(vertex));
+          if (ret[key]) ret[key].push(vertex);
+          else ret[key] = [vertex];
+          return ret;
+        },
+        {} as Record<string, Element[]>,
+      ),
     )
       .filter(
         ([_, vertices]) =>
           vertices.length > 2 ||
           (vertices.length === 2 &&
-            vertices.find(v => v.hasAttributeNS(sldNs, 'uuid')))
+            vertices.find(v => v.hasAttributeNS(sldNs, 'uuid'))),
       )
       .map(([_, [vertex]]) => this.renderedPosition(vertex));
     intersections.forEach(([x, y]) =>
-      circles.push(svg`<circle fill="black" cx="${x}" cy="${y}" r="0.15" />`)
+      circles.push(svg`<circle fill="black" cx="${x}" cy="${y}" r="0.15" />`),
     );
     const lines = [] as TemplateResult<2>[];
     const sections = Array.from(priv.getElementsByTagNameNS(sldNs, 'Section'));
@@ -3331,7 +3375,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
     sections.forEach(section => {
       const busBar = xmlBoolean(section.getAttributeNS(sldNs, 'bus'));
       const vertices = Array.from(
-        section.getElementsByTagNameNS(sldNs, 'Vertex')
+        section.getElementsByTagNameNS(sldNs, 'Vertex'),
       );
       let i = 0;
       while (i < vertices.length - 1) {
@@ -3386,7 +3430,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                 element: vertices[vertices.length - 1],
                 x: x2,
                 y: y2,
-              })
+              }),
             );
           };
           lines.push(svg`<rect x="${this.mouseX}" y="${this.mouseY}"
@@ -3400,7 +3444,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
               from
                 .closest('ConductingEquipment, PowerTransformer')!
                 .querySelector(
-                  `[connectivityNode="${cNode.getAttribute('pathName')}"]`
+                  `[connectivityNode="${cNode.getAttribute('pathName')}"]`,
                 )
             )
               return;
@@ -3432,7 +3476,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                 fromTerminal,
                 path,
                 to: cNode,
-              })
+              }),
             );
           };
 
@@ -3440,13 +3484,13 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
           svg`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
                 pointer-events="${pointerEvents}"
                 stroke-width="${busBar ? 0.12 : nothing}" stroke="black" 
-                stroke-linecap="${busBar ? 'round' : 'square'}" />`
+                stroke-linecap="${busBar ? 'round' : 'square'}" />`,
         );
         lines.push(
           svg`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
                 pointer-events="${pointerEvents}" stroke-width="${targetSize}"
                 @contextmenu=${handleContextMenu} @mousedown=${preventDefault}
-                @click=${handleClick} @auxclick=${handleAuxClick} />`
+                @click=${handleClick} @auxclick=${handleAuxClick} />`,
         );
         if (
           busBar ||
@@ -3457,7 +3501,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                   width="${targetSize}" height="${targetSize}"
                   @click=${handleClick} @auxclick=${handleAuxClick}
                   @contextmenu=${handleContextMenu} @mousedown=${preventDefault}
-                  pointer-events="${pointerEvents}" fill="none" />`
+                  pointer-events="${pointerEvents}" fill="none" />`,
           );
         if (
           busBar ||
@@ -3468,7 +3512,7 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
                   width="${targetSize}" height="${targetSize}"
                   @click=${handleClick} @auxclick=${handleAuxClick}
                   @contextmenu=${handleContextMenu} @mousedown=${preventDefault}
-                  pointer-events="${pointerEvents}" fill="none" />`
+                  pointer-events="${pointerEvents}" fill="none" />`,
           );
         i += 1;
       }
@@ -3503,7 +3547,9 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       background: var(--oscd-base3, white);
       margin: 0px;
       padding: 0px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+      box-shadow:
+        0 10px 20px rgba(0, 0, 0, 0.19),
+        0 6px 6px rgba(0, 0, 0, 0.23);
       --mdc-list-vertical-padding: 0px;
       overflow-y: auto;
     }

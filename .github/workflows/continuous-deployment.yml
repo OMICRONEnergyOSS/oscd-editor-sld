@@ -1,0 +1,14 @@
+name: Continuous Deployment
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci-cd:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: OMICRONEnergyOSS/oscd-gh-workflows/.github/workflows/continuous-deployment.yml@main
+    secrets:
+      gh_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,25 +1,13 @@
+node_modules
+*.tsbuildinfo
+
 ## editors
 /.idea
 /.vscode
 
-## system files
-.DS_Store
+## build artifacts
+dist
+coverage
+doc
 
-## npm
-/node_modules/
-/npm-debug.log
 
-## testing
-/coverage/
-
-## temp folders
-/.tmp/
-
-# build
-/.rollup.cache/
-/dist/*
-!/dist/__snapshots__/
-about.html
-
-storybook-static
-custom-elements.json
