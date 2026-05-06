@@ -16,6 +16,10 @@ import OscdEditorSld from './oscd-editor-sld.js';
 import { SldSubstationEditor } from './sld-substation-editor.js';
 import { SldEditor } from './sld-editor.js';
 import { getSLDAttributes, iedReferences, resolveIed, sldNs } from './util.js';
+import {
+  findSubstationSvgRoot,
+  gridPosToViewportCoords,
+} from './test-helpers.js';
 
 function sldAttribute(element: Element, attr: string): string | null {
   const nsp = 'https://openscd.org/SCL/SSD/SLD/v0';
@@ -468,19 +472,8 @@ function svgClientPosition(
   x: number,
   y: number,
 ): [number, number] {
-  const svg = getSldSubstationEditor(element)?.shadowRoot?.querySelector(
-    'svg#sld',
-  ) as SVGSVGElement | null;
-
-  const viewBox = svg!.viewBox.baseVal;
-  const rect = svg!.getBoundingClientRect();
-
-  const clientX =
-    rect.left + ((x + 0.5 - viewBox.x) / viewBox.width) * rect.width;
-  const clientY =
-    rect.top + ((y + 0.5 - viewBox.y) / viewBox.height) * rect.height;
-
-  return [Math.round(clientX), Math.round(clientY)];
+  const substationEditor = getSldSubstationEditor(element)!;
+  return gridPosToViewportCoords(findSubstationSvgRoot(substationEditor), x, y);
 }
 
 describe('SLD Editor', () => {
@@ -1097,13 +1090,25 @@ describe('SLD Editor', () => {
       element
         .shadowRoot!.querySelector<OscdTextButton>('[title="Add VoltageLevel"]')
         ?.click();
-      await sendMouse({ type: 'click', position: [200, 252] });
-      await sendMouse({ type: 'click', position: [300, 352] });
+      await sendMouse({
+        type: 'click',
+        position: svgClientPosition(element, 5, 3),
+      });
+      await sendMouse({
+        type: 'click',
+        position: svgClientPosition(element, 8, 6),
+      });
       element
         .shadowRoot!.querySelector<OscdTextButton>('[title="Add VoltageLevel"]')
         ?.click();
-      await sendMouse({ type: 'click', position: [350, 402] });
-      await sendMouse({ type: 'click', position: [450, 502] });
+      await sendMouse({
+        type: 'click',
+        position: svgClientPosition(element, 10, 7),
+      });
+      await sendMouse({
+        type: 'click',
+        position: svgClientPosition(element, 13, 11),
+      });
       const [name1, name2] = Array.from(
         element.doc.querySelectorAll('VoltageLevel'),
       ).map(substation => substation.getAttribute('name'));
@@ -1143,10 +1148,16 @@ describe('SLD Editor', () => {
         .shadowRoot!.querySelector<OscdTextButton>('[title="Add Bay"]')
         ?.click();
       expect(sldEditor.placing?.tagName).to.equal('Bay');
-      await sendMouse({ type: 'click', position: [200, 252] });
+      await sendMouse({
+        type: 'click',
+        position: svgClientPosition(element, 5, 3),
+      });
       expect(sldEditor.placing).to.be.undefined;
       expect(sldEditor.resizingBR?.tagName).to.equal('Bay');
-      await sendMouse({ type: 'click', position: [400, 500] });
+      await sendMouse({
+        type: 'click',
+        position: svgClientPosition(element, 11, 10),
+      });
       expect(sldSubstationEditor.resizingBR).to.be.undefined;
       const bay = sldEditor.doc.querySelector('Bay')!;
       expect(!!bay).to.be.true;
@@ -1200,7 +1211,10 @@ describe('SLD Editor', () => {
         .shadowRoot!.querySelector<OscdTextButton>('[title="Add GEN"]')
         ?.click();
       expect(sldEditor.placing?.tagName).to.equal('ConductingEquipment');
-      await sendMouse({ type: 'click', position: [160, 324] });
+      await sendMouse({
+        type: 'click',
+        position: svgClientPosition(element, 4, 4),
+      });
       expect(sldEditor.placing).to.be.undefined;
       expect(sldEditor.resizingBR).to.be.undefined;
       const equipment = element.doc.querySelector('ConductingEquipment');

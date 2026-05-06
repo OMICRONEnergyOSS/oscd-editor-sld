@@ -73,6 +73,18 @@ import {
 } from './util.js';
 
 import { SldEditor } from './sld-editor.js';
+import {
+  findSubstationSvgRoot,
+  gridPosToViewportCoords,
+  sclLabelToViewportCoords,
+  svgToViewportCoords,
+  vlOrigin,
+  vlResizeBR,
+  placeTL,
+  placeBR,
+  eqPos,
+  eqTarget,
+} from './test-helpers.js';
 import { OscdOutlinedTextField } from '@omicronenergy/oscd-ui/textfield/OscdOutlinedTextField.js';
 
 customElements.define('sld-editor', SldEditor);
@@ -285,6 +297,30 @@ describe('SLD Editor', () => {
     return items[i] as unknown as OscdMenuItem;
   }
 
+  function gridPos(gx: number, gy: number): [number, number] {
+    return gridPosToViewportCoords(
+      findSubstationSvgRoot(getSldSubstationEditor(element)!),
+      gx,
+      gy,
+    );
+  }
+
+  function labelPos(lx: number, ly: number): [number, number] {
+    return sclLabelToViewportCoords(
+      findSubstationSvgRoot(getSldSubstationEditor(element)!),
+      lx,
+      ly,
+    );
+  }
+
+  function svgPoint(svgX: number, svgY: number): [number, number] {
+    return svgToViewportCoords(
+      findSubstationSvgRoot(getSldSubstationEditor(element)!),
+      svgX,
+      svgY,
+    );
+  }
+
   beforeEach(async () => {
     const doc = new DOMParser().parseFromString(
       emptyDocString,
@@ -377,12 +413,12 @@ describe('SLD Editor', () => {
       expect(element)
         .property('placing')
         .to.have.property('tagName', 'VoltageLevel');
-      await sendMouse({ type: 'click', position: [184, 176] });
+      await sendMouse({ type: 'click', position: gridPos(...placeTL) });
       expect(element).to.have.property('placing', undefined);
       expect(element)
         .property('resizingBR')
         .to.have.property('tagName', 'VoltageLevel');
-      await sendMouse({ type: 'click', position: [390, 395] });
+      await sendMouse({ type: 'click', position: gridPos(...placeBR) });
       expect(element).to.have.property('resizingBR', undefined);
       const voltLv = element.doc.querySelector('VoltageLevel')!;
       expect(sldAttribute(voltLv, 'x')).to.equal('5');
@@ -445,14 +481,14 @@ describe('SLD Editor', () => {
       const voltageLevel = element.resizingBR!;
       expect(sldAttribute(voltageLevel, 'w')).to.equal('48');
       expect(sldAttribute(voltageLevel, 'h')).to.equal('23');
-      await sendMouse({ type: 'click', position: [284, 290] });
+      await sendMouse({ type: 'click', position: gridPos(...vlResizeBR) });
       expect(sldAttribute(voltageLevel, 'w')).to.equal('8');
       expect(sldAttribute(voltageLevel, 'h')).to.equal('7');
     });
 
     it('moves voltage levels on move handle click', async () => {
-      // Click on voltage level to start placing/moving
-      await sendMouse({ type: 'click', position: [100 - 16, 180 - 76] });
+      // Click inside VL rect but outside the TL resize handle (1x1 at VL origin) to start moving it
+      await sendMouse({ type: 'click', position: gridPos(3, 2) });
       expect(element)
         .property('placing')
         .to.exist.and.to.have.property('tagName', 'VoltageLevel');
@@ -460,7 +496,7 @@ describe('SLD Editor', () => {
       expect(sldAttribute(voltageLevel, 'x')).to.equal('1');
       expect(sldAttribute(voltageLevel, 'y')).to.equal('1');
       // Click to place at new position (moved right and down)
-      await sendMouse({ type: 'click', position: [132 - 16, 202 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(4, 3) });
       expect(sldAttribute(voltageLevel, 'x')).to.equal('2');
       expect(sldAttribute(voltageLevel, 'y')).to.equal('2');
     });
@@ -490,7 +526,7 @@ describe('SLD Editor', () => {
       const voltageLevel = element.resizingBR!;
       expect(sldAttribute(voltageLevel, 'w')).to.equal('48');
       expect(sldAttribute(voltageLevel, 'h')).to.equal('23');
-      await sendMouse({ type: 'click', position: [300 - 16, 352 - 72] });
+      await sendMouse({ type: 'click', position: gridPos(...vlResizeBR) });
       expect(sldAttribute(voltageLevel, 'w')).to.equal('8');
       expect(sldAttribute(voltageLevel, 'h')).to.equal('7');
     });
@@ -502,7 +538,7 @@ describe('SLD Editor', () => {
       });
 
       // Move mouse to voltage level position [1,1] to establish coordinates
-      await sendMouse({ type: 'move', position: [64 - 16, 164 - 72] });
+      await sendMouse({ type: 'move', position: gridPos(...vlOrigin) });
       await element.updateComplete;
 
       // Open context menu
@@ -527,7 +563,7 @@ describe('SLD Editor', () => {
       expect(sldAttribute(voltageLevel, 'y')).to.equal('1');
 
       // Click to place at [2,2]
-      await sendMouse({ type: 'click', position: [96 - 16, 196 - 72] });
+      await sendMouse({ type: 'click', position: gridPos(2, 2) });
       expect(sldAttribute(voltageLevel, 'x')).to.equal('2');
       expect(sldAttribute(voltageLevel, 'y')).to.equal('2');
     });
@@ -556,7 +592,7 @@ describe('SLD Editor', () => {
       expect(element)
         .property('placingLabel')
         .to.have.property('tagName', 'VoltageLevel');
-      await sendMouse({ type: 'click', position: [200 - 16, 252 - 76] });
+      await sendMouse({ type: 'click', position: labelPos(5, 4.5) });
       const voltageLevel = element.doc.querySelector('VoltageLevel')!;
       expect(sldAttribute(voltageLevel, 'lx')).to.equal('5');
       expect(sldAttribute(voltageLevel, 'ly')).to.equal('4.5');
@@ -573,7 +609,7 @@ describe('SLD Editor', () => {
       const voltageLevel = element.placing!;
       expect(sldAttribute(voltageLevel, 'x')).to.equal('1');
       expect(sldAttribute(voltageLevel, 'y')).to.equal('1');
-      await sendMouse({ type: 'click', position: [200 - 16, 252 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(...placeTL) });
       expect(sldAttribute(voltageLevel, 'x')).to.equal('1');
       expect(sldAttribute(voltageLevel, 'y')).to.equal('1');
     });
@@ -581,11 +617,24 @@ describe('SLD Editor', () => {
     it('moves the voltage level label on label left click', async () => {
       // Click on label to start placing/moving it
       queryUI({ ui: '.label text' }).dispatchEvent(new PointerEvent('click'));
-      expect(element)
-        .property('placingLabel')
-        .to.have.property('tagName', 'VoltageLevel');
-      // Click to place label at position [5, 4.5]
-      await sendMouse({ type: 'click', position: [144 - 16, 244 - 76] });
+      const placingLabel = element.placingLabel;
+      const placingLabelTagName = placingLabel?.tagName;
+      expect(placingLabelTagName).to.equal('VoltageLevel');
+      // Unlike the menu-based "Move Label", a direct label click captures a
+      // drag offset from the current (stale) mouse position. The afterEach
+      // reset leaves the mouse at [0,0], so the offset bakes in the label's
+      // original position (1,1). We target SVG (3.9, 3.4) which, after the
+      // offset is applied, results in the label being stored at lx=5, ly=4.5.
+      const svg = findSubstationSvgRoot(getSldSubstationEditor(element)!);
+      const rect = svg.getBoundingClientRect();
+      const vb = svg.viewBox.baseVal;
+      const clickX = Math.round(
+        rect.left + ((3.9 - vb.x) / vb.width) * rect.width,
+      );
+      const clickY = Math.round(
+        rect.top + ((3.4 - vb.y) / vb.height) * rect.height,
+      );
+      await sendMouse({ type: 'click', position: [clickX, clickY] });
       const voltageLevel = element.doc.querySelector('VoltageLevel')!;
       expect(sldAttribute(voltageLevel, 'lx')).to.equal('5');
       expect(sldAttribute(voltageLevel, 'ly')).to.equal('4.5');
@@ -606,11 +655,11 @@ describe('SLD Editor', () => {
       element.startPlacing(newBay);
 
       expect(element).property('placing').to.have.property('tagName', 'Bay');
-      await sendMouse({ type: 'click', position: [200 - 16, 252 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(...placeTL) });
       await aTimeout(10); // Wait for possible async operations
       expect(element).to.have.property('placing', undefined);
       expect(element).property('resizingBR').to.have.property('tagName', 'Bay');
-      await sendMouse({ type: 'click', position: [400 - 16, 470 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(...placeBR) });
       expect(sldSubstationEditor).to.have.property('resizingBR', undefined);
       const bay = element.doc.querySelector('Bay')!;
       expect(bay).to.exist;
@@ -625,10 +674,10 @@ describe('SLD Editor', () => {
       element.startPlacing(busBar);
 
       expect(element).property('placing').to.have.property('tagName', 'Bay');
-      await sendMouse({ type: 'click', position: [200 - 16, 252 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(...placeTL) });
       expect(element).to.have.property('placing', undefined);
       expect(element).property('resizingBR').to.have.property('tagName', 'Bay');
-      await sendMouse({ type: 'click', position: [400 - 16, 452 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(...placeBR) });
       expect(sldSubstationEditor).to.have.property('resizingBR', undefined);
       const bus = element.doc.querySelector('Bay');
       expect(bus).to.exist;
@@ -667,7 +716,7 @@ describe('SLD Editor', () => {
       const bay = element.resizingBR!;
       expect(sldAttribute(bay, 'w')).to.equal('3');
       expect(sldAttribute(bay, 'h')).to.equal('3');
-      await sendMouse({ type: 'click', position: [384 - 16, 516 - 120] });
+      await sendMouse({ type: 'click', position: gridPos(...placeBR) });
       expect(sldAttribute(bay!, 'w')).to.equal('10');
       expect(sldAttribute(bay, 'h')).to.equal('9');
     });
@@ -704,7 +753,7 @@ describe('SLD Editor', () => {
       const bay = element.resizingBR!;
       expect(sldAttribute(bay, 'w')).to.equal('3');
       expect(sldAttribute(bay, 'h')).to.equal('3');
-      await sendMouse({ type: 'click', position: [600, 452] });
+      await sendMouse({ type: 'click', position: gridPos(18, 12) });
       expect(sldAttribute(bay, 'w')).to.equal('3');
       expect(sldAttribute(bay, 'h')).to.equal('3');
     });
@@ -721,7 +770,7 @@ describe('SLD Editor', () => {
       const voltageLevel = element.resizingBR!;
       expect(sldAttribute(voltageLevel, 'w')).to.equal('13');
       expect(sldAttribute(voltageLevel, 'h')).to.equal('13');
-      await sendMouse({ type: 'click', position: [100, 152] });
+      await sendMouse({ type: 'click', position: gridPos(2, 3) });
       expect(sldAttribute(voltageLevel, 'w')).to.equal('13');
       expect(sldAttribute(voltageLevel, 'h')).to.equal('13');
     });
@@ -734,10 +783,7 @@ describe('SLD Editor', () => {
       // Move mouse to bay position to establish offset
       await sendMouse({
         type: 'move',
-        position: [
-          (currentX - 1) * 32 + 64 - 16,
-          (currentY - 1) * 32 + 228 - 76,
-        ],
+        position: gridPos(currentX, currentY),
       });
       await element.updateComplete;
 
@@ -754,8 +800,8 @@ describe('SLD Editor', () => {
         .property('placing')
         .to.exist.and.to.have.property('tagName', 'Bay');
       const bay = element.placing!;
-      // Click to place at new position [4,3] using equipment context formula
-      await sendMouse({ type: 'click', position: [160 - 16, 292 - 76] });
+      // Click to place at new position [4,3]
+      await sendMouse({ type: 'click', position: gridPos(4, 3) });
       expect(sldAttribute(bay, 'x')).to.equal('4');
       expect(sldAttribute(bay, 'y')).to.equal('3');
     });
@@ -768,10 +814,7 @@ describe('SLD Editor', () => {
       // Move mouse to bay position to establish offset
       await sendMouse({
         type: 'move',
-        position: [
-          (currentX - 1) * 32 + 64 - 16,
-          (currentY - 1) * 32 + 228 - 76,
-        ],
+        position: gridPos(currentX, currentY),
       });
       await element.updateComplete;
 
@@ -781,7 +824,7 @@ describe('SLD Editor', () => {
       const bay = element.placing!;
       expect(bay.parentElement).to.have.attribute('name', 'V1');
       expect(bay).to.have.attribute('name', 'B1');
-      await sendMouse({ type: 'click', position: [608 - 16, 292 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(18, 3) });
       expect(element).to.have.property('placing', undefined);
       expect(sldAttribute(bay, 'x')).to.equal('18');
       expect(sldAttribute(bay, 'y')).to.equal('3');
@@ -790,7 +833,7 @@ describe('SLD Editor', () => {
       queryUI({ scl: 'Bay', ui: 'rect' }).dispatchEvent(
         new PointerEvent('click'),
       );
-      await sendMouse({ type: 'click', position: [192 - 16, 292 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(...placeTL) });
       expect(sldAttribute(bay, 'x')).to.equal('5');
       expect(sldAttribute(bay, 'y')).to.equal('3');
       expect(bay.parentElement).to.have.attribute('name', 'V1');
@@ -805,10 +848,7 @@ describe('SLD Editor', () => {
       // Move mouse to bay position to establish offset
       await sendMouse({
         type: 'move',
-        position: [
-          (currentX - 1) * 32 + 64 - 16,
-          (currentY - 1) * 32 + 228 - 76,
-        ],
+        position: gridPos(currentX, currentY),
       });
       await element.updateComplete;
 
@@ -818,7 +858,7 @@ describe('SLD Editor', () => {
       const bay = element.placing!;
       const cNode = bay.querySelector('ConnectivityNode')!;
       expect(cNode).to.have.attribute('pathName', 'S1/V1/B1/L1');
-      await sendMouse({ type: 'click', position: [608 - 16, 292 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(18, 3) });
       expect(element).to.have.property('placing', undefined);
       expect(cNode).to.have.attribute('pathName', 'S1/V2/B2/L1');
       await expect(element.doc.documentElement).dom.to.equalSnapshot({
@@ -828,13 +868,13 @@ describe('SLD Editor', () => {
 
     it('moves a bay when its parent voltage level is moved', async () => {
       // const voltageLevel = element.doc.querySelector('VoltageLevel')!;
-      await sendMouse({ type: 'click', position: [70 - 16, 250 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(1, 3) });
       const bay = element.placing!.querySelector('Bay')!;
       expect(sldAttribute(bay, 'x')).to.equal('2');
       expect(sldAttribute(bay, 'y')).to.equal('2');
       await sendMouse({
         type: 'click',
-        position: [100 - 16, 220 - 76],
+        position: gridPos(2, 2),
       });
       expect(sldAttribute(bay, 'x')).to.equal('3');
       expect(sldAttribute(bay, 'y')).to.equal('1');
@@ -849,7 +889,7 @@ describe('SLD Editor', () => {
       expect(element)
         .property('placing')
         .to.have.property('tagName', 'ConductingEquipment');
-      await sendMouse({ type: 'click', position: [160 - 16, 324 - 120] });
+      await sendMouse({ type: 'click', position: gridPos(...eqPos) });
       expect(element).to.have.property('placing', undefined);
       expect(element).to.have.property('resizingBR', undefined);
       const equipment = element.doc.querySelector('ConductingEquipment');
@@ -863,8 +903,8 @@ describe('SLD Editor', () => {
         const busBar = makeBusBar(element.doc, element.nsp);
         element.startPlacing(busBar);
 
-        await sendMouse({ type: 'click', position: [200 - 16, 244 - 76] });
-        await sendMouse({ type: 'click', position: [400 - 16, 468 - 76] });
+        await sendMouse({ type: 'click', position: gridPos(...placeTL) });
+        await sendMouse({ type: 'click', position: gridPos(...placeBR) });
       });
 
       it('allows the bay to overlap its sibling bus bar', async () => {
@@ -879,7 +919,7 @@ describe('SLD Editor', () => {
         const bay = element.resizingBR!;
         expect(sldAttribute(bay, 'w')).to.equal('3');
         expect(sldAttribute(bay, 'h')).to.equal('3');
-        await sendMouse({ type: 'click', position: [384 - 16, 516 - 120] });
+        await sendMouse({ type: 'click', position: gridPos(...placeBR) });
         expect(sldAttribute(bay, 'w')).to.equal('10');
         expect(sldAttribute(bay, 'h')).to.equal('9');
       });
@@ -893,10 +933,7 @@ describe('SLD Editor', () => {
         const currentY = parseInt(sldAttribute(bus!, 'y')!, 10);
         await sendMouse({
           type: 'move',
-          position: [
-            (currentX - 1) * 32 + 64 - 16,
-            (currentY - 1) * 32 + 228 - 76,
-          ],
+          position: gridPos(currentX, currentY),
         });
         await element.updateComplete;
 
@@ -909,7 +946,7 @@ describe('SLD Editor', () => {
         menuItem(1).click();
         await sldSubstationEditor.updateComplete;
 
-        await sendMouse({ type: 'click', position: [128 - 16, 260 - 76] });
+        await sendMouse({ type: 'click', position: gridPos(...eqTarget) });
         expect(sldAttribute(bus!, 'x')).to.equal('3');
       });
 
@@ -921,10 +958,7 @@ describe('SLD Editor', () => {
         // Move mouse to bus bar position to establish offset
         await sendMouse({
           type: 'move',
-          position: [
-            (currentX - 1) * 32 + 64 - 16,
-            (currentY - 1) * 32 + 228 - 76,
-          ],
+          position: gridPos(currentX, currentY),
         });
         await element.updateComplete;
 
@@ -939,7 +973,7 @@ describe('SLD Editor', () => {
 
         expect(sldAttribute(bus!, 'w')).to.equal('1');
         expect(sldAttribute(bus!, 'h')).to.equal('8');
-        await sendMouse({ type: 'click', position: [272 - 16, 260 - 76] });
+        await sendMouse({ type: 'click', position: gridPos(7, 3) });
         expect(sldAttribute(bus!, 'w')).to.equal('3');
         expect(sldAttribute(bus!, 'h')).to.equal('1');
       });
@@ -1051,9 +1085,9 @@ describe('SLD Editor', () => {
       const oldIedX = iedAttr('IED1', 'x');
       const oldIedY = iedAttr('IED1', 'y');
 
-      await sendMouse({ type: 'click', position: [176, 228] });
+      await sendMouse({ type: 'click', position: gridPos(5, 5) });
       expect(element.placing).to.have.property('tagName', 'Bay');
-      await sendMouse({ type: 'click', position: [240, 292] });
+      await sendMouse({ type: 'click', position: gridPos(7, 7) });
 
       const movedBay = element.doc.querySelector('Bay')!;
       expect(sldAttribute(movedBay, 'x')).to.equal('4');
@@ -1079,7 +1113,7 @@ describe('SLD Editor', () => {
       label!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await settle();
 
-      await sendMouse({ type: 'click', position: [432, 484] });
+      await sendMouse({ type: 'click', position: gridPos(13, 13) });
       await settle();
 
       expect(getSLDAttributes(ied, 'lx')).to.not.equal(oldLx);
@@ -1425,7 +1459,7 @@ describe('SLD Editor', () => {
       expect(element)
         .property('placingLabel')
         .to.have.property('tagName', 'ConductingEquipment');
-      await sendMouse({ type: 'click', position: [200 - 16, 308 - 125] });
+      await sendMouse({ type: 'click', position: labelPos(5, 4.5) });
       const condEq = element.doc.querySelector('ConductingEquipment')!;
       expect(sldAttribute(condEq, 'lx')).to.equal('5');
       expect(sldAttribute(condEq, 'ly')).to.equal('4.5');
@@ -1434,9 +1468,9 @@ describe('SLD Editor', () => {
     it('moves equipment on left mouse button click', async () => {
       const equipment = element.doc.querySelector('ConductingEquipment');
       // Click on equipment to start placing/moving
-      await sendMouse({ type: 'click', position: [150 - 16, 230 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(...eqTarget) });
       // Click to place at new position (moved left -1, up -1 grid units)
-      await sendMouse({ type: 'click', position: [118 - 16, 198 - 76] });
+      await sendMouse({ type: 'click', position: gridPos(2, 2) });
       expect(sldAttribute(equipment!, 'x')).to.equal('3');
       expect(sldAttribute(equipment!, 'y')).to.equal('3');
     });
@@ -1455,7 +1489,7 @@ describe('SLD Editor', () => {
           'ConductingEquipment>Private>SLDAttributes[*|x="3"][*|y="3"]',
         ),
       ).to.not.exist;
-      await sendMouse({ type: 'click', position: [128 - 16, 292 - 120] });
+      await sendMouse({ type: 'click', position: gridPos(...eqTarget) });
       const newCondEqSld = element.doc.querySelector(
         'ConductingEquipment>Private>SLDAttributes[*|x="3"][*|y="3"]',
       );
@@ -1542,7 +1576,7 @@ describe('SLD Editor', () => {
       // Try to find coordinates that give [4,4]
       // Equipment tests showed [160,260] → [4,2], so Y is off by 2
       // Try adding 64 to Y: [160, 324]
-      await sendMouse({ type: 'move', position: [160 - 16, 324 - 76] });
+      await sendMouse({ type: 'move', position: gridPos(4, 6) });
       await element.updateComplete;
 
       // Open context menu
@@ -1563,8 +1597,8 @@ describe('SLD Editor', () => {
       expect(sldAttribute(equipment!, 'y')).to.equal('4');
 
       // Click to place at [3,3] - try [128, 292] (adding 64 to Y)
-      await sendMouse({ type: 'move', position: [128 - 16, 292 - 76] });
-      await sendMouse({ type: 'click', position: [128 - 16, 292 - 120] });
+      await sendMouse({ type: 'move', position: gridPos(3, 5) });
+      await sendMouse({ type: 'click', position: gridPos(...eqTarget) });
       expect(sldAttribute(equipment!, 'x')).to.equal('3');
       expect(sldAttribute(equipment!, 'y')).to.equal('3');
     });
@@ -1846,10 +1880,10 @@ describe('SLD Editor', () => {
           .shadowRoot!.getElementById(<string>identity(equipment))!
           .querySelector('circle')!;
         eqClickTarget.dispatchEvent(new PointerEvent('click'));
-        await sendMouse({ type: 'click', position: [400 - 16, 352 - 120] });
-        await sendMouse({ type: 'click', position: [350 - 16, 352 - 120] });
-        await sendMouse({ type: 'click', position: [300 - 16, 302 - 120] });
-        await sendMouse({ type: 'click', position: [300 - 16, 320 - 120] });
+        await sendMouse({ type: 'click', position: svgPoint(12.0, 5.5) });
+        await sendMouse({ type: 'click', position: svgPoint(10.0, 5.5) });
+        await sendMouse({ type: 'click', position: svgPoint(8.5, 4.0) });
+        await sendMouse({ type: 'click', position: svgPoint(8.5, 4.5) });
         const equipment2 = element.doc.querySelector(
           'ConductingEquipment[type="NEW"]',
         );
@@ -1857,7 +1891,7 @@ describe('SLD Editor', () => {
           .shadowRoot!.getElementById(<string>identity(equipment2))!
           .querySelector('circle')!;
         eq2ClickTarget.dispatchEvent(new PointerEvent('click'));
-        await sendMouse({ type: 'click', position: [300 - 16, 320 - 120] });
+        await sendMouse({ type: 'click', position: svgPoint(8.5, 4.5) });
         const equipment3 = element.doc.querySelector(
           'ConductingEquipment[type="VTR"]',
         );
@@ -1865,7 +1899,7 @@ describe('SLD Editor', () => {
           .shadowRoot!.getElementById(<string>identity(equipment3))!
           .querySelector('circle')!;
         eq3ClickTarget.dispatchEvent(new PointerEvent('click'));
-        await sendMouse({ type: 'click', position: [350 - 16, 320 - 120] });
+        await sendMouse({ type: 'click', position: svgPoint(10.0, 4.5) });
         expect(element.doc.querySelectorAll('Vertex')).to.have.property(
           'length',
           15,
@@ -1939,7 +1973,7 @@ describe('SLD Editor', () => {
           queryUI({ scl: '[type="VTR"]', ui: 'circle' }).dispatchEvent(
             new PointerEvent('click'),
           );
-          await sendMouse({ type: 'click', position: [300 - 16, 322 - 120] });
+          await sendMouse({ type: 'click', position: gridPos(8, 4) });
           expect(element.doc.querySelectorAll('Section')).to.have.lengthOf(6);
           expect(element.doc.querySelectorAll('Vertex')).to.have.lengthOf(16);
           queryUI({ scl: '[type="CBR"]', ui: 'rect' }).dispatchEvent(
@@ -1957,7 +1991,7 @@ describe('SLD Editor', () => {
           queryUI({ scl: '[type="NEW"]', ui: 'circle' }).dispatchEvent(
             new PointerEvent('click'),
           );
-          await sendMouse({ type: 'click', position: [600 - 16, 382 - 120] });
+          await sendMouse({ type: 'click', position: svgPoint(18.0, 6.5) });
           expect(element.doc.querySelectorAll('Section')).to.have.lengthOf(6);
           expect(element.doc.querySelectorAll('Vertex')).to.have.lengthOf(16);
           queryUI({ scl: '[type="NEW"]', ui: 'rect' }).dispatchEvent(
@@ -1975,11 +2009,11 @@ describe('SLD Editor', () => {
           queryUI({ scl: '[type="VTR"]', ui: 'circle' }).dispatchEvent(
             new PointerEvent('click'),
           );
-          await sendMouse({ type: 'click', position: [300 - 16, 326 - 125] });
+          await sendMouse({ type: 'click', position: gridPos(8, 4) });
           queryUI({ scl: '[type="NEW"]', ui: 'circle' }).dispatchEvent(
             new PointerEvent('click'),
           );
-          await sendMouse({ type: 'click', position: [300 - 16, 326 - 125] });
+          await sendMouse({ type: 'click', position: gridPos(8, 4) });
           expect(element.doc.querySelectorAll('Section')).to.have.lengthOf(7);
           expect(element.doc.querySelectorAll('Vertex')).to.have.lengthOf(19);
           queryUI({ scl: '[type="NEW"]', ui: 'rect' }).dispatchEvent(
@@ -1997,7 +2031,7 @@ describe('SLD Editor', () => {
             new PointerEvent('click'),
           );
           expect(element.doc.querySelector('[type="DIS"] > Terminal')).to.exist;
-          await sendMouse({ type: 'click', position: [160 - 16, 258 - 125] });
+          await sendMouse({ type: 'click', position: gridPos(4, 2) });
           expect(element.doc.querySelector('[type="DIS"] > Terminal')).to.not
             .exist;
           await expect(element.doc.documentElement).dom.to.equalSnapshot({
@@ -2019,8 +2053,8 @@ describe('SLD Editor', () => {
         });
 
         it('removes contained connectivity nodes when moving containers', async () => {
-          await sendMouse({ type: 'click', position: [150 - 16, 360 - 120] });
-          await sendMouse({ type: 'click', position: [150 - 16, 330 - 120] });
+          await sendMouse({ type: 'click', position: gridPos(3, 5) });
+          await sendMouse({ type: 'click', position: gridPos(3, 4) });
           expect(
             element.doc.querySelectorAll('ConnectivityNode'),
           ).to.have.lengthOf(1);
@@ -2034,7 +2068,7 @@ describe('SLD Editor', () => {
           expect(
             element.doc.querySelectorAll('ConnectivityNode'),
           ).to.have.lengthOf(2);
-          await sendMouse({ type: 'click', position: [600 - 16, 330 - 120] });
+          await sendMouse({ type: 'click', position: gridPos(18, 4) });
           expect(
             element.doc.querySelectorAll('ConnectivityNode'),
           ).to.have.lengthOf(1);
@@ -2122,13 +2156,13 @@ describe('SLD Editor', () => {
             const busBar = makeBusBar(element.doc, element.nsp);
             element.startPlacing(busBar);
 
-            await sendMouse({ type: 'click', position: [430 - 16, 202 - 120] });
-            await sendMouse({ type: 'click', position: [430 - 16, 282 - 120] });
+            await sendMouse({ type: 'click', position: gridPos(12, 0) });
+            await sendMouse({ type: 'click', position: gridPos(12, 3) });
             await sendMouse({
               type: 'click',
               position: middleOf(queryUI({ scl: '[name="L"]' })),
             });
-            await sendMouse({ type: 'click', position: [450 - 16, 202 - 120] });
+            await sendMouse({ type: 'click', position: gridPos(13, 0) });
             queryUI({ scl: '[type="VTR"]', ui: 'circle' }).dispatchEvent(
               new PointerEvent('click'),
             );
@@ -2174,11 +2208,11 @@ describe('SLD Editor', () => {
               scl: '[type="NEW"]',
               ui: 'circle:nth-of-type(2)',
             }).dispatchEvent(new PointerEvent('click'));
-            await sendMouse({ type: 'click', position: [450 - 16, 292 - 120] });
+            await sendMouse({ type: 'click', position: gridPos(13, 3) });
             queryUI({ scl: '[type="CBR"]', ui: 'circle' }).dispatchEvent(
               new PointerEvent('click'),
             );
-            await sendMouse({ type: 'click', position: [420 - 16, 292 - 120] });
+            await sendMouse({ type: 'click', position: gridPos(12, 3) });
             expect(busSection.querySelectorAll('Vertex')).to.have.lengthOf(2);
             queryUI({ scl: '[type="CBR"]', ui: 'rect' }).dispatchEvent(
               new PointerEvent('auxclick', { button: 1 }),
@@ -2197,10 +2231,7 @@ describe('SLD Editor', () => {
             // Move mouse to bus bar position to establish offset
             await sendMouse({
               type: 'move',
-              position: [
-                (currentX - 1) * 32 + 64 - 16,
-                (currentY - 1) * 32 + 228 - 76,
-              ],
+              position: gridPos(currentX, currentY),
             });
             await element.updateComplete;
 
@@ -2211,7 +2242,7 @@ describe('SLD Editor', () => {
             await element.updateComplete;
             menuItem(0).click();
             expect(sldAttribute(bus!, 'h')).equal('1');
-            await sendMouse({ type: 'click', position: [380 - 16, 330 - 120] });
+            await sendMouse({ type: 'click', position: gridPos(11, 4) });
             expect(sldAttribute(bus!, 'h')).equal('2');
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
               ignoreAttributes: ['esldoscd:uuid'],
@@ -2225,7 +2256,7 @@ describe('SLD Editor', () => {
             });
 
             // Move mouse to equipment position [4,4] using equipment formula: screenY = (gridY - 1) * 32 + 228
-            await sendMouse({ type: 'move', position: [160 - 16, 324 - 120] });
+            await sendMouse({ type: 'move', position: gridPos(...eqPos) });
             await element.updateComplete;
 
             equipmentRect.dispatchEvent(
@@ -2254,7 +2285,7 @@ describe('SLD Editor', () => {
               ),
             ).to.equal('4');
             // Click to place copy at [3,3] using equipment formula: screenY = (3-1)*32 + 228 = 292
-            await sendMouse({ type: 'click', position: [128 - 16, 292 - 120] });
+            await sendMouse({ type: 'click', position: gridPos(...eqTarget) });
             expect(
               element.doc.querySelector(
                 'ConductingEquipment SLDAttributes[*|x="3"][*|y="3"]',
@@ -2285,10 +2316,7 @@ describe('SLD Editor', () => {
             const currentX = parseInt(initialX, 10);
             await sendMouse({
               type: 'move',
-              position: [
-                (currentX - 1) * 32 + 64 - 16,
-                (currentY - 1) * 32 + 228 - 120,
-              ],
+              position: gridPos(currentX, currentY),
             });
             await element.updateComplete;
 
@@ -2305,7 +2333,7 @@ describe('SLD Editor', () => {
 
             expect(sldAttribute(bus!, 'y')).to.equal(initialY);
             // Click to place at y=4: screenY = (4-1)*32 + 228 = 324
-            await sendMouse({ type: 'click', position: [64 - 16, 324 - 120] });
+            await sendMouse({ type: 'click', position: gridPos(1, 4) });
             expect(sldAttribute(bus!, 'y')).to.equal('4');
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
               ignoreAttributes: ['esldoscd:uuid'],
@@ -2323,7 +2351,7 @@ describe('SLD Editor', () => {
             expect(element)
               .property('placingLabel')
               .to.have.attribute('name', 'BB1');
-            await sendMouse({ type: 'click', position: [200 - 16, 308 - 125] });
+            await sendMouse({ type: 'click', position: labelPos(5, 4.5) });
             const busBar = element.doc.querySelector('[name="BB1"]');
             expect(sldAttribute(busBar!, 'lx')).to.equal('5');
             expect(sldAttribute(busBar!, 'ly')).to.equal('4.5');
@@ -2365,7 +2393,7 @@ describe('SLD Editor', () => {
 
             // Move mouse to bay position first to establish offset for equipment context
             // V2 bay is at [16,2], so use equipment formula: screenX = (16-1)*32 + 64 = 544, screenY = (2-1)*32 + 228 = 260
-            await sendMouse({ type: 'move', position: [544 - 16, 260 - 120] });
+            await sendMouse({ type: 'move', position: gridPos(16, 2) });
             await element.updateComplete;
 
             bayRect.dispatchEvent(
@@ -2379,7 +2407,7 @@ describe('SLD Editor', () => {
             expect(element.doc.querySelector('[name="V1"] [name="B2"]')).not.to
               .exist;
             // Place in V1 voltage level - target around [5,8] using equipment formula
-            await sendMouse({ type: 'click', position: [192 - 16, 452 - 120] });
+            await sendMouse({ type: 'click', position: gridPos(5, 8) });
             expect(element.doc.querySelector('[name="V1"] [name="B2"]')).to
               .exist;
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
@@ -2403,7 +2431,7 @@ describe('SLD Editor', () => {
             );
             setSLDAttributes(subSt, element.nsp, { w: '50', h: '25' });
 
-            await sendMouse({ type: 'click', position: [640 - 16, 480 - 120] });
+            await sendMouse({ type: 'click', position: gridPos(19, 9) });
             expect(element.doc.querySelector('[name="S2"] [name="V1"]')).to
               .exist;
             await expect(element.doc.documentElement).dom.to.equalSnapshot({
@@ -2481,7 +2509,7 @@ describe('SLD Editor', () => {
 
       it('does not allow to move voltage level', async () => {
         // Click on voltage level to start placing/moving
-        await sendMouse({ type: 'click', position: [100 - 16, 180 - 76] });
+        await sendMouse({ type: 'click', position: gridPos(...vlOrigin) });
 
         expect(element).to.have.property('placing', undefined);
       });
@@ -2528,8 +2556,9 @@ describe('SLD Editor', () => {
         element.selectable = ['S1>V1'];
         element.requestUpdate();
         await element.updateComplete;
+        await sldSubstationEditor.updateComplete;
+        await element.updateComplete;
 
-        // Click on equipment to start placing/moving
         await sendMouse({
           type: 'click',
           position: middleOf(queryUI({ ui: '*[id="label:S1>V1"]' })),
@@ -2579,10 +2608,7 @@ describe('SLD Editor', () => {
         // Move mouse to bay position to establish offset
         await sendMouse({
           type: 'move',
-          position: [
-            (currentX - 1) * 32 + 64 - 16,
-            (currentY - 1) * 32 + 228 - 76,
-          ],
+          position: gridPos(currentX, currentY),
         });
         await element.updateComplete;
 
@@ -2601,6 +2627,8 @@ describe('SLD Editor', () => {
       it('send a selected event on bay label click', async () => {
         element.selectable = ['S1>V1>B1'];
         element.requestUpdate();
+        await element.updateComplete;
+        await sldSubstationEditor.updateComplete;
         await element.updateComplete;
 
         // Click on equipment to start placing/moving
@@ -2717,6 +2745,8 @@ describe('SLD Editor', () => {
       it('send a selected event on conducting equipment label click', async () => {
         element.selectable = ['S1>V1>B1>CBR1', 'S1>V2>B1>NEW1'];
         element.requestUpdate();
+        await element.updateComplete;
+        await sldSubstationEditor.updateComplete;
         await element.updateComplete;
 
         // Click on equipment to start placing/moving
