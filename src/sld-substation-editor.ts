@@ -2279,8 +2279,10 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       const offset = [this.mouseX2 - x - 0.5, this.mouseY2 - y + 0.5] as Point;
       handleClick = () =>
         this.dispatchEvent(newStartPlaceLabelEvent(element, offset));
-    } else if (this.disabled && isSelectable(element, this.selectable))
+    } else if (this.disabled && isSelectable(element, this.selectable)) {
+      events = 'all';
       handleClick = () => this.dispatchEvent(newSelectEvent(element));
+    }
 
     let auxclick: ((e: MouseEvent) => void) | symbol = nothing;
     if (!this.disabled)
@@ -3538,8 +3540,9 @@ export class SldSubstationEditor extends ScopedElementsMixin(LitElement) {
       font-size: 24px;
       margin-bottom: 4px;
       color: rgba(0, 0, 0, 0.83);
-      --mdc-icon-button-size: 28px;
-      --mdc-icon-size: 24px;
+      --md-icon-button-state-layer-height: 28px;
+      --md-icon-button-state-layer-width: 28px;
+      --md-icon-button-icon-size: 24px;
     }
 
     menu {
