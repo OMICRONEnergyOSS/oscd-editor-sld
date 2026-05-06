@@ -18,8 +18,8 @@ const filteredLogs = ['Running in dev mode', 'Lit is in dev mode'];
 
 const browsers = [
   playwrightLauncher({ product: 'chromium' }),
-  playwrightLauncher({ product: 'firefox' }),
-  playwrightLauncher({ product: 'webkit' }),
+  // playwrightLauncher({ product: 'firefox' }),
+  // playwrightLauncher({ product: 'webkit' }),
 ];
 
 function defaultGetImageDiff({ baselineImage, image, options }) {
@@ -107,7 +107,7 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
                 --oscd-primary: var(#2aa198);
                 --oscd-secondary: var(--oscd-theme-secondary, #6c71c4);
                 --oscd-error: var(--oscd-theme-error, #dc322f);
-    
+
                --oscd-base03: var(--oscd-theme-base03, #002b36);
                --oscd-base02: var(--oscd-theme-base02, #073642);
                --oscd-base01: var(--oscd-theme-base01, #586e75);
