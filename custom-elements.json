@@ -2346,6 +2346,256 @@
     },
     {
       "kind": "javascript-module",
+      "path": "src/test-helpers.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "findSubstationSvgRoot",
+          "return": {
+            "type": {
+              "text": "SVGSVGElement"
+            }
+          },
+          "parameters": [
+            {
+              "name": "substationEditor",
+              "type": {
+                "text": "Element"
+              }
+            }
+          ],
+          "description": "Return the `#sld` SVG element from a SldSubstationEditor shadow root."
+        },
+        {
+          "kind": "function",
+          "name": "gridPosToViewportCoords",
+          "return": {
+            "type": {
+              "text": "[number, number]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "svg",
+              "type": {
+                "text": "SVGSVGElement"
+              }
+            },
+            {
+              "name": "gx",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "gy",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Convert a grid cell position to browser viewport pixel coordinates.\nTargets the center of the cell so that `Math.floor(svgX)` yields\nthe correct integer grid position."
+        },
+        {
+          "kind": "function",
+          "name": "sclLabelToViewportCoords",
+          "return": {
+            "type": {
+              "text": "[number, number]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "svg",
+              "type": {
+                "text": "SVGSVGElement"
+              }
+            },
+            {
+              "name": "lx",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "ly",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Convert SCL label storage coordinates (lx, ly) to browser viewport\npixel coordinates. Inverts the component's label storage formula:\n  lx = mouseX2 - 0.5,  ly = mouseY2 + 0.5\nto determine where to click so the label ends up at (lx, ly)."
+        },
+        {
+          "kind": "function",
+          "name": "svgToViewportCoords",
+          "return": {
+            "type": {
+              "text": "[number, number]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "svg",
+              "type": {
+                "text": "SVGSVGElement"
+              }
+            },
+            {
+              "name": "svgX",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "svgY",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Convert exact SVG coordinates to browser viewport pixel coordinates.\nUse when half-grid precision (mouseX2/mouseY2) matters, e.g. for\nconnection vertex placement."
+        },
+        {
+          "kind": "variable",
+          "name": "vlOrigin",
+          "type": {
+            "text": "[number, number]"
+          },
+          "default": "[1, 1]",
+          "description": "Position of the VoltageLevel in voltageLevelDocString (x=1, y=1)"
+        },
+        {
+          "kind": "variable",
+          "name": "vlResizeBR",
+          "type": {
+            "text": "[number, number]"
+          },
+          "default": "[8, 7]",
+          "description": "Bottom-right resize target for VL from vlOrigin to w=8, h=7"
+        },
+        {
+          "kind": "variable",
+          "name": "placeTL",
+          "type": {
+            "text": "[number, number]"
+          },
+          "default": "[5, 3]",
+          "description": "Standard top-left corner for placing new elements (VL, bay, bus bar)"
+        },
+        {
+          "kind": "variable",
+          "name": "placeBR",
+          "type": {
+            "text": "[number, number]"
+          },
+          "default": "[11, 10]",
+          "description": "Standard bottom-right resize corner from placeTL giving w=7, h=8"
+        },
+        {
+          "kind": "variable",
+          "name": "eqPos",
+          "type": {
+            "text": "[number, number]"
+          },
+          "default": "[4, 4]",
+          "description": "Equipment position in equipmentDocString (x=4, y=4)"
+        },
+        {
+          "kind": "variable",
+          "name": "eqTarget",
+          "type": {
+            "text": "[number, number]"
+          },
+          "default": "[3, 3]",
+          "description": "Common target for equipment move/copy (x=3, y=3)"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "findSubstationSvgRoot",
+          "declaration": {
+            "name": "findSubstationSvgRoot",
+            "module": "src/test-helpers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "gridPosToViewportCoords",
+          "declaration": {
+            "name": "gridPosToViewportCoords",
+            "module": "src/test-helpers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "sclLabelToViewportCoords",
+          "declaration": {
+            "name": "sclLabelToViewportCoords",
+            "module": "src/test-helpers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "svgToViewportCoords",
+          "declaration": {
+            "name": "svgToViewportCoords",
+            "module": "src/test-helpers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "vlOrigin",
+          "declaration": {
+            "name": "vlOrigin",
+            "module": "src/test-helpers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "vlResizeBR",
+          "declaration": {
+            "name": "vlResizeBR",
+            "module": "src/test-helpers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "placeTL",
+          "declaration": {
+            "name": "placeTL",
+            "module": "src/test-helpers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "placeBR",
+          "declaration": {
+            "name": "placeBR",
+            "module": "src/test-helpers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "eqPos",
+          "declaration": {
+            "name": "eqPos",
+            "module": "src/test-helpers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "eqTarget",
+          "declaration": {
+            "name": "eqTarget",
+            "module": "src/test-helpers.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "src/util.ts",
       "declarations": [
         {

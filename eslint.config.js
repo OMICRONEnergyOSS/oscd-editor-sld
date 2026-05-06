@@ -9,7 +9,7 @@ export default [
   ...openWcConfig,
   ...typescriptEslint.configs['flat/recommended'],
   {
-    ignores: ['dist/', 'node_modules/', 'coverage/', 'doc/'],
+    ignores: ['dist/', 'node_modules/', 'coverage/', 'doc/', '.rollup.cache/'],
   },
   {
     files: ['**/*.{ts,tsx,mts,cts}'],

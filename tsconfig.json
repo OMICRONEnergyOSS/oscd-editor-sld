@@ -1,11 +1,16 @@
 {
   "compilerOptions": {
     "target": "es2021",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
-    "lib": ["es2021", "dom", "DOM.Iterable"],
-    "types": ["mocha"],
+    "lib": [
+      "es2021",
+      "dom"
+    ],
+    "types": [
+      "mocha"
+    ],
     "strict": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
@@ -18,5 +23,7 @@
     "declaration": true,
     "skipLibCheck": true
   },
-  "include": ["./src/**/*.ts"]
+  "include": [
+    "./src/**/*.ts"
+  ]
 }
