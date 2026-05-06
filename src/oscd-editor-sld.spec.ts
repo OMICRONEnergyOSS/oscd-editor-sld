@@ -1,6 +1,6 @@
 import '@webcomponents/scoped-custom-element-registry';
 import { html } from 'lit';
-import { fixture, expect, aTimeout } from '@open-wc/testing';
+import { fixture, expect, aTimeout, waitUntil } from '@open-wc/testing';
 
 import { OscdIconButton } from '@omicronenergy/oscd-ui/iconbutton/OscdIconButton.js';
 import { OscdMenuItem } from '@omicronenergy/oscd-ui/menu/OscdMenuItem.js';
@@ -442,29 +442,27 @@ function getSldEditor(element: OscdEditorSld): SldEditor | null | undefined {
 
 async function waitForSubstationEditor(
   element: OscdEditorSld,
-  timeout = 10000,
 ): Promise<{ sldEditor: SldEditor; sldSubstationEditor: SldSubstationEditor }> {
-  const start = Date.now();
-  while (Date.now() - start < timeout) {
-    const sldEditorEl = element.shadowRoot?.querySelector('sld-editor');
-    if (sldEditorEl && sldEditorEl.shadowRoot) {
-      const sldEditor = sldEditorEl as SldEditor;
-      await sldEditor.updateComplete;
-      const sldSubstationEditor = sldEditor.shadowRoot?.querySelector(
-        'sld-substation-editor',
-      ) as SldSubstationEditor | null;
-      if (sldSubstationEditor && sldSubstationEditor.shadowRoot) {
-        await sldSubstationEditor.updateComplete;
-        return { sldEditor, sldSubstationEditor };
-      }
-    }
-    await new Promise(r => setTimeout(r, 50));
-  }
-  const sldEditorEl = element.shadowRoot?.querySelector('sld-editor');
-  throw new Error(
-    `Timed out. sld-editor in DOM: ${!!sldEditorEl}, ` +
-      `has shadowRoot: ${!!sldEditorEl?.shadowRoot}`,
-  );
+  let sldEditor: SldEditor;
+  let sldSubstationEditor: SldSubstationEditor;
+
+  await waitUntil(() => {
+    const el = element.shadowRoot?.querySelector(
+      'sld-editor',
+    ) as SldEditor | null;
+    if (!el?.shadowRoot) return false;
+    const sub = el.shadowRoot.querySelector(
+      'sld-substation-editor',
+    ) as SldSubstationEditor | null;
+    if (!sub?.shadowRoot) return false;
+    sldEditor = el;
+    sldSubstationEditor = sub;
+    return true;
+  }, 'Timed out waiting for sld-substation-editor');
+
+  await sldEditor!.updateComplete;
+  await sldSubstationEditor!.updateComplete;
+  return { sldEditor: sldEditor!, sldSubstationEditor: sldSubstationEditor! };
 }
 
 function svgClientPosition(

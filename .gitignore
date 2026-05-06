@@ -9,5 +9,7 @@ node_modules
 dist
 coverage
 doc
+.rollup.cache
 
+about.html
 
