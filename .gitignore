@@ -1,0 +1,16 @@
+node_modules
+*.tsbuildinfo
+
+## editors
+/.idea
+/.vscode
+
+## build artifacts
+dist
+coverage
+doc
+.rollup.cache
+
+about.html
+
+/custom-elements.json

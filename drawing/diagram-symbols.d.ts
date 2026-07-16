@@ -1,0 +1,13 @@
+import { TemplateResult } from 'lit';
+export declare const resizePath: TemplateResult<2>;
+export declare const resizeTLPath: TemplateResult<2>;
+export declare const resizeBRPath: TemplateResult<2>;
+export declare const resizeTLPathAlt: TemplateResult<2>;
+export declare const resizeBRPathAlt: TemplateResult<2>;
+export declare const resizeTLPathAlt2: TemplateResult<2>;
+export declare const resizeBRPathAlt2: TemplateResult<2>;
+export declare const zigZagPath: TemplateResult<2>;
+export declare const zigZag2WTransform = "matrix(0.8, 0, 0, 0.8, 0.3, 0.3) translate(0 -0.1) rotate(-20 1.5 1.5)";
+export declare const eqRingPath: TemplateResult<2>;
+export declare function equipmentPath(equipmentType: string | null): TemplateResult<2>;
+export declare const symbols: TemplateResult<2>;

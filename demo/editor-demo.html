@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+  <head>
+    <title>sld-editor — standalone demo</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Roboto:wght@300;400;500&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Material+Symbols+Outlined&display=block"
+    />
+
+    <style>
+      * {
+        --oscd-theme-text-font: 'Roboto';
+        --oscd-theme-icon-font: 'Material Symbols Outlined';
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #eee8d5;
+        color: #073642;
+        padding: 24px;
+      }
+
+      header {
+        max-width: 60rem;
+        margin: 0 auto 20px;
+      }
+
+      header h1 {
+        font-weight: 500;
+        font-size: 1.4rem;
+      }
+
+      header p {
+        margin-top: 6px;
+        font-weight: 300;
+      }
+
+      header code,
+      kbd {
+        font-family: 'Roboto Mono', monospace;
+        background: #fdf6e3;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+
+      main {
+        max-width: 60rem;
+        margin: 0 auto;
+        background: #fdf6e3;
+        border-radius: 6px;
+        padding: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      }
+
+      abbr {
+        text-decoration: none;
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Standalone <code>sld-editor</code></h1>
+      <p>
+        The editor used on its own — no plugin host, no shell. It renders one
+        substation viewer per <code>Substation</code>, turns interactions into
+        <code>EditV2</code> events, and dispatches them as
+        <code>oscd-edit-v2</code>. This page plays the role of the host: it
+        applies each edit to the document, bumps <code>docVersion</code>, and
+        keeps an undo stack. Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo.
+      </p>
+    </header>
+
+    <main>
+      <sld-editor></sld-editor>
+    </main>
+
+    <script type="module">
+      import '@webcomponents/scoped-custom-element-registry';
+      import { SldEditor } from '../dist/sld-editor.js';
+      // handleEdit applies an EditV2 to the DOM and returns its inverse (undo).
+      import { handleEdit } from '@omicronenergy/oscd-editor';
+      // The one namespace responsibility the real host owns: prepend the SLD
+      // namespace declaration to edits that write layout to a doc missing it.
+      import { withSldNamespace } from '../dist/foundations/edits.js';
+
+      const params = new URL(document.location).searchParams;
+      const docFile = params.get('doc') ?? 'sample.scd';
+      const text = await fetch(docFile).then(r => r.text());
+      const doc = new DOMParser().parseFromString(text, 'application/xml');
+
+      customElements.define('sld-editor', SldEditor);
+      const editor = document.querySelector('sld-editor');
+      editor.doc = doc;
+      editor.docVersion = 1;
+      editor.showLabels = true;
+      editor.showIeds = true;
+
+      const undoStack = [];
+
+      // Minimal host loop: apply the edit, remember how to undo it, re-render.
+      editor.addEventListener('oscd-edit-v2', event => {
+        const undo = handleEdit(withSldNamespace(doc, event.detail.edit));
+        undoStack.push(undo);
+        editor.docVersion += 1;
+      });
+
+      window.addEventListener('keydown', event => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+          event.preventDefault();
+          const undo = undoStack.pop();
+          if (undo) {
+            handleEdit(undo);
+            editor.docVersion += 1;
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+  <head>
+    <title>sld-substation-viewer — standalone (read-only) demo</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Roboto:wght@300;400;500&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Material+Symbols+Outlined&display=block"
+    />
+
+    <style>
+      * {
+        --oscd-theme-text-font: "Roboto";
+        --oscd-theme-icon-font: "Material Symbols Outlined";
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Roboto", sans-serif;
+        background-color: #eee8d5;
+        color: #073642;
+        padding: 24px;
+      }
+
+      header {
+        max-width: 60rem;
+        margin: 0 auto 20px;
+      }
+
+      header h1 {
+        font-weight: 500;
+        font-size: 1.4rem;
+      }
+
+      header p {
+        margin-top: 6px;
+        font-weight: 300;
+      }
+
+      header code {
+        font-family: "Roboto Mono", monospace;
+        background: #fdf6e3;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+
+      #diagrams {
+        max-width: 60rem;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .substation {
+        background: #fdf6e3;
+        border-radius: 6px;
+        padding: 12px 16px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      }
+
+      .substation h2 {
+        font-weight: 500;
+        font-size: 1rem;
+        margin-bottom: 8px;
+      }
+
+      abbr {
+        text-decoration: none;
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Standalone <code>sld-substation-viewer</code></h1>
+      <p>
+        The viewer used on its own — no editor, no plugin host, no shell. Each
+        substation in the document is rendered by its own
+        <code>sld-substation-viewer</code>. With <code>interaction</code> left
+        in its default <code>locked</code> state, the viewer is a truly static
+        read-only diagram: no connect ports, resize handles or context menus are
+        drawn, nothing is pointer-interactive, and no interaction intents are
+        dispatched. An editor opts back in by driving the viewer to
+        <code>idle</code> and the gesture modes.
+      </p>
+    </header>
+
+    <div id="diagrams"></div>
+
+    <script type="module">
+      // The polyfill lets the ScopedElementsMixin components register their own
+      // child elements in isolated scopes.
+      import "@webcomponents/scoped-custom-element-registry";
+      import { SldSubstationViewer } from "../dist/sld-substation-viewer.js";
+
+      // No self-registration in the library — the consumer picks the tag name.
+      customElements.define("sld-substation-viewer", SldSubstationViewer);
+
+      const params = new URL(document.location).searchParams;
+      const docFile = params.get("doc") ?? "sample.scd";
+      const text = await fetch(docFile).then((r) => r.text());
+      const doc = new DOMParser().parseFromString(text, "application/xml");
+
+      const container = document.getElementById("diagrams");
+
+      // One viewer per Substation. A future `sld-viewer` facade (see
+      // ARCHITECTURE.md §7) would own this loop; for now the consumer does it.
+      const substations = doc.querySelectorAll(":root > Substation");
+      if (substations.length === 0) {
+        container.textContent = "No <Substation> elements in this document.";
+      }
+
+      substations.forEach((substation) => {
+        const card = document.createElement("div");
+        card.className = "substation";
+
+        const title = document.createElement("h2");
+        title.textContent = substation.getAttribute("name") ?? "(unnamed)";
+        card.appendChild(title);
+
+        const viewer = document.createElement("sld-substation-viewer");
+        viewer.doc = doc;
+        viewer.substation = substation;
+        viewer.docVersion = 1;
+        viewer.showLabels = true;
+        viewer.showIeds = true;
+        card.appendChild(viewer);
+
+        container.appendChild(card);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+# Keep Markdown prose on single lines per paragraph so GitHub wraps it to the
+# viewport instead of at a hard column; avoids noisy reflow diffs in docs like
+# ARCHITECTURE.md. Prose-only — code, tables, etc. use defaults.
+proseWrap: never
+

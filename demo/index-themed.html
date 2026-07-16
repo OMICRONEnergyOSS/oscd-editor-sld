@@ -1,0 +1,85 @@
+<html>
+  <head>
+    <title>oscd-editor-sld demo (dark theme)</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Roboto:wght@300;400;500&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Material+Symbols+Outlined&display=block"
+    />
+
+    <style>
+      * {
+        --oscd-theme-text-font: 'Roboto';
+        --oscd-theme-icon-font: 'Material Symbols Outlined';
+
+        margin: 0px;
+        padding: 0px;
+
+        background-color:  #073642;
+
+      /*
+       * Dark theme: drive the public host tokens the plugin's theme.ts reads.
+       * Solarized-dark foundation palette flips every --oscd-sld-* default,
+       * plus a couple of brand/semantic overrides + Material surface tokens to
+       * exercise the two-tier override path and verify SVG export resolves them.
+       */
+        --oscd-theme-primary: #2aa198;
+        --oscd-theme-secondary: #268bd2;
+        /* dark mode = inverted base palette: base3 darkest, base03 lightest, so
+           shell's --md-sys-color-surface (=base3) is dark and on-surface light */
+        --oscd-theme-base03: #fdf6e3;
+        --oscd-theme-base02: #eee8d5;
+        --oscd-theme-base01: #93a1a1;
+        --oscd-theme-base00: #839496;
+        --oscd-theme-base0: #657b83;
+        --oscd-theme-base1: #586e75;
+        --oscd-theme-base2: #073642;
+        --oscd-theme-base3: #002b36; /* html background color */
+        --oscd-theme-error: #dc322f;
+        --oscd-theme-warning: #b58900;
+
+        /* SLD brand + semantic overrides (two-tier hooks) */
+        --oscd-editor-sld-red: #cb4b16;
+        --oscd-editor-sld-yellow: #b58900;
+        --oscd-editor-sld-blue: #6c71c4;
+        --oscd-editor-sld-grid-color: #586e75;
+        --oscd-editor-sld-icon-voltage-level-foreground-color: var(--oscd-theme-base2);
+        --oscd-editor-sld-icon-substation-foreground-color: var(--oscd-theme-base02)
+      }
+
+      abbr {
+        text-decoration: none;
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <oscd-shell></oscd-shell>
+
+    <script type="module">
+      import '@webcomponents/scoped-custom-element-registry';
+      import '@omicronenergy/oscd-shell/oscd-shell.js';
+      import { plugins } from './plugins.js';
+
+      const editor = document.querySelector('oscd-shell');
+      editor.plugins = plugins;
+
+      const params = new URL(document.location).searchParams;
+      for (const [name, value] of params) {
+        editor.setAttribute(name, value);
+      }
+
+      const sample = await fetch('sample.scd').then(r => r.text());
+      editor.docs = {
+        ['sample.scd']: new DOMParser().parseFromString(
+          sample,
+          'application/xml',
+        ),
+      };
+      editor.docName = 'sample.scd';
+    </script>
+  </body>
+</html>
