@@ -14,5 +14,4 @@ jobs:
       id-token: write
     uses: OMICRONEnergyOSS/oscd-gh-workflows/.github/workflows/release-please.yml@main
     secrets:
-      npm_token: ${{ secrets.NPM_TOKEN }}
       gh_token: ${{ secrets.GITHUB_TOKEN }}
