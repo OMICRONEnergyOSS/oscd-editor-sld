@@ -1,7 +1,7 @@
 {
   "name": "@omicronenergy/oscd-editor-sld",
   "description": "OpenSCD plugin for designing single line diagrams",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "repository": {
     "type": "git",
