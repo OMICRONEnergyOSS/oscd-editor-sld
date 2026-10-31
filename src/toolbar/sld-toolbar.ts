@@ -19,6 +19,7 @@ import { setSLDAttributes } from '../foundations/sld-attributes.js';
 import { newStartInteractionEvent } from '../foundations/events.js';
 import { sldThemeStyles } from '../theme.js';
 import { sldPrefix } from '../foundations.js';
+import { DragToClickController } from '../drag-to-click.js';
 
 import { SldIedImporter } from './sld-ied-importer.js';
 import { SldIedMenu } from './sld-ied-menu.js';
@@ -72,6 +73,16 @@ export class SldToolbar extends ScopedElementsMixin(LitElement) {
   };
 
   @query('#about') private aboutDialog?: OscdDialog;
+
+  // Dragging an add-FAB onto the canvas places the element where it is dropped.
+  private dragToClick = new DragToClickController(this, {
+    canStart: event =>
+      !this.inAction &&
+      event
+        .composedPath()
+        .some(node => node instanceof Element && node.hasAttribute('data-places')),
+    isActive: () => this.inAction,
+  });
 
   @property({ type: Object })
   doc!: XMLDocument;
@@ -185,6 +196,7 @@ export class SldToolbar extends ScopedElementsMixin(LitElement) {
           size="small"
           aria-label="Add ${eqType}"
           title="Add ${eqType}"
+          data-places
           @click=${() => {
             const element =
               this.templateElements.ConductingEquipment!.cloneNode() as Element;
@@ -211,11 +223,13 @@ export class SldToolbar extends ScopedElementsMixin(LitElement) {
         }}
         aria-label="Add Bus Bar"
         title="Add Bus Bar"
+        data-places
         ><oscd-icon slot="icon">horizontal_rule</oscd-icon> </oscd-fab
       ><oscd-fab
         size="small"
         aria-label="Add Bay"
         title="Add Bay"
+        data-places
         @click=${() => {
           const element =
             this.templateElements.Bay!.cloneNode() as Element;
@@ -236,6 +250,7 @@ export class SldToolbar extends ScopedElementsMixin(LitElement) {
       size="small"
       aria-label="Add VoltageLevel"
       title="Add VoltageLevel"
+      data-places
       @click=${() => {
         const element =
           this.templateElements.VoltageLevel!.cloneNode() as Element;
@@ -296,6 +311,7 @@ export class SldToolbar extends ScopedElementsMixin(LitElement) {
           size="small"
           aria-label="Add ${config.label}"
           title="Add ${config.label}"
+          data-places
           @click=${() => {
             const element = this.createTransformerElement(config);
             this.startPlacing(element);
