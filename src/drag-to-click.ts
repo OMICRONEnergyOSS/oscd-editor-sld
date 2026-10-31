@@ -4,7 +4,7 @@ const DRAG_THRESHOLD_PX = 4;
 
 export interface DragToClickOptions {
   /** Whether a press may begin a drag; true only for presses that start a click-move-click gesture. */
-  canStart: (event: PointerEvent) => boolean;
+  canStart: (event: MouseEvent) => boolean;
   /** Whether the click that began the drag actually started a gesture. */
   isActive: () => boolean;
 }
@@ -46,13 +46,16 @@ function swallowNextClick() {
 
 /**
  * Lets press-drag-release stand in for click-move-click by replaying the two
- * clicks the gesture needs: the first once the pointer has moved past a small
+ * clicks the gesture needs: the first once the mouse has moved past a small
  * threshold (on the pressed element), the second on release (on whatever is
- * under the pointer). Existing click handlers do all the work, so a plain click
+ * under the cursor). Existing click handlers do all the work, so a plain click
  * and click-move-click keep working unchanged.
+ *
+ * Mouse events only: touch emits none while scrolling or panning, so the
+ * browser keeps those gestures.
  */
 export class DragToClickController implements ReactiveController {
-  private press?: { event: PointerEvent; target: EventTarget; dragging: boolean };
+  private press?: { event: MouseEvent; target: EventTarget; dragging: boolean };
 
   constructor(
     private host: ReactiveControllerHost & HTMLElement,
@@ -62,27 +65,26 @@ export class DragToClickController implements ReactiveController {
   }
 
   hostConnected() {
-    this.host.addEventListener('pointerdown', this.onDown);
+    this.host.addEventListener('mousedown', this.onDown);
   }
 
   hostDisconnected() {
-    this.host.removeEventListener('pointerdown', this.onDown);
+    this.host.removeEventListener('mousedown', this.onDown);
     this.end();
   }
 
-  private onDown = (event: PointerEvent) => {
-    if (event.button !== 0 || !event.isPrimary || !this.options.canStart(event)) {
+  private onDown = (event: MouseEvent) => {
+    if (event.button !== 0 || !this.options.canStart(event)) {
       return;
     }
     this.end();
     this.press = { event, target: event.composedPath()[0], dragging: false };
-    window.addEventListener('pointermove', this.onMove);
-    window.addEventListener('pointerup', this.onUp);
-    window.addEventListener('pointercancel', this.end);
+    window.addEventListener('mousemove', this.onMove);
+    window.addEventListener('mouseup', this.onUp);
     window.addEventListener('selectstart', this.preventSelection);
   };
 
-  private onMove = (event: PointerEvent) => {
+  private onMove = (event: MouseEvent) => {
     const { press } = this;
     if (!press || press.dragging) {
       return;
@@ -95,7 +97,7 @@ export class DragToClickController implements ReactiveController {
     clickAt(press.target, press.event);
   };
 
-  private onUp = (event: PointerEvent) => {
+  private onUp = (event: MouseEvent) => {
     const dragged = this.press?.dragging;
     this.end();
     if (!dragged) {
@@ -112,9 +114,8 @@ export class DragToClickController implements ReactiveController {
 
   private end = () => {
     this.press = undefined;
-    window.removeEventListener('pointermove', this.onMove);
-    window.removeEventListener('pointerup', this.onUp);
-    window.removeEventListener('pointercancel', this.end);
+    window.removeEventListener('mousemove', this.onMove);
+    window.removeEventListener('mouseup', this.onUp);
     window.removeEventListener('selectstart', this.preventSelection);
   };
 }
