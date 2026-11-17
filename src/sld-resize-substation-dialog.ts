@@ -11,6 +11,13 @@ import { canResizeTo } from './foundations/sld-placement.js';
 import { attributes } from './foundations/sld-attributes.js';
 import { newResizeEvent } from './foundations/events.js';
 
+export type SubstationResizeValidator = (
+  substation: Element,
+  width: number,
+  height: number,
+  dimension: 'width' | 'height',
+) => string | void;
+
 /**
  * A self-contained dialog for resizing a `Substation`. Owned by the editor
  * controller (`SldEditor`) so there is exactly one instance regardless of how
@@ -31,6 +38,9 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
 
   @property()
   substation?: Element;
+
+  @property({ attribute: false })
+  validateSubstationResize?: SubstationResizeValidator;
 
   @query('oscd-dialog')
   private dialog!: OscdDialog;
@@ -85,6 +95,12 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
     if (!this.substation) {
       return true;
     }
+    const message = this.validateSubstationResize?.(
+      this.substation,
+      Number(this.widthTextField.value),
+      Number(this.heightTextField.value),
+      field === this.widthTextField ? 'width' : 'height',
+    );
     const {
       dim: [oldW, oldH],
     } = attributes(this.substation);
@@ -94,9 +110,15 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
         ? canResizeTo(this.substation, this.substation, value, oldH)
         : canResizeTo(this.substation, this.substation, oldW, value);
     field.setCustomValidity(
-      fits ? '' : 'Too small to contain the substation’s voltage levels',
+      message || (fits ? '' : 'Too small to contain the substation’s voltage levels'),
     );
     return field.reportValidity();
+  }
+
+  private cancel() {
+    this.dialog.open = false;
+    this.widthTextField.reset();
+    this.heightTextField.reset();
   }
 
   render() {
@@ -106,7 +128,7 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
     const {
       dim: [w, h],
     } = attributes(this.substation);
-    return html`<oscd-dialog>
+    return html`<oscd-dialog @cancel=${this.cancel}>
       <div slot="headline">Resize ${this.substation.getAttribute('name')}</div>
       <form
         slot="content"
@@ -135,7 +157,7 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
         ></oscd-outlined-text-field>
       </form>
       <div slot="actions">
-        <oscd-text-button @click=${() => (this.dialog.open = false)}
+        <oscd-text-button @click=${this.cancel}
           >Cancel</oscd-text-button
         >
         <oscd-filled-button @click=${() => this.confirm()}

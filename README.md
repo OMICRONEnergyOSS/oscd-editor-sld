@@ -58,6 +58,14 @@ that the embedding application is expected to apply to the document. See
 examples, and [ARCHITECTURE.md](ARCHITECTURE.md) for how the viewer and editor
 tiers cooperate.
 
+### Additional substation resize validation
+
+Set `SldEditor.validateSubstationResize` to a synchronous callback receiving
+`(substation, width, height, dimension)`, where dimensions are numbers and
+`dimension` is `'width'` or `'height'`. It runs on input changes and Resize.
+Return a non-empty string to show an inline error and block resizing; otherwise,
+built-in validation applies.
+
 ## Linting and formatting
 
 To scan the project for linting and formatting errors, run

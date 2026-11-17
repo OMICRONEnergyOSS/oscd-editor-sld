@@ -59,6 +59,7 @@ import type { Point } from './foundations/geometry.js';
 import * as interactions from './foundations/interaction-mode.js';
 import type { InteractionState } from './foundations/interaction-mode.js';
 import type { Style } from './foundations/sld-attributes.js';
+import type { SubstationResizeValidator } from './sld-resize-substation-dialog.js';
 
 export type PlacementResult = {
   element: Element;
@@ -66,6 +67,8 @@ export type PlacementResult = {
   x: number;
   y: number;
 };
+
+export type { SubstationResizeValidator } from './sld-resize-substation-dialog.js';
 
 export class SldEditor extends ScopedElementsMixin(LitElement) {
   static scopedElements = {
@@ -121,6 +124,8 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
   @property({ type: Boolean })
   showIeds?: boolean;
 
+  @property({ attribute: false })
+  validateSubstationResize?: SubstationResizeValidator;
 
   @state() gridSize = 32;
 
@@ -536,6 +541,7 @@ export class SldEditor extends ScopedElementsMixin(LitElement) {
       .substationOf=${this.substationOf}
     ></sld-coordinate-tooltip>
     <sld-resize-substation-dialog
+      .validateSubstationResize=${this.validateSubstationResize}
       @oscd-sld-resize=${({ detail: { element, w, h } }: ResizeEvent) => {
         this.handleResize(element, w, h);
       }}
