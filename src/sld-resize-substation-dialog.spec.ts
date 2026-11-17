@@ -123,4 +123,53 @@ describe('sld-resize-substation-dialog', () => {
     expect(widthField().validity.valid).to.be.true;
     expect(widthField().validationMessage).to.equal('');
   });
+
+  describe('custom resize validation', () => {
+    it('displays the returned message and prevents resizing even when voltage levels fit', async () => {
+      await element.show(substation);
+      element.validateSubstationResize = () => 'Too small to contain Functions';
+      let dispatched = false;
+      element.addEventListener('oscd-sld-resize', () => {
+        dispatched = true;
+      });
+      widthField().value = '60';
+      heightField().value = '30';
+      for (const field of [widthField(), heightField()]) {
+        field.dispatchEvent(new Event('input'));
+        expect(field.validationMessage).to.equal('Too small to contain Functions');
+        expect(field.validity.valid).to.be.false;
+      }
+      clickResize();
+      expect(dispatched).to.be.false;
+    });
+
+    it('gives the custom message precedence over the built-in message', async () => {
+      await element.show(substation);
+      element.validateSubstationResize = () => 'Custom resize constraint';
+      widthField().value = '10';
+      widthField().dispatchEvent(new Event('input'));
+      expect(widthField().validationMessage).to.equal('Custom resize constraint');
+    });
+
+    it('clears the custom message when the callback accepts corrected input', async () => {
+      await element.show(substation);
+      element.validateSubstationResize = (_target, width) =>
+        width < 60 ? 'Width must be at least 60' : '';
+      widthField().value = '55';
+      widthField().dispatchEvent(new Event('input'));
+      expect(widthField().validationMessage).to.equal('Width must be at least 60');
+      widthField().value = '60';
+      widthField().dispatchEvent(new Event('input'));
+      expect(widthField().validationMessage).to.equal('');
+      expect(widthField().validity.valid).to.be.true;
+    });
+
+    it('retains the built-in error when the callback returns an empty message', async () => {
+      await element.show(substation);
+      element.validateSubstationResize = () => '';
+      widthField().value = '10';
+      widthField().dispatchEvent(new Event('input'));
+      expect(widthField().validationMessage).to.contain('voltage levels');
+    });
+  });
 });
