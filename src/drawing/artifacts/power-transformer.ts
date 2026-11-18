@@ -238,7 +238,7 @@ function powerTransformerActions(
 ): PowerTransformerRenderActions {
   const [x, y] = state.position;
 
-  let handleClick: ((e: MouseEvent) => void) | symbol = nothing;
+  let handleClick: (e: MouseEvent) => void;
   if (targetInMode(context.interaction, 'placing') === transformer) {
     handleClick = (e: MouseEvent) => {
       if (targetInMode(context.interaction, 'placing') === transformer) {

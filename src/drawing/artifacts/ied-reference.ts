@@ -76,7 +76,7 @@ function iedReferenceActions(
   context: SldSharedContext,
   state: IedReferenceRenderState,
 ): IedReferenceRenderActions {
-  let handleClick: (e: MouseEvent) => void = () => {};
+  let handleClick: (e: MouseEvent) => void;
   const [x, y] = state.position;
 
   if (
