@@ -16,7 +16,16 @@ export type SubstationResizeValidator = (
   width: number,
   height: number,
   dimension: 'width' | 'height',
-) => string | void;
+) => string | undefined;
+
+/** Whole number ≥ 1, or NaN for empty, fractional, non-finite or \< 1 input. */
+function parseDimension(raw: string | undefined): number {
+  if (raw === undefined || raw.trim() === '') {
+    return NaN;
+  }
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 ? n : NaN;
+}
 
 /**
  * A self-contained dialog for resizing a `Substation`. Owned by the editor
@@ -53,29 +62,31 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
 
   async show(substation: Element) {
     this.substation = substation;
+    this.requestUpdate(); // SCL doc may have changed, safest to update.
     await this.updateComplete;
+    this.resetFields();
     this.dialog.open = true;
   }
 
-  private confirm() {
-    if (!this.substation) {
-      return;
-    }
-    // Surface validity through the standard constraint-validation API; if
-    // either field is invalid, report it and keep the dialog open.
+  private validateAll(): boolean {
+    // No short-circuit: revalidate both so neither keeps a stale error.
     const widthOk = this.validate(this.widthTextField);
     const heightOk = this.validate(this.heightTextField);
-    if (!widthOk || !heightOk) {
+    return widthOk && heightOk;
+  }
+
+  private confirm() {
+    if (!this.substation || !this.validateAll()) {
       return;
     }
 
     const {
       dim: [oldW, oldH],
     } = attributes(this.substation);
-    const [newW, newH] = [this.widthTextField, this.heightTextField].map(ui =>
-      parseInt(ui.value ?? '1', 10),
-    );
-    this.dialog.open = false;
+    const newW = parseDimension(this.widthTextField.value);
+    const newH = parseDimension(this.heightTextField.value);
+    this.closeDialog();
+
     if (newW === oldW && newH === oldH) {
       return;
     }
@@ -89,22 +100,37 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
    * validation via `setCustomValidity`, then `reportValidity()` to surface (or
    * clear) the inline error — Material suppresses the native popup. Each field
    * is checked against the other dimension's committed value so the error is
-   * attributed to the dimension the user undersized. Returns the field validity.
+   * attributed to the dimension the user undersized. The host's
+   * `validateSubstationResize` callback, by contrast, receives both proposed
+   * dimensions and takes precedence over that built-in check. Returns the field
+   * validity.
    */
   private validate(field: OscdOutlinedTextField): boolean {
     if (!this.substation) {
       return true;
     }
-    const message = this.validateSubstationResize?.(
-      this.substation,
-      Number(this.widthTextField.value),
-      Number(this.heightTextField.value),
-      field === this.widthTextField ? 'width' : 'height',
-    );
+
+    const width = parseDimension(this.widthTextField.value);
+    const height = parseDimension(this.heightTextField.value);
+    const value = field === this.widthTextField ? width : height;
+
+    if (Number.isNaN(value)) {
+      field.setCustomValidity('Enter a whole number of at least 1');
+      return field.reportValidity();
+    }
+
+    // The other field may be invalid mid-edit; skip the host callback until both parse.
+    const message =
+      Number.isNaN(width) || Number.isNaN(height)
+        ? undefined
+        : this.runHostValidator(
+          width,
+          height,
+          field === this.widthTextField ? 'width' : 'height',
+        );
     const {
       dim: [oldW, oldH],
     } = attributes(this.substation);
-    const value = parseInt(field.value ?? '', 10);
     const fits =
       field === this.widthTextField
         ? canResizeTo(this.substation, this.substation, value, oldH)
@@ -115,10 +141,38 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
     return field.reportValidity();
   }
 
-  private cancel() {
+  /**
+   * Calls the host's validator. A throwing callback must not break the dialog,
+   * so the error is logged and treated as "no custom message" (fail open): the
+   * built-in validation still applies.
+   */
+  private runHostValidator(
+    width: number,
+    height: number,
+    dimension: 'width' | 'height',
+  ): string | undefined {
+    try {
+      return this.validateSubstationResize?.(
+        this.substation!,
+        width,
+        height,
+        dimension,
+      );
+    } catch (error) {
+      console.error('validateSubstationResize threw', error);
+      return undefined;
+    }
+  }
+
+  private resetFields() {
+    for (const field of [this.widthTextField, this.heightTextField]) {
+      field.reset();
+      field.setCustomValidity('');
+    }
+  }
+
+  private closeDialog() {
     this.dialog.open = false;
-    this.widthTextField.reset();
-    this.heightTextField.reset();
   }
 
   render() {
@@ -128,7 +182,7 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
     const {
       dim: [w, h],
     } = attributes(this.substation);
-    return html`<oscd-dialog @cancel=${this.cancel}>
+    return html`<oscd-dialog @cancel=${this.closeDialog}>
       <div slot="headline">Resize ${this.substation.getAttribute('name')}</div>
       <form
         slot="content"
@@ -143,7 +197,7 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
           value="${w}"
           supporting-text="Must stay large enough to contain all voltage levels"
           dialogInitialFocus
-          @input=${() => this.validate(this.widthTextField)}
+          @input=${() => this.validateAll()}
         ></oscd-outlined-text-field>
         <oscd-outlined-text-field
           id="substationHeight"
@@ -153,11 +207,11 @@ export class SldResizeSubstationDialog extends ScopedElementsMixin(LitElement) {
           label="Height"
           value="${h}"
           supporting-text="Must stay large enough to contain all voltage levels"
-          @input=${() => this.validate(this.heightTextField)}
+          @input=${() => this.validateAll()}
         ></oscd-outlined-text-field>
       </form>
       <div slot="actions">
-        <oscd-text-button @click=${this.cancel}
+        <oscd-text-button @click=${this.closeDialog}
           >Cancel</oscd-text-button
         >
         <oscd-filled-button @click=${() => this.confirm()}
