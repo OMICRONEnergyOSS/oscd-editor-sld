@@ -589,6 +589,32 @@ describe('SLD Editor', () => {
     );
   });
 
+  it('asks to migrate legacy Text/Private layout, then moves it to TextLayout', async () => {
+    element.doc = new DOMParser().parseFromString(
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:eosld="${sldNs}">
+        <Substation name="S1">
+          <Private type="OpenSCD-SLD-Layout"><eosld:SLDAttributes eosld:w="5" eosld:h="5"/></Private>
+          <Text><Private type="OpenSCD-SLD-Layout"><eosld:SLDAttributes eosld:lx="3" eosld:ly="4"/></Private>Note</Text>
+        </Substation>
+      </SCL>`,
+      'application/xml',
+    );
+    await element.updateComplete;
+    expect(element.shadowRoot!.querySelector('sld-editor')).to.equal(null);
+
+    await triggerConversion(element);
+
+    expect(element.doc.querySelector('Text > Private')).to.equal(null);
+    expect(
+      element.doc
+        .querySelector('Substation > Private > TextLayout')!
+        .getAttributeNS(sldNs, 'lx'),
+    ).to.equal('3');
+    expect(element.shadowRoot!.querySelector('sld-migration-notice')).to.equal(
+      null,
+    );
+  });
+
   it('converts old Transpower SLD layout to OpenSCD layout', async () => {
     const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
 

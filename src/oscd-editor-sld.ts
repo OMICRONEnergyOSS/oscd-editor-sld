@@ -13,6 +13,10 @@ import { makeBusBar } from './foundations/connectivity.js';
 import { withSldNamespace } from './foundations/edits.js';
 import { sldPrefix } from './foundations.js';
 import { convertSldLayout, hasOldNamespace } from './converter.js';
+import {
+  hasLegacyTextLayout,
+  migrateTextLayoutEdits,
+} from './foundations/text-layout-migration.js';
 
 import { SldToolbar } from './toolbar/sld-toolbar.js';
 import { sldThemeStyles } from './theme.js';
@@ -123,6 +127,15 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
     this.dispatchEvent(newEditEventV2(withSldNamespace(this.doc, convertEdits)));
   }
 
+  migrateTextLayout() {
+    const edits = migrateTextLayoutEdits(this.doc, this.nsp);
+    this.dispatchEvent(
+      newEditEventV2(withSldNamespace(this.doc, edits), {
+        title: 'Migrate SLD text layout',
+      }),
+    );
+  }
+
   /**
    * Intercepts `oscd-edit-v2` events bubbling up from the editor and toolbar and,
    * when the edit writes SLD-layout content to a document that does not yet
@@ -158,6 +171,13 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
     if (hasOldNamespace(this.doc)) {
       return html`<sld-migration-notice
         @sld-convert=${() => this.convertSldAttributes()}
+      ></sld-migration-notice>`;
+    }
+
+    if (hasLegacyTextLayout(this.doc)) {
+      return html`<sld-migration-notice
+        kind="text-layout"
+        @sld-convert=${() => this.migrateTextLayout()}
       ></sld-migration-notice>`;
     }
 

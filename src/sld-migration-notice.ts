@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit';
-import { state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 import { OscdIcon } from '@omicronenergy/oscd-ui/icon/OscdIcon.js';
 import { OscdFilledButton } from '@omicronenergy/oscd-ui/button/OscdFilledButton.js';
@@ -24,6 +24,13 @@ export default class SldMigrationNotice extends ScopedElementsMixin(
     'oscd-icon': OscdIcon,
     'oscd-filled-button': OscdFilledButton,
   };
+
+  /**
+   * `namespace` is the legacy attribute-based layout format; `text-layout` is
+   * layout stored in a `Private` inside `Text`, which SCL does not permit.
+   */
+  @property({ type: String })
+  kind: 'namespace' | 'text-layout' = 'namespace';
 
   @state()
   private converting = false;
@@ -52,7 +59,37 @@ export default class SldMigrationNotice extends ScopedElementsMixin(
     }
   }
 
+  private renderTextLayoutNotice() {
+    return html`<div
+      class="migration"
+      role="region"
+      aria-label="SLD text layout update required"
+    >
+      <oscd-icon class="migration-icon">shield</oscd-icon>
+      <h2>SLD text layout update required</h2>
+      <p class="migration-lead">
+        This file stores the position and formatting of some text labels inside
+        the <code>Text</code> elements themselves. The SCL schema does not allow
+        that, so it can make the file invalid. To keep working on this diagram
+        here, the label layout must be moved to the parent element's SLD layout
+        data. Only <em>where</em> the layout is stored changes; your text and
+        electrical model are untouched. You can undo the change.
+      </p>
+      <oscd-filled-button
+        class="migration-action"
+        ?disabled=${this.converting}
+        @click="${() => this.handleConvert()}"
+        >${this.converting
+          ? 'Updating…'
+          : 'Update Text Layout'}</oscd-filled-button
+      >
+    </div>`;
+  }
+
   render() {
+    if (this.kind === 'text-layout') {
+      return this.renderTextLayoutNotice();
+    }
     return html`<div
       class="migration"
       role="region"
