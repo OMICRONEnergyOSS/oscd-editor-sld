@@ -61,10 +61,22 @@ tiers cooperate.
 ### Additional substation resize validation
 
 Set `SldEditor.validateSubstationResize` to a synchronous callback receiving
-`(substation, width, height, dimension)`, where dimensions are numbers and
-`dimension` is `'width'` or `'height'`. It runs on input changes and Resize.
-Return a non-empty string to show an inline error and block resizing; otherwise,
-built-in validation applies.
+`(substation, width, height, dimension)`. `width` and `height` are the full
+proposed dimensions (whole numbers ≥ 1) and `dimension` (`'width'` or
+`'height'`) names the field being validated.
+
+The callback runs for both fields on every input change and again on Resize, so
+it may be called more than once per edit and must be cheap and free of side
+effects. It is skipped while either field is not a whole number ≥ 1; the
+built-in "whole number" error is shown instead.
+
+Return a non-empty string to show it as an inline error on that field and block
+resizing. Return `undefined` or an empty string to accept, in which case the
+built-in voltage-level validation still applies. If the callback throws, the
+error is logged to the console and treated as an accept.
+
+The property is available on `SldEditor` only; the `OscdEditorSld` plugin does
+not forward it.
 
 ## Linting and formatting
 

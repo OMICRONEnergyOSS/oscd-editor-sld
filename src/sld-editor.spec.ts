@@ -98,6 +98,7 @@ import {
 import {
   newGroundTerminalEvent,
 } from './foundations/events.js';
+import { SldResizeSubstationDialog } from './sld-resize-substation-dialog.js';
 
 customElements.define('sld-editor', SldEditor);
 
@@ -633,11 +634,21 @@ describe('SLD Editor', () => {
 
   describe('given a substation', () => {
     let sldSubstationViewer: SldSubstationViewer;
+    let dialog: SldResizeSubstationDialog;
+
+    const openResizeDialog = async () => {
+      getSldSubstationHeader(element)
+        ?.shadowRoot?.querySelectorAll<OscdIconButton>('h2 > oscd-icon-button')[1]
+        ?.shadowRoot?.querySelector<HTMLElement>('#button')
+        ?.click();
+      await dialog.updateComplete;
+    };
     beforeEach(async () => {
       const subSt = element.doc.createElement('Substation');
       subSt.setAttribute('name', 'S1');
       setSLDAttributes(subSt, element.nsp, { w: '51', h: '26' });
       element.doc.documentElement.appendChild(subSt);
+      dialog = element.resizeDialog;
       element.requestUpdate();
       await element.updateComplete;
 
@@ -652,13 +663,7 @@ describe('SLD Editor', () => {
     });
 
     it('allows resizing substations', async () => {
-      getSldSubstationHeader(element)
-        ?.shadowRoot?.querySelectorAll<OscdIconButton>('h2 > oscd-icon-button')[1]
-        ?.shadowRoot?.querySelector<HTMLElement>('#button')
-        ?.click();
-      await element.updateComplete;
-      const dialog = element.resizeDialog;
-      await dialog.updateComplete;
+      await openResizeDialog();
 
       const width = dialog.shadowRoot!.querySelector<OscdOutlinedTextField>(
         '#substationWidth',
@@ -686,6 +691,20 @@ describe('SLD Editor', () => {
       expect(sldAttribute(sldSubstationViewer.substation, 'w')).to.equal(
         '1337',
       );
+    });
+
+    it('applies validateSubstationResize from the editor to the resize dialog', async () => {
+      element.validateSubstationResize = () => 'Blocked by host';
+      await element.updateComplete;
+
+      await openResizeDialog();
+      const width = dialog.shadowRoot!.querySelector<OscdOutlinedTextField>('#substationWidth')!;
+
+      width.value = '60';
+      width.dispatchEvent(new Event('input'));
+
+      expect(dialog.validateSubstationResize).to.equal(element.validateSubstationResize);
+      expect(width.validationMessage).to.equal('Blocked by host');
     });
 
     it('routes substation deletion from the header through the editor', async () => {
