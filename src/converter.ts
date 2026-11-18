@@ -335,74 +335,91 @@ function noLayoutAttributes(element: Element): boolean {
   return attributes(element).some(attr => attr !== null);
 }
 
-function pushToPrivate(element: Element, nsd: string): EditV2 {
-  if (!noLayoutAttributes(element)) {
-    return [];
-  }
+const textLayoutNames = ['lx', 'ly', 'rot', 'color', 'weight'];
 
-  const resetOldAttributes: SetAttributes = {
+function copyLayoutAttributes(
+  target: Element,
+  element: Element,
+  nsd: string,
+  only?: string[],
+): void {
+  const names = [
+    'x',
+    'y',
+    'w',
+    'h',
+    'rot',
+    'lx',
+    'ly',
+    'kind',
+    'flip',
+    'color',
+    'weight',
+    'uuid',
+  ];
+  const values = attributes(element);
+  names.forEach((name, i) => {
+    if (values[i] && (!only || only.includes(name))) {
+      target.setAttributeNS(newNs, `${nsd}:${name}`, values[i]!);
+    }
+  });
+}
+
+function resetOldAttributes(element: Element): SetAttributes {
+  return {
     element,
     attributes: {},
     attributesNS: {
       [`${oldNs}`]: nulledAttributes,
     },
   };
+}
+
+function pushToPrivate(element: Element, nsd: string): EditV2 {
+  // The SCL Text element cannot hold a Private, so its layout is stored as a
+  // TextLayout in the parent's Private.
+  const text = element.querySelector(':scope > Text');
+  const hasOwnLayout = noLayoutAttributes(element);
+  const hasTextLayout = !!text && noLayoutAttributes(text);
+  if (!hasOwnLayout && !hasTextLayout) {
+    return [];
+  }
+
+  const edits: EditV2[] = [];
+  if (hasOwnLayout) {
+    edits.push(resetOldAttributes(element));
+  }
+  if (hasTextLayout) {
+    edits.push(resetOldAttributes(text!));
+  }
 
   const sldPrivate = createElement(element.ownerDocument!, 'Private', {
     type: 'OpenSCD-SLD-Layout',
   });
-  const sldAttributes = element.ownerDocument!.createElementNS(
-    newNs,
-    `${nsd}:SLDAttributes`,
-  );
-  sldPrivate.insertBefore(sldAttributes, null);
-
-  const [x, y, w, h, rot, lx, ly, kind, flip, color, weight, uuid] =
-    attributes(element);
-  if (x) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:x`, x);
+  if (hasOwnLayout) {
+    const sldAttributes = element.ownerDocument!.createElementNS(
+      newNs,
+      `${nsd}:SLDAttributes`,
+    );
+    copyLayoutAttributes(sldAttributes, element, nsd);
+    sldPrivate.appendChild(sldAttributes);
   }
-  if (y) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:y`, y);
-  }
-  if (w) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:w`, w);
-  }
-  if (h) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:h`, h);
-  }
-  if (rot) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:rot`, rot);
-  }
-  if (lx) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:lx`, lx);
-  }
-  if (ly) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:ly`, ly);
-  }
-  if (kind) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:kind`, kind);
-  }
-  if (flip) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:flip`, flip);
-  }
-  if (color) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:color`, color);
-  }
-  if (weight) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:weight`, weight);
-  }
-  if (uuid) {
-    sldAttributes.setAttributeNS(newNs, `${nsd}:uuid`, uuid);
+  if (hasTextLayout) {
+    const layout = element.ownerDocument!.createElementNS(
+      newNs,
+      `${nsd}:TextLayout`,
+    );
+    copyLayoutAttributes(layout, text!, nsd, textLayoutNames);
+    sldPrivate.appendChild(layout);
   }
 
-  const insertPrivate: EditV2 = {
+  edits.push({
     parent: element,
     node: sldPrivate,
     reference: getReference(element, sldPrivate.tagName),
-  };
+  });
 
-  return [resetOldAttributes, insertPrivate];
+  return edits;
 }
 
 function replaceNamespace(doc: XMLDocument, nsd: string): EditV2[] {
@@ -429,7 +446,7 @@ function replaceNamespace(doc: XMLDocument, nsd: string): EditV2[] {
 
 export function convertSldLayout(doc: XMLDocument, nsd: string): EditV2 {
   const processElements = doc.querySelectorAll(
-    ':root > Substation, :root > Substation :not(Section, Vertex)',
+    ':root > Substation, :root > Substation :not(Section, Vertex, Text)',
   );
   const privateEdits: EditV2[] = Array.from(processElements).flatMap(el =>
     pushToPrivate(el, nsd),
