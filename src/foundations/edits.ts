@@ -10,7 +10,9 @@ import { iedReferences, isIedReferenceElement } from './ied.js';
 import {
   attributes,
   getSLDAttributes,
+  layoutPrivate,
   setSLDAttributes,
+  textLayout,
 } from './sld-attributes.js';
 import { updateSLDAttributes } from './sld-attribute-edits.js';
 import { privType, sldNs, uuid, xmlnsNs, hasSldNamespace, defaultSldNsPrefix } from '../foundations.js';
@@ -185,24 +187,81 @@ export function createFlipElementEdits(
   return edits;
 }
 
-export function createAddTextEdit(element: Element, nsp: string): EditV2 {
+export function createAddTextEdit(element: Element, nsp: string): EditV2[] {
   const {
     pos: [x, y],
   } = attributes(element);
-  const text = element.ownerDocument.createElementNS(
-    element.ownerDocument.documentElement.namespaceURI,
-    'Text',
-  );
-  setSLDAttributes(text, nsp, {
+  const doc = element.ownerDocument;
+  const text = doc.createElementNS(doc.documentElement.namespaceURI, 'Text');
+  const values = {
     lx: x.toString(),
     ly: (y < 2 ? y + 1 : y - 1).toString(),
-  });
-
-  return {
-    node: text,
-    parent: element,
-    reference: getReference(element, 'Text'),
   };
+  const edits: EditV2[] = [
+    { node: text, parent: element, reference: getReference(element, 'Text') },
+  ];
+
+  const existing = textLayout(element);
+  if (existing) {
+    edits.push(updateTextLayoutEdit(existing, nsp, values));
+    return edits;
+  }
+
+  const layout = doc.createElementNS(sldNs, `${nsp}:TextLayout`);
+  Object.entries(values).forEach(([key, value]) =>
+    layout.setAttributeNS(sldNs, `${nsp}:${key}`, value),
+  );
+  const priv = layoutPrivate(element);
+  if (priv) {
+    edits.push({ node: layout, parent: priv, reference: null });
+  } else {
+    const newPriv = doc.createElementNS(
+      doc.documentElement.namespaceURI,
+      'Private',
+    );
+    newPriv.setAttribute('type', privType);
+    newPriv.appendChild(layout);
+    edits.push({
+      node: newPriv,
+      parent: element,
+      reference: getReference(element, 'Private'),
+    });
+  }
+
+  return edits;
+}
+
+function updateTextLayoutEdit(
+  layout: Element,
+  nsp: string,
+  values: Record<string, string>,
+): EditV2 {
+  return {
+    element: layout,
+    attributesNS: {
+      [sldNs]: Object.fromEntries(
+        Object.entries(values).map(([key, value]) => [`${nsp}:${key}`, value]),
+      ),
+    },
+  };
+}
+
+/**
+ * Removes a `Text` together with its `TextLayout`, which is stored in the
+ * parent's layout `Private` rather than in the `Text` itself. A layout
+ * `Private` left empty by this is removed as well.
+ */
+export function createRemoveTextEdits(text: Element): EditV2[] {
+  const parent = text.parentElement;
+  const layout = parent ? textLayout(parent) : null;
+  if (!layout) {
+    return [{ node: text }];
+  }
+  const priv = layout.parentElement!;
+  return [
+    { node: text },
+    { node: priv.children.length === 1 ? priv : layout },
+  ];
 }
 
 export function createDeleteBusBarEdits(busBar: Element): EditV2[] {
@@ -561,15 +620,19 @@ export function shiftTextEdits(
   dy: number,
   nsp: string,
 ): EditV2[] {
-  return Array.from(element.querySelectorAll('Text')).map((text) => {
-    const {
-      label: [textLX, textLY],
-    } = attributes(text);
-    return updateSLDAttributes(text, nsp, {
-      lx: (textLX + dx).toString(),
-      ly: (textLY + dy).toString(),
+  // Each parent has one TextLayout, so shift once per parent, not per Text.
+  const seen = new Set<Element | null>();
+  return Array.from(element.querySelectorAll('Text'))
+    .filter(text => !seen.has(text.parentElement) && seen.add(text.parentElement))
+    .map((text) => {
+      const {
+        label: [textLX, textLY],
+      } = attributes(text);
+      return updateSLDAttributes(text, nsp, {
+        lx: (textLX + dx).toString(),
+        ly: (textLY + dy).toString(),
+      });
     });
-  });
 }
 
 export function shiftDescendantEdits(

@@ -7,6 +7,7 @@ import {
   createFlipElementEdits,
   createGroundTerminalEdits,
   createAddTextEdit,
+  createRemoveTextEdits,
   createResizeTLEdits,
   createRotateEdits,
   disconnectExternalEdits,
@@ -18,6 +19,22 @@ import {
 } from './edits.js';
 import { sldNs } from '../foundations.js';
 import { createSCLDoc, sldFixture } from '../test-helpers.js';
+
+function bayWithTextLayout(): XMLDocument {
+  return createSCLDoc(`
+    <Substation name="S1">
+      <VoltageLevel name="V1">
+        <Bay name="B1">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:SLDAttributes smth:x="1" smth:y="1" smth:w="5" smth:h="5"/>
+            <smth:TextLayout smth:lx="2" smth:ly="3"/>
+          </Private>
+          <Text>Note</Text>
+        </Bay>
+      </VoltageLevel>
+    </Substation>
+  `);
+}
 
 describe('edits', () => {
   describe('createGroundTerminalEdits', () => {
@@ -206,13 +223,28 @@ describe('edits', () => {
               </ConductingEquipment>
             ` });
       const eq = doc.querySelector('ConductingEquipment')!;
-      const edit = createAddTextEdit(eq, 'smth') as {
+      const [textEdit, layoutEdit] = createAddTextEdit(eq, 'smth') as {
         node: Element;
         parent: Element;
         reference: Element | null;
-      };
-      expect(edit.node.tagName).to.equal('Text');
-      expect(edit.parent).to.equal(eq);
+      }[];
+      expect(textEdit.node.tagName).to.equal('Text');
+      expect(textEdit.parent).to.equal(eq);
+      expect(layoutEdit.node.localName).to.equal('TextLayout');
+      expect(layoutEdit.node.getAttributeNS(sldNs, 'lx')).to.equal('3');
+      expect(layoutEdit.parent).to.equal(eq.querySelector('Private'));
+    });
+  });
+
+  describe('createRemoveTextEdits', () => {
+    it('removes the Text and its TextLayout', () => {
+      const doc = bayWithTextLayout();
+      const text = doc.querySelector('Text')!;
+      const edits = createRemoveTextEdits(text) as { node: Element }[];
+      expect(edits.map(e => e.node.localName)).to.deep.equal([
+        'Text',
+        'TextLayout',
+      ]);
     });
   });
 
@@ -439,26 +471,16 @@ describe('edits', () => {
   });
 
   describe('shiftTextEdits', () => {
-    it('shifts all Text children by delta', () => {
-      const doc = sldFixture({ children: `
-              <Private type="OpenSCD-SLD-Layout">
-                <smth:SLDAttributes smth:x="1" smth:y="1" smth:w="5" smth:h="5"/>
-              </Private>
-              <Text>
-                <Private type="OpenSCD-SLD-Layout">
-                  <smth:SLDAttributes smth:lx="2" smth:ly="3"/>
-                </Private>
-              </Text>
-              <Text>
-                <Private type="OpenSCD-SLD-Layout">
-                  <smth:SLDAttributes smth:lx="4" smth:ly="5"/>
-                </Private>
-              </Text>
-            ` });
+    it('shifts the TextLayout of each Text by delta', () => {
+      const doc = bayWithTextLayout();
       const bay = doc.querySelector('Bay')!;
       const edits = shiftTextEdits(bay, 2, 3, 'smth');
-      expect(edits).to.have.length(2);
-      const edit0 = edits[0] as { attributesNS: Record<string, Record<string, string | null>> };
+      expect(edits).to.have.length(1);
+      const edit0 = edits[0] as {
+        element: Element;
+        attributesNS: Record<string, Record<string, string | null>>;
+      };
+      expect(edit0.element.localName).to.equal('TextLayout');
       expect(edit0.attributesNS[sldNs]['smth:lx']).to.equal('4');
       expect(edit0.attributesNS[sldNs]['smth:ly']).to.equal('6');
     });

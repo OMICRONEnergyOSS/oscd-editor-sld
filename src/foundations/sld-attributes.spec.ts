@@ -226,4 +226,53 @@ describe('sld-attributes', () => {
       expect(attributes(el).kind).to.equal('default');
     });
   });
+
+  describe('Text layout', () => {
+    const textDoc = (inner: string) =>
+      createSCLDoc(`
+        <Substation name="S1">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:SLDAttributes smth:w="5" smth:h="5"/>
+            ${inner}
+          </Private>
+          <Text>Note</Text>
+        </Substation>
+      `);
+
+    it('reads a Text layout from the parent TextLayout', () => {
+      const doc = textDoc(
+        '<smth:TextLayout smth:lx="3" smth:ly="4" smth:rot="1" smth:weight="500" smth:color="#F00"/>',
+      );
+      const attrs = attributes(doc.querySelector('Text')!);
+      expect(attrs.label).to.deep.equal([3, 4]);
+      expect(attrs.rot).to.equal(1);
+      expect(attrs.weight).to.equal(500);
+      expect(attrs.color).to.equal('#F00');
+    });
+
+    it('writes a Text layout to the parent TextLayout, not into Text', () => {
+      const doc = textDoc('');
+      const text = doc.querySelector('Text')!;
+      setSLDAttributes(text, 'smth', { lx: '2' });
+      expect(text.querySelector('Private')).to.equal(null);
+      expect(
+        doc
+          .querySelector('Substation > Private > TextLayout')!
+          .getAttributeNS(sldNs, 'lx'),
+      ).to.equal('2');
+    });
+
+    it('ignores a legacy Private inside Text', () => {
+      const doc = createSCLDoc(`
+        <Substation name="S1">
+          <Text>
+            <Private type="OpenSCD-SLD-Layout">
+              <smth:SLDAttributes smth:lx="9" smth:ly="9"/>
+            </Private>
+          </Text>
+        </Substation>
+      `);
+      expect(attributes(doc.querySelector('Text')!).label).to.deep.equal([0, 0]);
+    });
+  });
 });
