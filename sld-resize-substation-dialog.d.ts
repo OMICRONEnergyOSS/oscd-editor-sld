@@ -3,6 +3,7 @@ import { OscdFilledButton } from '@omicronenergy/oscd-ui/button/OscdFilledButton
 import { OscdTextButton } from '@omicronenergy/oscd-ui/button/OscdTextButton.js';
 import { OscdDialog } from '@omicronenergy/oscd-ui/dialog/OscdDialog.js';
 import { OscdOutlinedTextField } from '@omicronenergy/oscd-ui/textfield/OscdOutlinedTextField.js';
+export type SubstationResizeValidator = (substation: Element, width: number, height: number, dimension: 'width' | 'height') => string | undefined;
 declare const SldResizeSubstationDialog_base: typeof LitElement & import("@open-wc/dedupe-mixin").Constructor<import("@open-wc/scoped-elements/types.js").ScopedElementsHost> & import("@open-wc/scoped-elements/types.js").ScopedElementsHostConstructor;
 /**
  * A self-contained dialog for resizing a `Substation`. Owned by the editor
@@ -22,19 +23,32 @@ export declare class SldResizeSubstationDialog extends SldResizeSubstationDialog
         'oscd-outlined-text-field': typeof OscdOutlinedTextField;
     };
     substation?: Element;
+    validateSubstationResize?: SubstationResizeValidator;
     private dialog;
     private widthTextField;
     private heightTextField;
     show(substation: Element): Promise<void>;
+    private validateAll;
     private confirm;
     /**
      * Feeds the substation-bounds rule into the field's standard constraint
      * validation via `setCustomValidity`, then `reportValidity()` to surface (or
      * clear) the inline error — Material suppresses the native popup. Each field
      * is checked against the other dimension's committed value so the error is
-     * attributed to the dimension the user undersized. Returns the field validity.
+     * attributed to the dimension the user undersized. The host's
+     * `validateSubstationResize` callback, by contrast, receives both proposed
+     * dimensions and takes precedence over that built-in check. Returns the field
+     * validity.
      */
     private validate;
+    /**
+     * Calls the host's validator. A throwing callback must not break the dialog,
+     * so the error is logged and treated as "no custom message" (fail open): the
+     * built-in validation still applies.
+     */
+    private runHostValidator;
+    private resetFields;
+    private closeDialog;
     render(): import("lit-html").TemplateResult<1>;
 }
 export {};

@@ -69782,7 +69782,7 @@ function iedReferenceState(referencedIed, context, { preview = false } = {}) {
     };
 }
 function iedReferenceActions(referencedIed, context, state) {
-    let handleClick = () => { };
+    let handleClick;
     const [x, y] = state.position;
     if (targetInMode(context.interaction, 'placing') === referencedIed &&
         canPlaceAt(context.substation, referencedIed, x, y, 1, 1)) {
@@ -70228,7 +70228,7 @@ function powerTransformerState(transformer, context, { preview = false } = {}) {
 }
 function powerTransformerActions(transformer, context, state) {
     const [x, y] = state.position;
-    let handleClick = A;
+    let handleClick;
     if (targetInMode(context.interaction, 'placing') === transformer) {
         handleClick = (e) => {
             if (targetInMode(context.interaction, 'placing') === transformer) {
@@ -74872,6 +74872,14 @@ OscdOutlinedTextField.scopedElements = {
     'oscd-outlined-field': OscdOutlinedField,
 };
 
+/** Whole number ≥ 1, or NaN for empty, fractional, non-finite or \< 1 input. */
+function parseDimension(raw) {
+    if (raw === undefined || raw.trim() === '') {
+        return NaN;
+    }
+    const n = Number(raw);
+    return Number.isInteger(n) && n >= 1 ? n : NaN;
+}
 /**
  * A self-contained dialog for resizing a `Substation`. Owned by the editor
  * controller (`SldEditor`) so there is exactly one instance regardless of how
@@ -74885,23 +74893,25 @@ OscdOutlinedTextField.scopedElements = {
 class SldResizeSubstationDialog extends ScopedElementsMixin(i$4) {
     async show(substation) {
         this.substation = substation;
+        this.requestUpdate(); // SCL doc may have changed, safest to update.
         await this.updateComplete;
+        this.resetFields();
         this.dialog.open = true;
     }
-    confirm() {
-        if (!this.substation) {
-            return;
-        }
-        // Surface validity through the standard constraint-validation API; if
-        // either field is invalid, report it and keep the dialog open.
+    validateAll() {
+        // No short-circuit: revalidate both so neither keeps a stale error.
         const widthOk = this.validate(this.widthTextField);
         const heightOk = this.validate(this.heightTextField);
-        if (!widthOk || !heightOk) {
+        return widthOk && heightOk;
+    }
+    confirm() {
+        if (!this.substation || !this.validateAll()) {
             return;
         }
         const { dim: [oldW, oldH], } = attributes$1(this.substation);
-        const [newW, newH] = [this.widthTextField, this.heightTextField].map(ui => parseInt(ui.value ?? '1', 10));
-        this.dialog.open = false;
+        const newW = parseDimension(this.widthTextField.value);
+        const newH = parseDimension(this.heightTextField.value);
+        this.closeDialog();
         if (newW === oldW && newH === oldH) {
             return;
         }
@@ -74912,26 +74922,62 @@ class SldResizeSubstationDialog extends ScopedElementsMixin(i$4) {
      * validation via `setCustomValidity`, then `reportValidity()` to surface (or
      * clear) the inline error — Material suppresses the native popup. Each field
      * is checked against the other dimension's committed value so the error is
-     * attributed to the dimension the user undersized. Returns the field validity.
+     * attributed to the dimension the user undersized. The host's
+     * `validateSubstationResize` callback, by contrast, receives both proposed
+     * dimensions and takes precedence over that built-in check. Returns the field
+     * validity.
      */
     validate(field) {
         if (!this.substation) {
             return true;
         }
+        const width = parseDimension(this.widthTextField.value);
+        const height = parseDimension(this.heightTextField.value);
+        const value = field === this.widthTextField ? width : height;
+        if (Number.isNaN(value)) {
+            field.setCustomValidity('Enter a whole number of at least 1');
+            return field.reportValidity();
+        }
+        // The other field may be invalid mid-edit; skip the host callback until both parse.
+        const message = Number.isNaN(width) || Number.isNaN(height)
+            ? undefined
+            : this.runHostValidator(width, height, field === this.widthTextField ? 'width' : 'height');
         const { dim: [oldW, oldH], } = attributes$1(this.substation);
-        const value = parseInt(field.value ?? '', 10);
         const fits = field === this.widthTextField
             ? canResizeTo(this.substation, this.substation, value, oldH)
             : canResizeTo(this.substation, this.substation, oldW, value);
-        field.setCustomValidity(fits ? '' : 'Too small to contain the substation’s voltage levels');
+        field.setCustomValidity(message || (fits ? '' : 'Too small to contain the substation’s voltage levels'));
         return field.reportValidity();
+    }
+    /**
+     * Calls the host's validator. A throwing callback must not break the dialog,
+     * so the error is logged and treated as "no custom message" (fail open): the
+     * built-in validation still applies.
+     */
+    runHostValidator(width, height, dimension) {
+        try {
+            return this.validateSubstationResize?.(this.substation, width, height, dimension);
+        }
+        catch (error) {
+            console.error('validateSubstationResize threw', error);
+            return undefined;
+        }
+    }
+    resetFields() {
+        for (const field of [this.widthTextField, this.heightTextField]) {
+            field.reset();
+            field.setCustomValidity('');
+        }
+    }
+    closeDialog() {
+        this.dialog.open = false;
     }
     render() {
         if (!this.substation) {
             return b `<oscd-dialog></oscd-dialog>`;
         }
         const { dim: [w, h], } = attributes$1(this.substation);
-        return b `<oscd-dialog>
+        return b `<oscd-dialog @cancel=${this.closeDialog}>
       <div slot="headline">Resize ${this.substation.getAttribute('name')}</div>
       <form
         slot="content"
@@ -74946,7 +74992,7 @@ class SldResizeSubstationDialog extends ScopedElementsMixin(i$4) {
           value="${w}"
           supporting-text="Must stay large enough to contain all voltage levels"
           dialogInitialFocus
-          @input=${() => this.validate(this.widthTextField)}
+          @input=${() => this.validateAll()}
         ></oscd-outlined-text-field>
         <oscd-outlined-text-field
           id="substationHeight"
@@ -74956,11 +75002,11 @@ class SldResizeSubstationDialog extends ScopedElementsMixin(i$4) {
           label="Height"
           value="${h}"
           supporting-text="Must stay large enough to contain all voltage levels"
-          @input=${() => this.validate(this.heightTextField)}
+          @input=${() => this.validateAll()}
         ></oscd-outlined-text-field>
       </form>
       <div slot="actions">
-        <oscd-text-button @click=${() => (this.dialog.open = false)}
+        <oscd-text-button @click=${this.closeDialog}
           >Cancel</oscd-text-button
         >
         <oscd-filled-button @click=${() => this.confirm()}
@@ -74979,6 +75025,9 @@ SldResizeSubstationDialog.scopedElements = {
 __decorate([
     n$3()
 ], SldResizeSubstationDialog.prototype, "substation", void 0);
+__decorate([
+    n$3({ attribute: false })
+], SldResizeSubstationDialog.prototype, "validateSubstationResize", void 0);
 __decorate([
     e$5('oscd-dialog')
 ], SldResizeSubstationDialog.prototype, "dialog", void 0);
@@ -79922,6 +79971,7 @@ class SldEditor extends ScopedElementsMixin(i$4) {
       .substationOf=${this.substationOf}
     ></sld-coordinate-tooltip>
     <sld-resize-substation-dialog
+      .validateSubstationResize=${this.validateSubstationResize}
       @oscd-sld-resize=${({ detail: { element, w, h } }) => {
             this.handleResize(element, w, h);
         }}
@@ -79981,6 +80031,9 @@ __decorate([
 __decorate([
     n$3({ type: Boolean })
 ], SldEditor.prototype, "showIeds", void 0);
+__decorate([
+    n$3({ attribute: false })
+], SldEditor.prototype, "validateSubstationResize", void 0);
 __decorate([
     r$2()
 ], SldEditor.prototype, "gridSize", void 0);

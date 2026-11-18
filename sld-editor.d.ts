@@ -10,12 +10,14 @@ import type { ConnectDetail, SubstationCommandEvent, InteractionIntent } from '.
 import type { Point } from './foundations/geometry.js';
 import type { InteractionState } from './foundations/interaction-mode.js';
 import type { Style } from './foundations/sld-attributes.js';
+import type { SubstationResizeValidator } from './sld-resize-substation-dialog.js';
 export type PlacementResult = {
     element: Element;
     parent: Element;
     x: number;
     y: number;
 };
+export type { SubstationResizeValidator } from './sld-resize-substation-dialog.js';
 declare const SldEditor_base: typeof LitElement & import("@open-wc/dedupe-mixin").Constructor<import("@open-wc/scoped-elements/types.js").ScopedElementsHost> & import("@open-wc/scoped-elements/types.js").ScopedElementsHostConstructor;
 export declare class SldEditor extends SldEditor_base {
     static scopedElements: {
@@ -42,6 +44,7 @@ export declare class SldEditor extends SldEditor_base {
         style: Style;
     }[];
     showIeds?: boolean;
+    validateSubstationResize?: SubstationResizeValidator;
     gridSize: number;
     get nsp(): string;
     interaction: InteractionState;
@@ -118,4 +121,3 @@ export declare class SldEditor extends SldEditor_base {
     isNewBayOrVL(element: Element): boolean;
     render(): import("lit-html").TemplateResult<1>;
 }
-export {};
