@@ -48,10 +48,56 @@ export function xmlBoolean(value?: string | null) {
   return ['true', '1'].includes(value?.trim() ?? 'false');
 }
 
+/** Finds the parent's `Private[@type="OpenSCD-SLD-Layout"]`, if any. */
+export function layoutPrivate(parent: Element): Element | null {
+  return (
+    Array.from(parent.children).find(
+      child =>
+        child.localName === 'Private' &&
+        child.getAttribute('type') === privType,
+    ) ?? null
+  );
+}
+
+/**
+ * Finds (or, given a prefix, creates) the `TextLayout` that describes the
+ * single direct `Text` child of `parent`. It lives in the parent's layout
+ * `Private`, as SCL does not permit a `Private` inside `Text`.
+ */
+export function textLayout(parent: Element, nsPrefix?: string): Element | null {
+  const priv = layoutPrivate(parent);
+  const existing = priv
+    ? Array.from(priv.children).find(
+      child =>
+        child.localName === 'TextLayout' && child.namespaceURI === sldNs,
+    ) ?? null
+    : null;
+  if (existing || !nsPrefix) {
+    return existing;
+  }
+
+  const doc = parent.ownerDocument;
+  const privEl =
+    priv ?? doc.createElementNS(doc.documentElement.namespaceURI, 'Private');
+  if (!priv) {
+    privEl.setAttribute('type', privType);
+    parent.insertBefore(privEl, getReference(parent, 'Private'));
+  }
+  const layout = doc.createElementNS(sldNs, `${nsPrefix}:TextLayout`);
+  privEl.appendChild(layout);
+  return layout;
+}
+
 export function sldAttributes(
   element: Element,
   nsPrefix?: string,
 ): Element | null {
+  if (element.localName === 'Text') {
+    return element.parentElement
+      ? textLayout(element.parentElement, nsPrefix)
+      : null;
+  }
+
   if (isIedReferenceElement(element)) {
     const referenceSldAttrs = Array.from(element.children).find(
       child =>

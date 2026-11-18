@@ -4,6 +4,7 @@ import { getReference, removeIED } from '@openscd/scl-lib';
 
 import {
   createAddTextEdit,
+  createRemoveTextEdits,
   createDeleteBusBarEdits,
   createDeleteContainerEdits,
   createFlipElementEdits,
@@ -207,7 +208,7 @@ function transformerMenuItems(
       ? {
         headline: 'Delete Text',
         icon: 'format_strikethrough',
-        handler: () => context.dispatch(newEditEventV2({ node: text })),
+        handler: () => context.dispatch(newEditEventV2(createRemoveTextEdits(text))),
       }
       : {
         headline: 'Add Text',
@@ -291,7 +292,7 @@ function equipmentMenuItems(
         headline: 'Remove Text',
         icon: 'format_strikethrough',
         handler: () =>
-          context.dispatch(newEditEventV2({ node: textElement })),
+          context.dispatch(newEditEventV2(createRemoveTextEdits(textElement))),
       }
       : {
         headline: 'Add Text',
@@ -488,7 +489,7 @@ function busBarMenuItems(
       ? {
         headline: 'Remove Text',
         icon: 'format_strikethrough',
-        handler: () => context.dispatch(newEditEventV2({ node: text })),
+        handler: () => context.dispatch(newEditEventV2(createRemoveTextEdits(text))),
       }
       : {
         headline: 'Add Text',
@@ -552,7 +553,7 @@ function containerMenuItems(
       ? {
         headline: 'Remove Text',
         icon: 'format_strikethrough',
-        handler: () => context.dispatch(newEditEventV2({ node: text })),
+        handler: () => context.dispatch(newEditEventV2(createRemoveTextEdits(text))),
       }
       : {
         headline: 'Add Text',
@@ -597,7 +598,7 @@ function textMenuItems(
     {
       headline: 'Delete',
       icon: 'delete',
-      handler: () => context.dispatch(newEditEventV2({ node: text })),
+      handler: () => context.dispatch(newEditEventV2(createRemoveTextEdits(text))),
     },
   ];
 

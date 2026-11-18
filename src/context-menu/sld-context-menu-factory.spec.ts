@@ -720,13 +720,9 @@ describe('sld-context-menu-factory', () => {
         <ConductingEquipment name="Q1" type="CBR">
           <Private type="OpenSCD-SLD-Layout">
             <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1"/>
+            <smth:TextLayout/>
           </Private>
-          <Text>
-            <Private type="OpenSCD-SLD-Layout">
-              <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1"/>
-            </Private>
-            Label
-          </Text>
+          <Text>Label</Text>
         </ConductingEquipment>
       `);
       const text = doc.querySelector('Text')!;
@@ -742,13 +738,9 @@ describe('sld-context-menu-factory', () => {
         <ConductingEquipment name="Q1" type="CBR">
           <Private type="OpenSCD-SLD-Layout">
             <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1"/>
+            <smth:TextLayout smth:color="#BB1326"/>
           </Private>
-          <Text>
-            <Private type="OpenSCD-SLD-Layout">
-              <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1" smth:color="#BB1326"/>
-            </Private>
-            Label
-          </Text>
+          <Text>Label</Text>
         </ConductingEquipment>
       `);
       const text = doc.querySelector('Text')!;
@@ -764,13 +756,9 @@ describe('sld-context-menu-factory', () => {
         <ConductingEquipment name="Q1" type="CBR">
           <Private type="OpenSCD-SLD-Layout">
             <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1"/>
+            <smth:TextLayout/>
           </Private>
-          <Text>
-            <Private type="OpenSCD-SLD-Layout">
-              <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1"/>
-            </Private>
-            Label
-          </Text>
+          <Text>Label</Text>
         </ConductingEquipment>
       `);
       const text = doc.querySelector('Text')!;
@@ -785,13 +773,9 @@ describe('sld-context-menu-factory', () => {
         <ConductingEquipment name="Q1" type="CBR">
           <Private type="OpenSCD-SLD-Layout">
             <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1"/>
+            <smth:TextLayout smth:weight="500"/>
           </Private>
-          <Text>
-            <Private type="OpenSCD-SLD-Layout">
-              <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1" smth:weight="500"/>
-            </Private>
-            Label
-          </Text>
+          <Text>Label</Text>
         </ConductingEquipment>
       `);
       const text = doc.querySelector('Text')!;
@@ -806,13 +790,9 @@ describe('sld-context-menu-factory', () => {
         <ConductingEquipment name="Q1" type="CBR">
           <Private type="OpenSCD-SLD-Layout">
             <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1"/>
+            <smth:TextLayout/>
           </Private>
-          <Text>
-            <Private type="OpenSCD-SLD-Layout">
-              <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1"/>
-            </Private>
-            Label
-          </Text>
+          <Text>Label</Text>
         </ConductingEquipment>
       `);
       const text = doc.querySelector('Text')!;
@@ -827,13 +807,9 @@ describe('sld-context-menu-factory', () => {
         <ConductingEquipment name="Q1" type="CBR">
           <Private type="OpenSCD-SLD-Layout">
             <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1"/>
+            <smth:TextLayout smth:weight="500" smth:color="#BB1326"/>
           </Private>
-          <Text>
-            <Private type="OpenSCD-SLD-Layout">
-              <smth:SLDAttributes smth:x="3" smth:y="3" smth:w="1" smth:h="1" smth:weight="500" smth:color="#BB1326"/>
-            </Private>
-            Label
-          </Text>
+          <Text>Label</Text>
         </ConductingEquipment>
       `);
       const text = doc.querySelector('Text')!;
