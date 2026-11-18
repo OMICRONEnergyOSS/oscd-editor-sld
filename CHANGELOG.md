@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/compare/oscd-editor-sld-v1.0.0...oscd-editor-sld-v1.1.0) (2026-11-18)
+
+
+### Features
+
+* add custom resize validation tests for substation dimensions ([a813091](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/a81309189181f437ff3464d46f0a84679f8cebe4))
+* add substation resize validation callback ([961cdd4](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/961cdd46df12df4a50a2e5cd258012b77bf510e5))
+
+
+### Bug Fixes
+
+* harden substation resize validation and reset dialog on open ([267b3b8](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/267b3b8c74e3a89df59ef1cb87ba4a5b4727d726))
+
 ## 1.0.0 (2026-07-20)
 
 
