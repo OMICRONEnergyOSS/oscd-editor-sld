@@ -498,25 +498,135 @@ describe('edits', () => {
   });
 
   describe('shiftDescendantEdits', () => {
-    it('shifts nested equipment and vertices by delta', () => {
+    it('shifts positioned SCL descendants at any depth by delta', () => {
       const doc = sldFixture({ children: `
-              <Private type="OpenSCD-SLD-Layout">
-                <smth:SLDAttributes smth:x="1" smth:y="1" smth:w="5" smth:h="5"/>
-              </Private>
-              <ConductingEquipment name="Q1" type="CBR">
-                <Private type="OpenSCD-SLD-Layout">
-                  <smth:SLDAttributes smth:x="2" smth:y="2" smth:lx="3" smth:ly="3"/>
-                </Private>
-              </ConductingEquipment>
-            ` });
+        <Private type="OpenSCD-SLD-Layout">
+          <smth:SLDAttributes smth:x="1" smth:y="1" smth:w="5" smth:h="5"/>
+        </Private>
+        <ConductingEquipment name="Q1" type="CBR">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:SLDAttributes smth:x="2" smth:y="2" smth:lx="3" smth:ly="3"/>
+          </Private>
+          <EqFunction name="EF1">
+            <Private type="OpenSCD-SLD-Layout">
+              <smth:SLDAttributes smth:x="3.5" smth:y="4.5" smth:lx="4" smth:ly="5"/>
+            </Private>
+          </EqFunction>
+        </ConductingEquipment>
+        <PowerTransformer name="T1">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:SLDAttributes smth:x="5" smth:y="6" smth:lx="7" smth:ly="8"/>
+          </Private>
+        </PowerTransformer>
+        <ConnectivityNode name="L1">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:Section><smth:Vertex smth:x="8" smth:y="9"/></smth:Section>
+          </Private>
+        </ConnectivityNode>
+        <Private type="OpenSCD-SLD-Layout">
+          <smth:Reference smth:type="IED" smth:id="IED1">
+            <smth:SLDAttributes smth:x="10" smth:y="11" smth:lx="12" smth:ly="13"/>
+          </smth:Reference>
+        </Private>
+      ` });
       const bay = doc.querySelector('Bay')!;
+      const equipment = doc.querySelector('ConductingEquipment')!;
+      const eqFunction = doc.querySelector('EqFunction')!;
+      const transformer = doc.querySelector('PowerTransformer')!;
+      const reference = bay.getElementsByTagNameNS(sldNs, 'Reference')[0];
       const edits = shiftDescendantEdits(bay, 1, 2, 'smth');
-      expect(edits).to.have.length(1);
-      const edit = edits[0] as { attributesNS: Record<string, Record<string, string | null>> };
-      expect(edit.attributesNS[sldNs]['smth:x']).to.equal('3');
-      expect(edit.attributesNS[sldNs]['smth:y']).to.equal('4');
-      expect(edit.attributesNS[sldNs]['smth:lx']).to.equal('4');
-      expect(edit.attributesNS[sldNs]['smth:ly']).to.equal('5');
+      expect(edits).to.deep.equal([
+        {
+          element: equipment.getElementsByTagNameNS(sldNs, 'SLDAttributes')[0],
+          attributesNS: { [sldNs]: {
+            'smth:x': '3', 'smth:y': '4', 'smth:lx': '4', 'smth:ly': '5',
+          } },
+        },
+        {
+          element: eqFunction.getElementsByTagNameNS(sldNs, 'SLDAttributes')[0],
+          attributesNS: { [sldNs]: {
+            'smth:x': '4.5', 'smth:y': '6.5', 'smth:lx': '5', 'smth:ly': '7',
+          } },
+        },
+        {
+          element: transformer.getElementsByTagNameNS(sldNs, 'SLDAttributes')[0],
+          attributesNS: { [sldNs]: {
+            'smth:x': '6', 'smth:y': '8', 'smth:lx': '8', 'smth:ly': '10',
+          } },
+        },
+        {
+          element: bay.getElementsByTagNameNS(sldNs, 'Vertex')[0],
+          attributesNS: { [sldNs]: { 'smth:x': '9', 'smth:y': '11' } },
+        },
+        {
+          element: reference.getElementsByTagNameNS(sldNs, 'SLDAttributes')[0],
+          attributesNS: { [sldNs]: {
+            'smth:x': '11', 'smth:y': '13', 'smth:lx': '13', 'smth:ly': '15',
+          } },
+        },
+      ]);
+    });
+
+    it('skips missing coordinates, foreign elements and attributes outside the SLD namespace', () => {
+      const doc = sldFixture({ children: `
+        <Function name="MissingY">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:SLDAttributes smth:x="2"/>
+          </Private>
+        </Function>
+        <Function name="MissingX">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:SLDAttributes smth:y="2"/>
+          </Private>
+        </Function>
+        <ConductingEquipment name="NoPosition" type="CBR"/>
+        <PowerTransformer name="PartialPosition">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:SLDAttributes smth:x="4"/>
+          </Private>
+        </PowerTransformer>
+        <Private type="OpenSCD-SLD-Layout">
+          <smth:Reference smth:type="IED" smth:id="IED1"/>
+        </Private>
+        <ConnectivityNode name="L1">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:Section><smth:Vertex smth:x="1"/></smth:Section>
+          </Private>
+        </ConnectivityNode>
+        <Function name="WrongNamespace">
+          <Private type="OpenSCD-SLD-Layout">
+            <smth:SLDAttributes x="2" y="3"/>
+          </Private>
+        </Function>
+        <Private type="Other">
+          <foreign:ConductingEquipment xmlns:foreign="urn:other" name="Foreign">
+            <Private type="OpenSCD-SLD-Layout">
+              <smth:SLDAttributes smth:x="2" smth:y="3"/>
+            </Private>
+          </foreign:ConductingEquipment>
+        </Private>
+      ` });
+      const original = new XMLSerializer().serializeToString(doc);
+      expect(shiftDescendantEdits(doc.querySelector('Bay')!, 2, 3, 'smth'))
+        .to.deep.equal([]);
+      expect(new XMLSerializer().serializeToString(doc)).to.equal(original);
+    });
+
+    it('preserves movement of positioned IED references', () => {
+      const doc = sldFixture({ children: `
+        <Private type="OpenSCD-SLD-Layout">
+          <smth:Reference smth:type="IED" smth:id="IED1">
+            <smth:SLDAttributes smth:x="2" smth:y="3" smth:lx="4" smth:ly="5"/>
+          </smth:Reference>
+        </Private>
+      ` });
+      const edits = shiftDescendantEdits(doc.querySelector('Bay')!, 1, 2, 'smth');
+      expect(edits).to.deep.equal([{
+        element: doc.querySelector('Reference > SLDAttributes'),
+        attributesNS: { [sldNs]: {
+          'smth:x': '3', 'smth:y': '5', 'smth:lx': '5', 'smth:ly': '7',
+        } },
+      }]);
     });
 
     it('does not include lx/ly for Vertex descendants', () => {
@@ -528,23 +638,17 @@ describe('edits', () => {
                 <Private type="OpenSCD-SLD-Layout">
                   <smth:Section>
                     <smth:Vertex smth:x="2" smth:y="2"/>
+                    <foreign:Vertex xmlns:foreign="urn:other" smth:x="9" smth:y="9"/>
                   </smth:Section>
                 </Private>
               </ConnectivityNode>
             ` });
       const bay = doc.querySelector('Bay')!;
       const edits = shiftDescendantEdits(bay, 1, 1, 'smth');
-      // Should find the Vertex via querySelectorAll('Vertex') — but it's in SLD namespace
-      // Actually querySelectorAll uses localName, so it matches
-      const vertexEdits = edits.filter((e) => {
-        const edit = e as { element?: Element };
-        return edit.element?.localName === 'Vertex';
-      });
-      // Vertex edits should not have lx/ly
-      vertexEdits.forEach((e) => {
-        const edit = e as { attributesNS: Record<string, Record<string, string | null>> };
-        expect(edit.attributesNS[sldNs]).to.not.have.property('smth:lx');
-      });
+      expect(edits).to.deep.equal([{
+        element: doc.getElementsByTagNameNS(sldNs, 'Vertex')[0],
+        attributesNS: { [sldNs]: { 'smth:x': '3', 'smth:y': '3' } },
+      }]);
     });
   });
 
