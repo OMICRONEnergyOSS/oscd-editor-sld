@@ -20,6 +20,7 @@ export default class OscdEditorSld extends OscdEditorSld_base {
     private _showIeds;
     get showIeds(): boolean;
     sldEditor?: SldEditor;
+    private showLegacyLayoutNotice;
     zoomIn(): void;
     zoomOut(): void;
     startBayTypicalPlacing({ bayTypical, ieds, }: {
@@ -28,6 +29,7 @@ export default class OscdEditorSld extends OscdEditorSld_base {
     }): Promise<void>;
     willUpdate(changedProperties: Map<string, unknown>): void;
     convertSldAttributes(): void;
+    migrateTextLayout(): void;
     /**
      * Intercepts `oscd-edit-v2` events bubbling up from the editor and toolbar and,
      * when the edit writes SLD-layout content to a document that does not yet

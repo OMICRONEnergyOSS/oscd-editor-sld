@@ -18,8 +18,14 @@ export default class SldMigrationNotice extends SldMigrationNotice_base {
         'oscd-icon': typeof OscdIcon;
         'oscd-filled-button': typeof OscdFilledButton;
     };
+    /**
+     * `namespace` is the legacy attribute-based layout format; `text-layout` is
+     * layout stored in a `Private` inside `Text`, which SCL does not permit.
+     */
+    kind: 'namespace' | 'text-layout';
     private converting;
     private handleConvert;
+    private renderTextLayoutNotice;
     render(): import("lit-html").TemplateResult<1>;
     static styles: import("lit").CSSResult[];
 }

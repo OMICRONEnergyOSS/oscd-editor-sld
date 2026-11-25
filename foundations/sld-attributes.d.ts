@@ -29,6 +29,14 @@ export type Attrs = {
     kind: TransformerKind;
 };
 export declare function xmlBoolean(value?: string | null): boolean;
+/** Finds the parent's `Private[@type="OpenSCD-SLD-Layout"]`, if any. */
+export declare function layoutPrivate(parent: Element): Element | null;
+/**
+ * Finds (or, given a prefix, creates) the `TextLayout` that describes the
+ * single direct `Text` child of `parent`. It lives in the parent's layout
+ * `Private`, as SCL does not permit a `Private` inside `Text`.
+ */
+export declare function textLayout(parent: Element, nsPrefix?: string): Element | null;
 export declare function sldAttributes(element: Element, nsPrefix?: string): Element | null;
 export declare function setSLDAttributes(element: Element, nsPrefix: string, values: Record<string, string>): void;
 export declare function getSLDAttributes(element: Element, key: string): string | null;

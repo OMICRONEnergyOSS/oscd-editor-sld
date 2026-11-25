@@ -30,7 +30,13 @@ export declare function declareSldNamespaceEdit(doc: XMLDocument): SetAttributes
 export declare function withSldNamespace(doc: XMLDocument, edits: EditV2): EditV2;
 export declare function createGroundTerminalEdits(equipment: Element, name: TerminalName): EditV2[] | null;
 export declare function createFlipElementEdits(element: Element, nsp: string): EditV2[];
-export declare function createAddTextEdit(element: Element, nsp: string): EditV2;
+export declare function createAddTextEdit(element: Element, nsp: string): EditV2[];
+/**
+ * Removes a `Text` together with its `TextLayout`, which is stored in the
+ * parent's layout `Private` rather than in the `Text` itself. A layout
+ * `Private` left empty by this is removed as well.
+ */
+export declare function createRemoveTextEdits(text: Element): EditV2[];
 export declare function createDeleteBusBarEdits(busBar: Element): EditV2[];
 export declare function createDeleteContainerEdits(container: Element): EditV2[];
 export declare function createRotateEdits(element: Element, nsp: string): EditV2[];
