@@ -12,7 +12,11 @@ import { SldEditor } from './sld-editor.js';
 import { makeBusBar } from './foundations/connectivity.js';
 import { withSldNamespace } from './foundations/edits.js';
 import { sldPrefix } from './foundations.js';
-import { convertSldLayout, hasOldNamespace } from './converter.js';
+import {
+  convertSldLayout,
+  hasLegacyLayout,
+  hasPrivateLayout,
+} from './converter.js';
 import {
   hasLegacyTextLayout,
   migrateTextLayoutEdits,
@@ -69,6 +73,8 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
 
   @query('sld-editor') sldEditor?: SldEditor;
 
+  private showLegacyLayoutNotice = false;
+
   zoomIn() {
     this.gridSize += 3;
   }
@@ -102,6 +108,14 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
   }
 
   willUpdate(changedProperties: Map<string, unknown>) {
+    if (
+      this.doc &&
+      (changedProperties.has('doc') || changedProperties.has('docVersion'))
+    ) {
+      this.showLegacyLayoutNotice =
+        !hasPrivateLayout(this.doc) && hasLegacyLayout(this.doc);
+    }
+
     if (!changedProperties.has('doc')) {
       return;
     }
@@ -168,7 +182,7 @@ export default class OscdEditorSld extends ScopedElementsMixin(LitElement) {
     if (!this.doc) {
       return html`<p>Please open an SCL document</p>`;
     }
-    if (hasOldNamespace(this.doc)) {
+    if (this.showLegacyLayoutNotice) {
       return html`<sld-migration-notice
         @sld-convert=${() => this.convertSldAttributes()}
       ></sld-migration-notice>`;

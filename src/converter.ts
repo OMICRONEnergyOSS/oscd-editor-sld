@@ -27,6 +27,8 @@ const legacyLayoutAttributeNames = [
   'uuid',
 ];
 
+const coordinateNames = ['x', 'y', 'w', 'h', 'lx', 'ly'];
+
 const nulledAttributes = {
   [`${oldPrefix}:x`]: null,
   [`${oldPrefix}:y`]: null,
@@ -479,6 +481,37 @@ export function convertSldLayout(doc: XMLDocument, nsd: string): EditV2 {
   return [...context.edits, ...replaceNamespace(doc, nsd)];
 }
 
-export function hasOldNamespace(doc: XMLDocument): boolean {
-  return !!doc.documentElement.lookupPrefix(oldNs);
+export function hasPrivateLayout(doc: XMLDocument): boolean {
+  const privates = doc.querySelectorAll(
+    `:root > Substation Private[type="${privType}"]`,
+  );
+  for (const priv of Array.from(privates)) {
+    const layout = Array.from(
+      priv.querySelectorAll('SLDAttributes, TextLayout, Vertex'),
+    );
+    for (const element of layout) {
+      if (
+        element.namespaceURI === sldNs &&
+        coordinateNames.some(name => element.hasAttributeNS(sldNs, name))
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export function hasLegacyLayout(doc: XMLDocument): boolean {
+  const elements = doc.querySelectorAll(':root > Substation, :root > Substation *');
+  if (elements.length === 0) {
+    return false;
+  }
+  if (Array.from(elements).some(element =>
+    coordinateNames.some(name => element.hasAttributeNS(oldNs, name)),
+  )) {
+    return true;
+  }
+  return Array.from(doc.querySelectorAll(':root > IED')).some(ied =>
+    ['x', 'y', 'lx', 'ly'].some(name => ied.hasAttributeNS(oldNs, name)),
+  );
 }
