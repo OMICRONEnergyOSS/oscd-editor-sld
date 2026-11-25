@@ -1,11 +1,31 @@
-import { EditV2, SetAttributes } from '@openscd/oscd-api';
 import { getReference, identity } from '@openscd/scl-lib';
 import { createElement } from '@openscd/scl-lib/dist/foundation/utils.js';
+
+import { privType, sldNs } from './foundations.js';
+import { layoutPrivate } from './foundations/sld-attributes.js';
+
+import type { EditV2, SetAttributes } from '@openscd/oscd-api';
 
 const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
 const newNs = 'https://openscd.org/SCL/SSD/SLD/v0';
 
 const oldPrefix = 'esld';
+
+// SLDv1 element layout attributes migrated here, not the complete SLDv1 format.
+const legacyLayoutAttributeNames = [
+  'x',
+  'y',
+  'w',
+  'h',
+  'rot',
+  'lx',
+  'ly',
+  'kind',
+  'flip',
+  'color',
+  'weight',
+  'uuid',
+];
 
 const nulledAttributes = {
   [`${oldPrefix}:x`]: null,
@@ -23,21 +43,75 @@ const nulledAttributes = {
 };
 
 function attributes(element: Element): (string | null)[] {
-  return [
-    'x',
-    'y',
-    'w',
-    'h',
-    'rot',
-    'lx',
-    'ly',
-    'kind',
-    'flip',
-    'color',
-    'weight',
-    'uuid',
-  ].map(name => element.getAttributeNS(oldNs, name));
+  return legacyLayoutAttributeNames.map(name => element.getAttributeNS(oldNs, name));
 }
+
+// Plans one conversion before edits are applied. Substation coordinates and
+// IED references can both need the same Private, even when it does not exist yet.
+function conversionContext() {
+  const edits: EditV2[] = [];
+  const privates = new Map<Element, Element>();
+  const layouts = new Map<Element, Map<string, Element>>();
+
+  // Returns the Private; if new, adds its Insert to edits before child inserts.
+  function privateFor(parent: Element): Element {
+    const planned = privates.get(parent);
+    if (planned) {
+      return planned;
+    }
+
+    const existing = layoutPrivate(parent);
+    if (existing) {
+      privates.set(parent, existing);
+      return existing;
+    }
+
+    const created = createElement(parent.ownerDocument, 'Private', {
+      type: privType,
+    });
+    privates.set(parent, created);
+    edits.push({
+      parent,
+      node: created,
+      reference: getReference(parent, created.tagName),
+    });
+    return created;
+  }
+
+  function addToPrivate(parent: Element, node: Element): void {
+    edits.push({ parent: privateFor(parent), node, reference: null });
+  }
+
+  // Returns the layout child; if new, adds its Insert to edits.
+  function layoutFor(parent: Element, name: string, nsd: string): Element {
+    const priv = privateFor(parent);
+    let children = layouts.get(priv);
+    if (!children) {
+      children = new Map();
+      layouts.set(priv, children);
+    }
+    const planned = children.get(name);
+    if (planned) {
+      return planned;
+    }
+    const existing = Array.from(priv.children).find(
+      child => child.localName === name && child.namespaceURI === sldNs,
+    );
+    const layout = existing ?? parent.ownerDocument.createElementNS(
+      sldNs,
+      `${nsd}:${name}`,
+    );
+    children.set(name, layout);
+    if (!existing) {
+      edits.push({ parent: priv, node: layout, reference: null });
+    }
+    return layout;
+  }
+
+  return { edits, addToPrivate, layoutFor };
+}
+
+type ConversionContext = ReturnType<typeof conversionContext>;
 
 function addVertexes(
   parentSection: Element,
@@ -64,12 +138,11 @@ function addVertexes(
   }
 }
 
-function copySection(newPrivate: Element, section: Element, nsd: string): void {
+function copySection(section: Element, nsd: string): Element {
   const newSection = section.ownerDocument!.createElementNS(
     newNs,
     `${nsd}:Section`,
   );
-  newPrivate.appendChild(newSection);
 
   const bus = section.getAttribute('bus');
   if (bus) {
@@ -78,35 +151,29 @@ function copySection(newPrivate: Element, section: Element, nsd: string): void {
 
   const vertices = Array.from(section.querySelectorAll(':scope > Vertex'));
   vertices.forEach(vertex => addVertexes(newSection, vertex, nsd));
+  return newSection;
 }
 
-function copyConnNodePrivate(connNode: Element, nsd: string): EditV2[] {
+function copyConnNodePrivate(
+  context: ConversionContext,
+  connNode: Element,
+  nsd: string,
+): void {
   const oldPrivate = connNode.querySelector(
     ':scope > Private[type="Transpower-SLD-Vertices"]',
   );
 
   if (!oldPrivate) {
-    return [];
+    return;
   }
 
-  const newPrivate = createElement(connNode.ownerDocument!, 'Private', {
-    type: 'OpenSCD-SLD-Layout',
-  });
   oldPrivate
     .querySelectorAll(':scope > Section')
-    .forEach(section => copySection(newPrivate, section, nsd));
+    .forEach(section =>
+      context.addToPrivate(connNode, copySection(section, nsd)),
+    );
 
-  const removeOldPrivate: EditV2 = {
-    node: oldPrivate!,
-  };
-
-  const insertPrivate: EditV2 = {
-    parent: connNode,
-    node: newPrivate,
-    reference: getReference(connNode, newPrivate.tagName),
-  };
-
-  return [insertPrivate, removeOldPrivate];
+  context.edits.push({ node: oldPrivate });
 }
 
 /**
@@ -116,26 +183,16 @@ function copyConnNodePrivate(connNode: Element, nsd: string): EditV2[] {
  * `Private[type="OpenSCD-SLD-Layout"]` containers under the Substation section,
  * using `Reference` elements with nested `SLDAttributes`.
  */
-function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
+function migrateOldIEDNames(
+  context: ConversionContext,
+  substation: Element,
+  nsd: string,
+): void {
   const oldIedPrivates = Array.from(
     substation.querySelectorAll(':scope Private[type="OpenSCD-Linked-IEDs"]'),
   );
 
-  if (!oldIedPrivates) {
-    return [];
-  }
-
-  const edits: EditV2[] = [];
-
   oldIedPrivates.forEach((oldIedPrivate) => {
-    const sldPrivateWithIEDs = createElement(
-      oldIedPrivate.ownerDocument!,
-      'Private',
-      {
-        type: 'OpenSCD-SLD-Layout',
-      },
-    );
-
     const oldIedNames = Array.from(
       oldIedPrivate.querySelectorAll(':scope > *'),
     ).filter(
@@ -196,20 +253,11 @@ function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
 
       iedReference.appendChild(sldAttributes);
 
-      sldPrivateWithIEDs.appendChild(iedReference);
+      context.addToPrivate(oldIedPrivate.parentElement!, iedReference);
     });
 
-    const insertNewIeds: EditV2 = {
-      parent: oldIedPrivate.parentElement!,
-      node: sldPrivateWithIEDs,
-      reference: getReference(oldIedPrivate, sldPrivateWithIEDs.tagName),
-    };
-
-    const removeOldIeds: EditV2 = { node: oldIedPrivate };
-    edits.push(insertNewIeds, removeOldIeds);
+    context.edits.push({ node: oldIedPrivate });
   });
-
-  return edits;
 }
 
 /**
@@ -221,10 +269,14 @@ function migrateOldIEDNames(substation: Element, nsd: string): EditV2[] {
  * This migration moves those coordinates into Substation layout Private data by
  * creating `Reference` + nested `SLDAttributes` and clearing the old IED attrs.
  */
-function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
+function migrateLegacyIedCoordinates(
+  context: ConversionContext,
+  doc: XMLDocument,
+  nsd: string,
+): void {
   const substation = doc.querySelector(':root > Substation');
   if (!substation) {
-    return [];
+    return;
   }
 
   const oldLinkedIedNames = new Set(
@@ -246,25 +298,7 @@ function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
   );
 
   if (legacyIeds.length === 0) {
-    return [];
-  }
-
-  const edits: EditV2[] = [];
-  let targetPrivate = substation.querySelector(
-    ':scope > Private[type="OpenSCD-SLD-Layout"]',
-  );
-
-  if (!targetPrivate) {
-    targetPrivate = createElement(substation.ownerDocument!, 'Private', {
-      type: 'OpenSCD-SLD-Layout',
-    });
-
-    const insertPrivate: EditV2 = {
-      parent: substation,
-      node: targetPrivate,
-      reference: getReference(substation, targetPrivate.tagName),
-    };
-    edits.push(insertPrivate);
+    return;
   }
 
   legacyIeds.forEach((ied) => {
@@ -305,12 +339,7 @@ function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
 
       iedReference.appendChild(sldAttributes);
 
-      const insertIedReference: EditV2 = {
-        parent: targetPrivate!,
-        node: iedReference,
-        reference: getReference(targetPrivate!, iedReference.tagName),
-      };
-      edits.push(insertIedReference);
+      context.addToPrivate(substation, iedReference);
     }
 
     const resetIedLegacyCoordinates: SetAttributes = {
@@ -325,10 +354,8 @@ function migrateLegacyIedCoordinates(doc: XMLDocument, nsd: string): EditV2[] {
         },
       },
     };
-    edits.push(resetIedLegacyCoordinates);
+    context.edits.push(resetIedLegacyCoordinates);
   });
-
-  return edits;
 }
 
 function noLayoutAttributes(element: Element): boolean {
@@ -338,31 +365,29 @@ function noLayoutAttributes(element: Element): boolean {
 const textLayoutNames = ['lx', 'ly', 'rot', 'color', 'weight'];
 
 function copyLayoutAttributes(
+  context: ConversionContext,
   target: Element,
   element: Element,
   nsd: string,
   only?: string[],
 ): void {
-  const names = [
-    'x',
-    'y',
-    'w',
-    'h',
-    'rot',
-    'lx',
-    'ly',
-    'kind',
-    'flip',
-    'color',
-    'weight',
-    'uuid',
-  ];
   const values = attributes(element);
-  names.forEach((name, i) => {
-    if (values[i] && (!only || only.includes(name))) {
-      target.setAttributeNS(newNs, `${nsd}:${name}`, values[i]!);
+  const updates: Record<string, string> = {};
+  legacyLayoutAttributeNames.forEach((name, i) => {
+    if (
+      values[i] &&
+      (!only || only.includes(name)) &&
+      !target.hasAttributeNS(newNs, name)
+    ) {
+      updates[`${nsd}:${name}`] = values[i]!;
     }
   });
+  if (Object.keys(updates).length > 0) {
+    context.edits.push({
+      element: target,
+      attributesNS: { [newNs]: updates },
+    });
+  }
 }
 
 function resetOldAttributes(element: Element): SetAttributes {
@@ -375,51 +400,44 @@ function resetOldAttributes(element: Element): SetAttributes {
   };
 }
 
-function pushToPrivate(element: Element, nsd: string): EditV2 {
+function pushToPrivate(
+  context: ConversionContext,
+  element: Element,
+  nsd: string,
+): void {
   // The SCL Text element cannot hold a Private, so its layout is stored as a
   // TextLayout in the parent's Private.
   const text = element.querySelector(':scope > Text');
   const hasOwnLayout = noLayoutAttributes(element);
   const hasTextLayout = !!text && noLayoutAttributes(text);
   if (!hasOwnLayout && !hasTextLayout) {
-    return [];
+    return;
   }
 
-  const edits: EditV2[] = [];
   if (hasOwnLayout) {
-    edits.push(resetOldAttributes(element));
+    context.edits.push(resetOldAttributes(element));
   }
   if (hasTextLayout) {
-    edits.push(resetOldAttributes(text!));
+    context.edits.push(resetOldAttributes(text!));
   }
 
-  const sldPrivate = createElement(element.ownerDocument!, 'Private', {
-    type: 'OpenSCD-SLD-Layout',
-  });
   if (hasOwnLayout) {
-    const sldAttributes = element.ownerDocument!.createElementNS(
-      newNs,
-      `${nsd}:SLDAttributes`,
+    copyLayoutAttributes(
+      context,
+      context.layoutFor(element, 'SLDAttributes', nsd),
+      element,
+      nsd,
     );
-    copyLayoutAttributes(sldAttributes, element, nsd);
-    sldPrivate.appendChild(sldAttributes);
   }
   if (hasTextLayout) {
-    const layout = element.ownerDocument!.createElementNS(
-      newNs,
-      `${nsd}:TextLayout`,
+    copyLayoutAttributes(
+      context,
+      context.layoutFor(element, 'TextLayout', nsd),
+      text!,
+      nsd,
+      textLayoutNames,
     );
-    copyLayoutAttributes(layout, text!, nsd, textLayoutNames);
-    sldPrivate.appendChild(layout);
   }
-
-  edits.push({
-    parent: element,
-    node: sldPrivate,
-    reference: getReference(element, sldPrivate.tagName),
-  });
-
-  return edits;
 }
 
 function replaceNamespace(doc: XMLDocument, nsd: string): EditV2[] {
@@ -445,34 +463,20 @@ function replaceNamespace(doc: XMLDocument, nsd: string): EditV2[] {
 }
 
 export function convertSldLayout(doc: XMLDocument, nsd: string): EditV2 {
+  const context = conversionContext();
   const processElements = doc.querySelectorAll(
     ':root > Substation, :root > Substation :not(Section, Vertex, Text)',
   );
-  const privateEdits: EditV2[] = Array.from(processElements).flatMap(el =>
-    pushToPrivate(el, nsd),
-  );
+  processElements.forEach(el => pushToPrivate(context, el, nsd));
 
   const connNodes = doc.querySelectorAll(':root > Substation ConnectivityNode');
-  const sectionCopy = Array.from(connNodes).flatMap(connNode =>
-    copyConnNodePrivate(connNode, nsd),
-  );
+  connNodes.forEach(connNode => copyConnNodePrivate(context, connNode, nsd));
 
   const substations = doc.querySelectorAll(':root > Substation');
+  substations.forEach(substation => migrateOldIEDNames(context, substation, nsd));
+  migrateLegacyIedCoordinates(context, doc, nsd);
 
-  const iedMigration = Array.from(substations).flatMap(substation =>
-    migrateOldIEDNames(substation, nsd),
-  );
-  const legacyIedCoordinateMigration = migrateLegacyIedCoordinates(doc, nsd);
-
-  const namespaceEdits = replaceNamespace(doc, nsd);
-
-  return [
-    ...privateEdits,
-    ...sectionCopy,
-    ...iedMigration,
-    ...legacyIedCoordinateMigration,
-    ...namespaceEdits,
-  ];
+  return [...context.edits, ...replaceNamespace(doc, nsd)];
 }
 
 export function hasOldNamespace(doc: XMLDocument): boolean {
