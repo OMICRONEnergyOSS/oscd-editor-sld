@@ -615,6 +615,87 @@ describe('SLD Editor', () => {
     );
   });
 
+  it('merges converted layout into an existing Private and preserves it on undo and redo', async () => {
+    const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
+    element.doc = new DOMParser().parseFromString(
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL"
+            xmlns:esld="${oldNs}" xmlns:eosld="${sldNs}">
+        <Substation name="S1" esld:w="20" esld:h="10" esld:rot="1">
+          <Private type="Other"><Data/></Private>
+          <Private type="OpenSCD-SLD-Layout">
+            <eosld:SLDAttributes eosld:rot="2"/>
+            <eosld:TextLayout eosld:color="#f00"/>
+          </Private>
+          <Text esld:lx="3" esld:ly="4" esld:color="#00f">Note</Text>
+        </Substation>
+      </SCL>`,
+      'application/xml',
+    );
+    const substation = element.doc.querySelector('Substation')!;
+    const existing = substation.querySelector(
+      ':scope > Private[type="OpenSCD-SLD-Layout"]',
+    )!;
+    const unrelated = substation.querySelector(':scope > Private[type="Other"]')!;
+    await element.updateComplete;
+    await triggerConversion(element);
+
+    const assertConverted = () => {
+      expect(substation.querySelectorAll(
+        ':scope > Private[type="OpenSCD-SLD-Layout"]',
+      ).length).to.equal(1);
+      expect(substation.querySelector(':scope > Private[type="Other"]')).to.equal(unrelated);
+      expect(substation.querySelector(':scope > Private[type="OpenSCD-SLD-Layout"]')).to.equal(existing);
+      const layout = existing.querySelector(':scope > SLDAttributes')!;
+      expect(layout.getAttributeNS(sldNs, 'w')).to.equal('20');
+      expect(layout.getAttributeNS(sldNs, 'h')).to.equal('10');
+      expect(layout.getAttributeNS(sldNs, 'rot')).to.equal('2');
+      const textLayout = existing.querySelector(':scope > TextLayout')!;
+      expect(textLayout.getAttributeNS(sldNs, 'lx')).to.equal('3');
+      expect(textLayout.getAttributeNS(sldNs, 'ly')).to.equal('4');
+      expect(textLayout.getAttributeNS(sldNs, 'color')).to.equal('#f00');
+    };
+    assertConverted();
+
+    xmlEditor.undo();
+    expect(substation.getAttributeNS(oldNs, 'w')).to.equal('20');
+    expect(substation.querySelector('Text')!.getAttributeNS(oldNs, 'lx')).to.equal('3');
+    expect(existing.querySelector('SLDAttributes')!.getAttributeNS(sldNs, 'w')).to.equal(null);
+    expect(existing.querySelector('TextLayout')!.getAttributeNS(sldNs, 'lx')).to.equal(null);
+
+    xmlEditor.redo();
+    assertConverted();
+  });
+
+  it('combines connectivity layout and converted sections in one Private', async () => {
+    element.doc = new DOMParser().parseFromString(
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL"
+            xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0">
+        <Substation name="S1" esld:w="20" esld:h="10">
+          <VoltageLevel name="V1"><Bay name="B1">
+            <ConnectivityNode name="L1" pathName="S1/V1/B1/L1" esld:x="2">
+              <Private type="Transpower-SLD-Vertices">
+                <esld:Section><esld:Vertex esld:x="2" esld:y="3"/></esld:Section>
+              </Private>
+            </ConnectivityNode>
+          </Bay></VoltageLevel>
+        </Substation>
+      </SCL>`,
+      'application/xml',
+    );
+    await element.updateComplete;
+    await triggerConversion(element);
+
+    const node = element.doc.querySelector('ConnectivityNode')!;
+    const privates = node.querySelectorAll(
+      ':scope > Private[type="OpenSCD-SLD-Layout"]',
+    );
+    expect(privates.length).to.equal(1);
+    expect(privates[0].querySelector('SLDAttributes')!
+      .getAttributeNS(sldNs, 'x')).to.equal('2');
+    expect(privates[0].querySelector('Vertex')!
+      .getAttributeNS(sldNs, 'y')).to.equal('3');
+  });
+
   it('converts old Transpower SLD layout to OpenSCD layout', async () => {
     const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
 
@@ -771,6 +852,10 @@ describe('SLD Editor', () => {
     const parentPrivate = reference.parentElement;
     expect(parentPrivate?.tagName).to.equal('Private');
     expect(parentPrivate?.getAttribute('type')).to.equal('OpenSCD-SLD-Layout');
+    expect(parentPrivate?.parentElement?.querySelectorAll(
+      ':scope > Private[type="OpenSCD-SLD-Layout"]',
+    ).length).to.equal(1);
+    expect(parentPrivate?.querySelector('SLDAttributes')).not.to.equal(null);
   });
 
   it('migrates legacy IED coordinates into Substation IED references', async () => {
@@ -809,10 +894,28 @@ describe('SLD Editor', () => {
     expect(referenceAttrs!.getAttributeNS(sldNs, 'ly')).to.equal('4');
 
     const substation = element.doc.querySelector(':root > Substation')!;
+    expect(substation.querySelectorAll(
+      ':scope > Private[type="OpenSCD-SLD-Layout"]',
+    ).length).to.equal(1);
+    expect(sldAttribute(substation, 'w')).to.equal('12');
     expect(reference.closest('Substation') === substation).to.be.true;
     expect(reference.closest('Private')?.getAttribute('type')).to.equal(
       'OpenSCD-SLD-Layout',
     );
+
+    xmlEditor.undo();
+    expect(iedWithLegacyCoords.getAttributeNS(oldNs, 'x')).to.equal('3');
+    expect(substation.getAttributeNS(oldNs, 'w')).to.equal('12');
+    expect(substation.querySelectorAll(
+      ':scope > Private[type="OpenSCD-SLD-Layout"]',
+    ).length).to.equal(0);
+
+    xmlEditor.redo();
+    expect(substation.querySelectorAll(
+      ':scope > Private[type="OpenSCD-SLD-Layout"]',
+    ).length).to.equal(1);
+    expect(sldAttribute(substation, 'w')).to.equal('12');
+    expect(iedReferences(element.doc).length).to.equal(1);
   });
 
   it('does not create duplicate IED references when legacy IEDName exists', async () => {
