@@ -589,10 +589,106 @@ describe('SLD Editor', () => {
     );
   });
 
+  it('renders Private coordinates when legacy coordinates also exist', async () => {
+    const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
+    element.doc = new DOMParser().parseFromString(
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL"
+            xmlns:old="${oldNs}" xmlns:layout="${sldNs}">
+        <Substation name="S1" old:w="99" old:h="99">
+          <Private type="OpenSCD-SLD-Layout">
+            <layout:SLDAttributes w="DECOY" h="DECOY" layout:w="50" layout:h="25"/>
+          </Private>
+        </Substation>
+      </SCL>`,
+      'application/xml',
+    );
+    const original = new XMLSerializer().serializeToString(element.doc);
+    await element.updateComplete;
+
+    const { sldSubstationViewer } = await waitForSubstationEditor(element);
+    expect(sldSubstationViewer.shadowRoot!.querySelector('svg#sld')!
+      .getAttribute('viewBox')).to.equal('0 0 50 25');
+    expect(element.shadowRoot!.querySelector('sld-migration-notice')).to.equal(null);
+    expect(xmlEditor.past.length).to.equal(0);
+    expect(new XMLSerializer().serializeToString(element.doc)).to.equal(original);
+  });
+
+  it('ignores an unused legacy namespace and unnamespaced coordinate decoys', async () => {
+    element.doc = new DOMParser().parseFromString(
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL"
+            xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0">
+        <Substation name="S1" x="DECOY" y="DECOY"/>
+      </SCL>`,
+      'application/xml',
+    );
+    await element.updateComplete;
+
+    expect(element.shadowRoot!.querySelector('sld-editor')).not.to.equal(null);
+    expect(element.shadowRoot!.querySelector('sld-migration-notice')).to.equal(null);
+  });
+
+  it('does not let empty or wrong-namespace Private data hide legacy coordinates', async () => {
+    element.doc = new DOMParser().parseFromString(
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL"
+            xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0"
+            xmlns:eosld="${sldNs}"
+            xmlns:other="urn:other">
+        <Substation name="S1" esld:w="20">
+          <Private type="OpenSCD-SLD-Layout">
+            <other:SLDAttributes other:x="1" x="DECOY"/>
+            <eosld:SLDAttributes x="DECOY"/>
+          </Private>
+        </Substation>
+      </SCL>`,
+      'application/xml',
+    );
+    await element.updateComplete;
+
+    expect(element.shadowRoot!.querySelector('sld-editor')).to.equal(null);
+    expect(element.shadowRoot!.querySelector('sld-migration-notice')).not.to.equal(null);
+  });
+
+  it('detects legacy coordinates declared with a local namespace prefix', async () => {
+    element.doc = new DOMParser().parseFromString(
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+        <Substation name="S1" xmlns:old="https://transpower.co.nz/SCL/SSD/SLD/v0"
+                    old:w="20" old:h="10"/>
+      </SCL>`,
+      'application/xml',
+    );
+    await element.updateComplete;
+    await triggerConversion(element);
+
+    expect(sldAttribute(element.doc.querySelector('Substation')!, 'w')).to.equal('20');
+    expect(element.shadowRoot!.querySelector('sld-editor')).not.to.equal(null);
+  });
+
+  it('rechecks legacy layout when the document version changes', async () => {
+    const oldNs = 'https://transpower.co.nz/SCL/SSD/SLD/v0';
+    element.doc = new DOMParser().parseFromString(
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:esld="${oldNs}">
+        <Substation name="S1" esld:w="20"/>
+      </SCL>`,
+      'application/xml',
+    );
+    await element.updateComplete;
+    expect(element.shadowRoot!.querySelector('sld-migration-notice')).not.to.equal(null);
+
+    xmlEditor.commit({
+      element: element.doc.querySelector('Substation')!,
+      attributes: {},
+      attributesNS: { [oldNs]: { 'esld:w': null } },
+    });
+    element.docVersion += 1;
+    await element.updateComplete;
+    expect(element.shadowRoot!.querySelector('sld-editor')).not.to.equal(null);
+  });
+
   it('asks to migrate legacy Text/Private layout, then moves it to TextLayout', async () => {
     element.doc = new DOMParser().parseFromString(
-      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:eosld="${sldNs}">
-        <Substation name="S1">
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:eosld="${sldNs}"
+            xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0">
+        <Substation name="S1" esld:w="9">
           <Private type="OpenSCD-SLD-Layout"><eosld:SLDAttributes eosld:w="5" eosld:h="5"/></Private>
           <Text><Private type="OpenSCD-SLD-Layout"><eosld:SLDAttributes eosld:lx="3" eosld:ly="4"/></Private>Note</Text>
         </Substation>
@@ -613,6 +709,24 @@ describe('SLD Editor', () => {
     expect(element.shadowRoot!.querySelector('sld-migration-notice')).to.equal(
       null,
     );
+  });
+
+  it('prioritizes Text migration when its Private contains the only current coordinates', async () => {
+    element.doc = new DOMParser().parseFromString(
+      `<SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:eosld="${sldNs}"
+            xmlns:esld="https://transpower.co.nz/SCL/SSD/SLD/v0">
+        <Substation name="S1" esld:w="9">
+          <Text><Private type="OpenSCD-SLD-Layout"><eosld:SLDAttributes eosld:lx="3"/></Private>Note</Text>
+        </Substation>
+      </SCL>`,
+      'application/xml',
+    );
+    await element.updateComplete;
+    expect(element.shadowRoot!.querySelector('sld-migration-notice')!
+      .getAttribute('kind')).to.equal('text-layout');
+
+    await triggerConversion(element);
+    expect(element.shadowRoot!.querySelector('sld-editor')).not.to.equal(null);
   });
 
   it('merges converted layout into an existing Private and preserves it on undo and redo', async () => {
