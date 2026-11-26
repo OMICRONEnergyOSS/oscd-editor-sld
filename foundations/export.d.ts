@@ -1,7 +1,8 @@
 /**
  * Produces the export-ready serialization of a rendered SLD SVG: clones the
  * source (never mutating it), pins a monochrome black-on-white palette, strips
- * the editor-only interaction chrome, and pretty-prints the result to a string.
+ * the editor-only interaction chrome and whitespace-only text nodes, then
+ * serializes the result to a string.
  *
  * This is the SLD "SVG out" capability — it encodes intimate knowledge of how
  * the viewer builds its SVG (which nodes are editing chrome, how colour is

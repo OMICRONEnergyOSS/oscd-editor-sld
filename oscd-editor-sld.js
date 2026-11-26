@@ -70762,30 +70762,6 @@ const sldThemeStyles = i$7 `
   }
 `;
 
-const prettifyXSLT = new DOMParser().parseFromString([
-    // Describes how we want to modify the XML: indent everything.
-    '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
-    '  <xsl:strip-space elements="*"/>',
-    '  <xsl:template match="para[content-style][not(text())]">',
-    '    <xsl:value-of select="normalize-space(.)"/>',
-    '  </xsl:template>',
-    '  <xsl:template match="node()|@*">',
-    '    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
-    '  </xsl:template>',
-    '  <xsl:output indent="yes"/>',
-    '</xsl:stylesheet>',
-].join('\n'), 'application/xml');
-let xsltProcessor;
-if (!navigator.userAgent.toLowerCase().includes('firefox')) {
-    xsltProcessor = new XSLTProcessor();
-    xsltProcessor.importStylesheet(prettifyXSLT);
-}
-function prettyPrint(xmlDoc) {
-    const doc = xsltProcessor
-        ? xsltProcessor.transformToDocument(xmlDoc)
-        : xmlDoc;
-    return new XMLSerializer().serializeToString(doc);
-}
 // SLD theme tokens the artifacts consume via `style="…: var(--oscd-sld-…)"`.
 // The export is monochrome by spec, so every token is pinned to black ink on a
 // white surface (overriding the live theme) — the diagram markup keeps its
@@ -70844,7 +70820,8 @@ function downloadBlob(blob, filename) {
 /**
  * Produces the export-ready serialization of a rendered SLD SVG: clones the
  * source (never mutating it), pins a monochrome black-on-white palette, strips
- * the editor-only interaction chrome, and pretty-prints the result to a string.
+ * the editor-only interaction chrome and whitespace-only text nodes, then
+ * serializes the result to a string.
  *
  * This is the SLD "SVG out" capability — it encodes intimate knowledge of how
  * the viewer builds its SVG (which nodes are editing chrome, how colour is
@@ -70856,7 +70833,7 @@ function serializeForExport(svg) {
     const exportedSvg = svg.cloneNode(true);
     forceMonochromeTokens(exportedSvg);
     cleanXML(exportedSvg);
-    return prettyPrint(exportedSvg);
+    return new XMLSerializer().serializeToString(exportedSvg);
 }
 /**
  * Packages an already-serialized SVG string as a file and triggers a browser
