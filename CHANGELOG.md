@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.0](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/compare/oscd-editor-sld-v1.0.0...oscd-editor-sld-v1.1.0) (2026-11-26)
+
+
+### Features
+
+* add custom resize validation tests for substation dimensions ([a813091](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/a81309189181f437ff3464d46f0a84679f8cebe4))
+* add substation resize validation callback ([961cdd4](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/961cdd46df12df4a50a2e5cd258012b77bf510e5))
+* store SLD Text layout in parent's Private/TextLayout ([bdb920b](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/bdb920b25ee5f99ce60bc5762ca109817f977dd4))
+
+
+### Bug Fixes
+
+* avoid duplicate SLD layout Privates during conversion ([5052c80](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/5052c8078fad9ec1c227b76949ae10a147257b94))
+* harden substation resize validation and reset dialog on open ([267b3b8](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/267b3b8c74e3a89df59ef1cb87ba4a5b4727d726))
+* prefer Private SLD coordinates over legacy layout ([7b1cf15](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/7b1cf155fc7bdc53fe604b14ee8471d380cbbc70))
+* remove unsupported XSLTProcessor references ([412a13c](https://github.com/OMICRONEnergyOSS/oscd-editor-sld/commit/412a13c8f1528e1954e93696cffaaca2b325b783))
+
 ## 1.0.0 (2026-07-20)
 
 
