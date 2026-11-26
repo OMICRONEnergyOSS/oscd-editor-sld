@@ -1,6 +1,12 @@
 import { expect } from '@open-wc/testing';
 
 import { downloadSvg, serializeForExport } from './export.js';
+import { renderLabel } from '../drawing/artifacts/label.js';
+import {
+  makeArtifactContext,
+  renderToSvg,
+} from '../drawing/artifacts/test-context.js';
+import { sldFixture } from '../test-helpers.js';
 
 describe('export', () => {
   describe('serializeForExport', () => {
@@ -108,6 +114,52 @@ describe('export', () => {
       expect(exported).to.contain('--oscd-sld-terminal-color: black');
       // markup keeps its var() reference; the pinned :root resolves it black
       expect(exported).to.contain('var(--oscd-sld-terminal-color)');
+    });
+
+    it('preserves real multiline label text and positioning in the export', () => {
+      const doc = sldFixture({
+        children: `
+          <ConductingEquipment name="QA1" type="CBR">
+            <Private type="OpenSCD-SLD-Layout">
+              <smth:SLDAttributes smth:x="3" smth:y="3"/>
+            </Private>
+            <Text>  North
+
+South  </Text>
+          </ConductingEquipment>`,
+      });
+      const text = doc.querySelector('Text')!;
+      const context = makeArtifactContext({
+        substation: doc.querySelector('Substation')!,
+        renderedLabelPosition: () => [4, 5],
+      });
+      const rendered = renderToSvg(renderLabel(text, context));
+      const renderedTspans = Array.from(
+        rendered.querySelectorAll('text > tspan'),
+      );
+      const exported = new DOMParser().parseFromString(
+        serializeForExport(rendered),
+        'image/svg+xml',
+      );
+      const tspans = Array.from(exported.querySelectorAll('text > tspan'));
+
+      expect(tspans).to.have.length(3);
+      expect(tspans.map(tspan => tspan.textContent)).to.deep.equal(
+        renderedTspans.map(tspan => tspan.textContent),
+      );
+      expect(tspans.map(tspan => tspan.textContent?.trim())).to.deep.equal([
+        'North',
+        '.',
+        'South',
+      ]);
+      expect(tspans.map(tspan => tspan.getAttribute('x'))).to.deep.equal([
+        '4.1',
+        '4.1',
+        '4.1',
+      ]);
+      expect(tspans[0].hasAttribute('dy')).to.be.false;
+      expect(tspans[1].getAttribute('dy')).to.equal('1.19em');
+      expect(tspans[1].getAttribute('visibility')).to.equal('hidden');
     });
   });
 
